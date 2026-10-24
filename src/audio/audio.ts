@@ -41,6 +41,7 @@ export class AudioEngine {
   private noise!: AudioBuffer;
   private sfxOn = true;
   private musicOn = true;
+  private musicVolume = .8;
   private hostAllowed = true;
   private hostSuspended = false;
   private song: Song | null = null;
@@ -51,6 +52,13 @@ export class AudioEngine {
   private intensity = 0;
   private targetIntensity = 0;
   private boss = false;
+  private meter:AnalyserNode|null=null;
+  private meterSamples:Float32Array<ArrayBuffer>|null=null;
+  diagnostics():{state:string;musicOn:boolean;volume:number;hostAllowed:boolean;rms:number;steps:number} {
+    if(this.ctx&&!this.meter){this.meter=this.ctx.createAnalyser();this.meter.fftSize=1024;this.musicBus.connect(this.meter);this.meterSamples=new Float32Array(1024);}
+    let rms=0;if(this.meter&&this.meterSamples){this.meter.getFloatTimeDomainData(this.meterSamples);rms=Math.sqrt(this.meterSamples.reduce((sum,n)=>sum+n*n,0)/this.meterSamples.length);}
+    return {state:this.ctx?.state??'locked',musicOn:this.musicOn,volume:this.musicVolume,hostAllowed:this.hostAllowed,rms,steps:this.step};
+  }
   private lastPlay: Record<string, number> = {};
 
   get ready(): boolean {
@@ -61,6 +69,8 @@ export class AudioEngine {
     this.sfxOn = on;
     this.applyGains();
   }
+
+  setMusicVolume(v:number):void {this.musicVolume=Math.max(0,Math.min(1,v));this.applyGains();}
 
   setMusic(on: boolean): void {
     this.musicOn = on;
@@ -80,6 +90,8 @@ export class AudioEngine {
         if (!Ctor) return;
         const ctx = new Ctor();
         this.ctx = ctx;
+        // Request resume synchronously inside the initiating gesture, before creating impulse buffers.
+        if(ctx.state!=='running')void ctx.resume().catch(()=>{});
         const comp = ctx.createDynamicsCompressor();
         comp.threshold.value = -16;
         comp.ratio.value = 4;
@@ -93,12 +105,12 @@ export class AudioEngine {
         this.reverb.buffer = this.makeImpulse(2.4);
         this.reverbSend = ctx.createGain();
         this.reverbSend.gain.value = 0.35;
-        this.reverbSend.connect(this.reverb).connect(this.master);
+        this.reverbSend.connect(this.reverb).connect(this.musicBus);
         this.noise = this.makeNoise();
         this.applyGains();
         if (this.songName) this.startScheduler();
       }
-      if (this.ctx.state === 'suspended' && !this.hostSuspended) void this.ctx.resume().catch(() => {});
+      if (this.ctx.state !== 'running' && this.ctx.state !== 'closed' && !this.hostSuspended) void this.ctx.resume().then(()=>{this.nextTime=this.ctx!.currentTime+.05;this.startScheduler();}).catch(() => {});
     } catch {
       this.ctx = null;
     }
@@ -111,7 +123,7 @@ export class AudioEngine {
 
   resume(): void {
     this.hostSuspended = false;
-    if (this.ctx?.state === 'suspended') void this.ctx.resume().catch(() => {});
+    if (this.ctx && this.ctx.state!=='closed')void this.ctx.resume().then(()=>{this.nextTime=this.ctx!.currentTime+.05;this.startScheduler();}).catch(()=>{});
   }
 
   private applyGains(): void {
@@ -119,8 +131,8 @@ export class AudioEngine {
     const t = this.ctx.currentTime;
     const host = this.hostAllowed ? 1 : 0;
     this.master.gain.setTargetAtTime(0.8 * host, t, 0.05);
-    this.sfxBus.gain.setTargetAtTime(this.sfxOn ? 0.9 : 0, t, 0.03);
-    this.musicBus.gain.setTargetAtTime(this.musicOn ? 0.55 : 0, t, 0.3);
+    this.sfxBus.gain.setTargetAtTime(this.sfxOn ? 0.72 : 0, t, 0.03);
+    this.musicBus.gain.setTargetAtTime(this.musicOn ? this.musicVolume*1.15 : 0, t, 0.3);
   }
 
   private makeNoise(): AudioBuffer {
@@ -179,11 +191,13 @@ export class AudioEngine {
   private schedule(): void {
     const ctx = this.ctx;
     const song = this.song;
-    if (!ctx || !song) return;
+    if (!ctx || !song || this.hostSuspended) return;
     if (ctx.state !== 'running') {
       this.nextTime = ctx.currentTime + 0.05;
       return;
     }
+    // Never replay minutes of expired notes after background timer throttling.
+    if(this.nextTime<ctx.currentTime-.25)this.nextTime=ctx.currentTime+.05;
     const eighth = 60 / song.bpm / 2;
     while (this.nextTime < ctx.currentTime + 0.25) {
       this.intensity += (this.targetIntensity - this.intensity) * 0.06;

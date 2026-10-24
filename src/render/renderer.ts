@@ -1,3 +1,5 @@
+import { drawWeapon } from './weapons';
+import { WEAPONS } from '../core/weapons';
 import { VIEW_H, VIEW_W_MAX, VIEW_W_MIN } from '../core/config';
 import type { Sign } from '../core/levels';
 import type { Game } from '../game';
@@ -20,19 +22,13 @@ export const SERIF = '"Palatino Linotype", "Book Antiqua", Palatino, Georgia, "T
 export const SANS = 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
 /** Landscape fills the screen; portrait puts the view on top and controls below. */
-export function computeLayout(w: number, h: number): Layout {
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  const portrait = h > w * 1.05;
-  if (portrait) {
-    const viewW = 560;
-    const scale = w / viewW;
-    const gh = VIEW_H * scale;
-    const oy = Math.max(0, Math.min(h * 0.07, (h - gh) / 2 - h * 0.14));
-    return { w, h, dpr, scale, viewW, ox: 0, oy, portrait, zoom: 1.1 };
-  }
-  const viewW = Math.max(VIEW_W_MIN, Math.min(VIEW_W_MAX, (w / h) * VIEW_H));
-  const scale = Math.min(h / VIEW_H, w / viewW);
-  return { w, h, dpr, scale, viewW, ox: (w - viewW * scale) / 2, oy: (h - VIEW_H * scale) / 2, portrait, zoom: 1.2 };
+export function computeLayout(w:number,h:number,touch=false,insets={top:0,right:0,bottom:0,left:0}):Layout {
+  const dpr=Math.min(window.devicePixelRatio||1,2),portrait=h>w*1.05;
+  const controls=touch?(portrait?164:94):0;
+  const aw=Math.max(1,w-insets.left-insets.right-12),ah=Math.max(1,h-insets.top-insets.bottom-controls-12);
+  const viewW=portrait?720:Math.max(VIEW_W_MIN,Math.min(VIEW_W_MAX,aw/ah*VIEW_H));
+  const scale=Math.min(aw/viewW,ah/VIEW_H);
+  return {w,h,dpr,scale,viewW,ox:insets.left+(aw-viewW*scale)/2+6,oy:insets.top+(portrait?6:(ah-VIEW_H*scale)/2+6),portrait,zoom:1};
 }
 
 const SIGN_TEXT: Record<Sign['key'], Record<InputMode, string>> = {
@@ -59,7 +55,12 @@ export class Renderer {
   }
 
   resize(): Layout {
-    const l = computeLayout(window.innerWidth, window.innerHeight);
+    const style=getComputedStyle(document.documentElement);
+    const inset=(key:string)=>parseFloat(style.getPropertyValue('--safe-'+key))||0;
+    const w=Math.min(window.innerWidth,window.visualViewport?.width??Infinity),h=Math.min(window.innerHeight,window.visualViewport?.height??Infinity);
+    const touch=(window.matchMedia?.('(pointer: coarse)').matches??false)||new URLSearchParams(location.search).has('touch');
+    const l=computeLayout(w,h,touch,{top:inset('top'),right:inset('right'),bottom:inset('bottom'),left:inset('left')});
+    document.body.style.width=`${w}px`;document.body.style.height=`${h}px`;
     this.canvas.width = Math.round(l.w * l.dpr);
     this.canvas.height = Math.round(l.h * l.dpr);
     this.canvas.style.width = `${l.w}px`;
@@ -105,6 +106,7 @@ export class Renderer {
     world.drawTerrain(ctx, s.terrain, camX, worldW, game.time);
     if (!game.demo) for (const sign of s.def.signs) if (Math.abs(sign.x-s.player.x)<170) this.drawSign(sign, s.terrain.groundAt(sign.x) ?? 450, inputMode);
     this.drawPickups(game);
+    this.drawWeaponDrops(game);
     this.drawMarkers(game);
     this.drawWaves(game);
     for(const e of s.enemies){
@@ -149,6 +151,22 @@ export class Renderer {
   }
 
   // ------------------------------------------------------------ world
+
+  private drawWeaponDrops(game:Game):void {
+    const ctx=this.ctx,s=game.stage!;
+    for(const d of s.weaponDrops){
+      if(d.x<game.camX-100||d.x>game.camX+game.viewW+100)continue;
+      const w=WEAPONS[d.weapon],ground=s.terrain.groundAt(d.x)??d.y;
+      ctx.save();ctx.fillStyle='rgba(10,12,27,.45)';ctx.beginPath();ctx.ellipse(d.x,ground+1,24,4,0,0,Math.PI*2);ctx.fill();
+      // Small dark backing and thin light rim keep the actual silhouette readable on every land.
+      ctx.translate(d.x,d.y-22+(d.settled?Math.sin(d.age*2)*1.5:0));
+      ctx.shadowColor='#090f20';ctx.shadowBlur=5;ctx.strokeStyle='#fff3cd';ctx.lineWidth=1;
+      ctx.fillStyle=w.color+'18';ctx.beginPath();ctx.ellipse(0,0,35,28,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+      ctx.shadowColor=w.color;ctx.shadowBlur=7;
+      ctx.rotate(d.settled?-.12:Math.sin(d.age*6)*.3);
+      ctx.scale(.82,.82);drawWeapon(ctx,d.weapon,d.rank,{x:-18,y:14},2.05,game.time);ctx.restore();
+    }
+  }
 
   private drawExit(game: Game): void {
     const s = game.stage!;
@@ -381,7 +399,7 @@ export class Renderer {
       const lost = !full && i < p.hp + 1 && game.hurtFlash > 0;
       heart(ctx, x, top, 11, full ? '#ff5d7a' : lost ? '#ffffff' : 'rgba(40, 20, 50, 0.55)', full ? '#ffd0da' : 'rgba(255,255,255,0.35)');
     }
-    ctx.save();ctx.font=`600 11px ${SANS}`;ctx.fillStyle='#e9d5a3';ctx.fillText(`ELIAM · ${p.dashCooldown>0?'DASH RECHARGING':'L / LB · DASH'}`,left-10,top+29);ctx.restore();
+    ctx.save();ctx.font=`600 11px ${SANS}`;ctx.fillStyle='#e9d5a3';ctx.fillText(`ELIAM · ${p.dashCooldown>0?'DASH RECHARGING':'DASH READY'}`,left-10,top+29);ctx.restore();
     // motes + score (leaves room on the right for the pause button)
     const rx = l.viewW - 24;
     ctx.save();
@@ -457,12 +475,12 @@ export class Renderer {
         ctx.font = `600 46px ${SERIF}`;
         ctx.lineWidth = 6;
         ctx.strokeStyle = 'rgba(30, 15, 40, 0.55)';
-        ctx.strokeText(b.text, l.viewW / 2, y + rise);
+        ctx.strokeText(b.text, l.viewW / 2, y + rise,l.viewW-50);
         const g = ctx.createLinearGradient(0, y - 24, 0, y + 24);
         g.addColorStop(0, '#fffbe8');
         g.addColorStop(1, '#ffd77a');
         ctx.fillStyle = g;
-        ctx.fillText(b.text, l.viewW / 2, y + rise);
+        ctx.fillText(b.text, l.viewW / 2, y + rise,l.viewW-50);
         if (b.sub) {
           ctx.font = `italic 400 18px ${SERIF}`;
           ctx.lineWidth = 4;
@@ -473,9 +491,9 @@ export class Renderer {
         ctx.font = `600 26px ${SERIF}`;
         ctx.lineWidth = 5;
         ctx.strokeStyle = 'rgba(30, 15, 40, 0.55)';
-        ctx.strokeText(b.text, l.viewW / 2, y + rise);
+        ctx.strokeText(b.text, l.viewW / 2, y + rise,l.viewW-50);
         ctx.fillStyle = '#fff3d6';
-        ctx.fillText(b.text, l.viewW / 2, y + rise);
+        ctx.fillText(b.text, l.viewW / 2, y + rise,l.viewW-50);
         if (b.sub) {
           ctx.font = `400 16px ${SANS}`;
           ctx.strokeText(b.sub, l.viewW / 2, y + 30 + rise);

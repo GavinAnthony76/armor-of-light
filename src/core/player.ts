@@ -1,3 +1,4 @@
+import { freshEquipment, WEAPONS, type Equipment, type WeaponId, type Rank } from './weapons';
 import { PLAYER } from './config';
 import type { Body } from './terrain';
 import type { InputFrame, Rect } from './types';
@@ -26,6 +27,9 @@ export const AIR_SWING: SwingDef = {
 };
 
 export class Player implements Body {
+  equipment: Equipment = freshEquipment();
+  get weaponId(): WeaponId { return this.equipment.equipped==='alternate'&&this.equipment.alternate?this.equipment.alternate.id:'hammer'; }
+  get weaponRank(): Rank { return this.weaponId==='hammer'?1:this.equipment.alternate?.rank??1; }
   x: number;
   y: number;
   vx = 0;
@@ -72,7 +76,13 @@ export class Player implements Body {
   }
 
   get swing(): SwingDef {
-    return this.airSwing ? AIR_SWING : SWINGS[this.combo];
+    const base = this.airSwing ? AIR_SWING : SWINGS[this.combo];
+    if(this.weaponId==='hammer') return base;
+    const w=WEAPONS[this.weaponId], rank=this.weaponRank;
+    // Defensive cancel always opens no later than the signature hammer's window.
+    return {...base,dur:base.dur*w.tempo,hitFrom:base.hitFrom*Math.min(1,w.tempo),hitTo:base.hitTo*Math.min(1,w.tempo),chainFrom:base.chainFrom*w.tempo,
+      damage:base.damage*w.damage*(1+(rank-1)*.09),knock:base.knock*w.knock,
+      box:{...base.box,w:base.box.w*w.reach,h:this.weaponId==='tide'?38:base.box.h,dy:this.weaponId==='tide'?-65:base.box.dy}};
   }
 
   get blocking(): boolean {

@@ -198,6 +198,9 @@ export class Game {
     const sound = this.say(e);
     const s = this.stage!;
     switch (e.type) {
+      case 'equipment':
+        if(sound)a.play('pickup',2);
+        this.banners.push({text:e.text,t:0,dur:2.6,big:false});break;
       case 'dash':
         for(let i=0;i<9;i++)fx.add('ember',e.x-e.facing*i*5,e.y-22,{vx:-e.facing*100,vy:-30,life:.2+i*.015,size:2,color:'#ffb05f'});
         if(sound)a.play('swing',0);break;
