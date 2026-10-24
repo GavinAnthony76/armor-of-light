@@ -1,6 +1,6 @@
 import type { InputFrame } from './core/types';
 
-type Action = 'left' | 'right' | 'jump' | 'attack' | 'block' | 'dash';
+type Action = 'left' | 'right' | 'jump' | 'attack' | 'block' | 'dash' | 'interact' | 'swap';
 export type InputMode = 'keyboard' | 'touch' | 'gamepad';
 
 const KEYS: Record<string, Action> = {
@@ -20,6 +20,8 @@ const KEYS: Record<string, Action> = {
   KeyC: 'block',
   ShiftLeft: 'block',
   ShiftRight: 'block',
+  KeyE: 'interact',
+  KeyQ: 'swap',
 };
 
 /**
@@ -147,6 +149,8 @@ export class Input {
     if (b(4)) now.add('dash');
     if (b(2) || b(3)) now.add('attack');
     if (b(1) || b(5) || b(7)) now.add('block');
+    if (b(12)) now.add('interact');
+    if (b(13)) now.add('swap');
     if (b(14) || ax < -0.4) now.add('left');
     if (b(15) || ax > 0.4) now.add('right');
     if (b(9)) now.add('start');
@@ -157,7 +161,7 @@ export class Input {
       for (const a of now) {
         if (a === 'start') continue;
         this.padHeld.add(a as Action);
-        if (!this.padPrev.has(a) && (a === 'jump' || a === 'attack' || a === 'block' || a==='dash')) this.pressed.add(a);
+        if (!this.padPrev.has(a) && (a === 'jump' || a === 'attack' || a === 'block' || a === 'dash' || a === 'interact' || a === 'swap')) this.pressed.add(a);
       }
     }
     this.padPrev = now;
@@ -178,6 +182,8 @@ export class Input {
       attackPressed: this.pressed.has('attack'),
       blockPressed: this.pressed.has('block'),
       dashPressed:this.pressed.has('dash'),
+      interactPressed:this.pressed.has('interact'),
+      swapPressed:this.pressed.has('swap'),
     };
     this.pressed.clear();
     if (this.jumpAssist > 0) this.jumpAssist--;

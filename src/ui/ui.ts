@@ -5,10 +5,14 @@ import { STAGES } from '../core/levels';
 import type { StageResult } from '../core/stage';
 import type { Layout } from '../render/renderer';
 import type { SaveData } from '../save';
+import type { Player } from '../core/player';
+import type { WeaponDrop } from '../core/stage';
+import { romanRank, WEAPONS } from '../core/weapons';
+import type { InputMode } from '../input';
 import { ICON } from './icons';
 
 export interface UIHandlers {
-  play(level: number): void;
+  play(level: number, resumeRun?: boolean): void;
   pause(): void;
   resume(): void;
   restart(): void;
@@ -83,12 +87,13 @@ export class UI {
               <p><kbd>Space</kbd> or <kbd>W</kbd> jump</p>
               <p><kbd>J</kbd> or <kbd>X</kbd> strike</p>
               <p>Hold <kbd>K</kbd> or <kbd>C</kbd> to block</p>
-              <p><kbd>L</kbd> or <kbd>V</kbd> dash. Jump against a wall to kick away.</p><p><kbd>Esc</kbd> pause</p></div>
+              <p><kbd>L</kbd> or <kbd>V</kbd> dash. Jump against a wall to kick away.</p><p><kbd>E</kbd> pick up a weapon · <kbd>Q</kbd> swap</p><p><kbd>Esc</kbd> pause</p></div>
             <div><h3>Touch</h3>
               <p>Slide on the left pad to walk</p>
               <p><b>Strike</b>, <b>Jump</b> and <b>Shield</b> buttons on the right</p>
+              <p>Nearby weapons show a deliberate <b>Pick up</b> button; tap <b>Swap</b> to switch.</p>
               <h3>Controller</h3>
-              <p>Stick walks · A jump · X strike · B block</p></div>
+              <p>Stick walks · A jump · X strike · B block</p><p>D-pad up picks up a weapon · down swaps</p></div>
           </div>
           <div class="warn-key">
             <p><span class="w gold"></span><b>Gold warning:</b> block it. Block right as it flashes to <b>parry</b>, which stuns the foe.</p>
@@ -100,6 +105,11 @@ export class UI {
 
       <section class="screen hud" data-screen="hud">
         <button class="btn icon hud-btn" data-act="pause" aria-label="Pause">${ICON.pause}</button>
+        <div class="weapon-offer" data-ref="weaponOffer" role="status" aria-live="polite" hidden>
+          <strong data-ref="weaponOfferTitle"></strong>
+          <span data-ref="weaponOfferCopy"></span>
+          <small data-ref="weaponOfferPrompt"></small>
+        </div>
       </section>
 
       <section class="screen modal" data-screen="pause">
@@ -141,6 +151,8 @@ export class UI {
           <button class="tbtn dash" data-ref="tDash" tabindex="-1">${ICON.dash}<span>Dash</span></button><button class="tbtn block" data-ref="tBlock" tabindex="-1">${ICON.shield}<span>Shield</span></button>
           <button class="tbtn jump" data-ref="tJump" tabindex="-1">${ICON.jump}<span>Jump</span></button>
           <button class="tbtn attack" data-ref="tAttack" tabindex="-1">${ICON.hammer}<span>Strike</span></button>
+          <button class="tbtn interact" data-ref="tInteract" tabindex="-1" hidden><span class="touch-letter">E</span><span>Pick up</span></button>
+          <button class="tbtn swap" data-ref="tSwap" tabindex="-1" hidden><span class="touch-letter">↔</span><span>Swap</span></button>
         </div>
       </div>
     `;
@@ -157,11 +169,11 @@ export class UI {
       const btn = (e.target as HTMLElement).closest('button');
       if (!btn || btn.disabled || btn.classList.contains('tbtn')) return;
       this.h.click();
-      if (btn.dataset.level !== undefined) return this.h.play(Number(btn.dataset.level));
+      if (btn.dataset.level !== undefined) return this.h.play(Number(btn.dataset.level), false);
       if (btn.dataset.diff) return this.h.setDifficulty(btn.dataset.diff as DifficultyId);
       switch (btn.dataset.act) {
         case 'continue':
-          return this.h.play(Number(btn.dataset.target ?? 0));
+          return this.h.play(Number(btn.dataset.target ?? 0), true);
         case 'motion': return this.h.toggleMotion();
         case 'levels':
           return this.h.levels();
@@ -230,7 +242,41 @@ export class UI {
     st.setProperty('--gw', `${l.viewW * l.scale}px`);
     st.setProperty('--gh', `${540 * l.scale}px`);
     st.setProperty('--u', `${l.scale}px`);
+    st.setProperty('--viewport-h', `${l.h}px`);
+    st.setProperty('--viewport-w', `${l.w}px`);
     this.root.classList.toggle('portrait', l.portrait);
+  }
+
+  setWeaponOffer(drop: WeaponDrop | null, player: Player, mode: InputMode): void {
+    const panel = this.ref('weaponOffer');
+    const pickup = this.ref<HTMLButtonElement>('tInteract');
+    const swap = this.ref<HTMLButtonElement>('tSwap');
+    swap.hidden = !player.alternateWeapon;
+    if (!drop) {
+      panel.hidden = true;
+      pickup.hidden = true;
+      return;
+    }
+    const profile = WEAPONS[drop.weapon];
+    panel.style.setProperty('--weapon-color', profile.color);
+    const same = player.alternateWeapon === drop.weapon;
+    const maxed = same && player.weaponRank >= 3;
+    const nextRank = same ? Math.min(3, player.weaponRank + 1) : 1;
+    this.ref('weaponOfferTitle').textContent = `${profile.name} · RANK ${romanRank(nextRank)}`;
+    const change = !same && player.alternateWeapon
+      ? `Replaces ${WEAPONS[player.alternateWeapon].name}; the Burning Hammer stays. `
+      : '';
+    this.ref('weaponOfferCopy').textContent = maxed
+      ? 'Rank III · Maxed. Leave it here or keep moving.'
+      : `${change}${profile.advantage}. ${profile.tradeoff}.`;
+    const action = mode === 'keyboard' ? 'E · pick up' : mode === 'gamepad' ? '↑ · pick up' : 'Tap PICK UP';
+    const prompt = this.ref('weaponOfferPrompt');
+    prompt.textContent = maxed ? 'MAX RANK' : `${action} · no auto-pickup`;
+    panel.hidden = false;
+    panel.dataset.weapon = drop.weapon;
+    pickup.hidden = maxed;
+    pickup.innerHTML = `<span class="touch-letter">${same ? '↑' : '+'}</span><span>${same ? 'Upgrade' : 'Pick up'}</span>`;
+    pickup.setAttribute('aria-label', maxed ? `${profile.name} is already max rank` : `${same ? 'Upgrade' : 'Pick up'} ${profile.name}, rank ${romanRank(nextRank)}`);
   }
 
   showTouch(on: boolean): void {

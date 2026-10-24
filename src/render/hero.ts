@@ -1,4 +1,5 @@
 import type { Player } from '../core/player';
+import { drawWeaponSilhouette } from './weapon-art';
 
 /**
  * The traveler is a small procedural rig: joint angles are computed from the
@@ -142,7 +143,7 @@ type V = { x: number; y: number };
 
 export class HeroView {
   private cape: { x: number; y: number; px: number; py: number }[] = [];
-  private trail: { tip: V; hilt: V; age: number }[] = [];
+  private trail: { tip: V; hilt: V; age: number; color: string | null }[] = [];
   private lastTip: V | null = null;
   private capeAccumulator=0;
   private time = 0;
@@ -169,7 +170,15 @@ export class HeroView {
     const hand={x:shoulder.x+Math.sin(pose.armS)*12+Math.sin(fa)*11,y:shoulder.y+Math.cos(pose.armS)*12+Math.cos(fa)*11};
     const angle=fa+pose.blade;
     const W=(v:V):V=>({x:p.x+v.x*f,y:p.y+v.y});
-    if(p.attacking){const tip=W({x:hand.x+Math.sin(angle)*36,y:hand.y+Math.cos(angle)*36});const hilt=W({x:hand.x+Math.sin(angle)*22,y:hand.y+Math.cos(angle)*22});if(this.lastTip)this.trail.push({tip,hilt,age:0});this.lastTip=tip;}else this.lastTip=null;
+    if(p.attacking){
+      const profile=p.equippedWeapon;
+      const length=profile?.kind==='spear'?80:profile?.kind==='glaive'?66:profile?.kind==='greatsword'?64:profile?.kind==='maul'?50:profile?.kind==='twinblades'?48:profile?.kind==='sabre'?58:profile?58:36;
+      const grip=profile?Math.min(30,length*.48):22;
+      const tip=W({x:hand.x+Math.sin(angle)*length,y:hand.y+Math.cos(angle)*length});
+      const hilt=W({x:hand.x+Math.sin(angle)*grip,y:hand.y+Math.cos(angle)*grip});
+      if(this.lastTip)this.trail.push({tip,hilt,age:0,color:profile?.color??null});
+      this.lastTip=tip;
+    }else this.lastTip=null;
     if(this.trail.length>24)this.trail.splice(0,this.trail.length-24);
     this.capeAccumulator=Math.min(.05,this.capeAccumulator+dt);
     while(this.capeAccumulator>=1/120){this.stepCape(W({x:neck.x-4,y:neck.y+2}),p,1/120);this.capeAccumulator-=1/120;}
@@ -309,9 +318,13 @@ export class HeroView {
     this.limb(ctx, shoulder, ah.elbow, ah.hand, 6, C.steelMid);
     this.shield(ctx, ah.hand, p.blocking);
 
-    // Hammer follows the original hand and swing poses; combat timing is unchanged.
+    // Keep the signature flame hammer intact; alternates use their own silhouettes.
     this.limb(ctx, shoulder, as.elbow, as.hand, 6, C.steel);
-    this.hammer(ctx, as.hand, bladeA, p.state === 'attack');
+    if (p.equippedWeapon) {
+      drawWeaponSilhouette(ctx, as.hand.x, as.hand.y, bladeA, p.equippedWeapon, p.weaponRank, 0.86);
+    } else {
+      this.hammer(ctx, as.hand, bladeA, p.state === 'attack');
+    }
 
     ctx.restore();
   }
@@ -432,7 +445,8 @@ export class HeroView {
       const a = this.trail[i - 1];
       const b = this.trail[i];
       const k = 1 - b.age / 0.12;
-      ctx.fillStyle = `rgba(255, 139, 34, ${0.65 * k})`;
+      const color = b.color;
+      ctx.fillStyle = color ? this.rgba(color, 0.62 * k) : `rgba(255, 139, 34, ${0.65 * k})`;
       ctx.beginPath();
       ctx.moveTo(a.hilt.x, a.hilt.y);
       ctx.lineTo(a.tip.x, a.tip.y);
@@ -442,6 +456,12 @@ export class HeroView {
       ctx.fill();
     }
     ctx.globalCompositeOperation = 'source-over';
+  }
+
+  private rgba(hex: string, alpha: number): string {
+    const clean = hex.replace('#', '');
+    const value = Number.parseInt(clean, 16);
+    return `rgba(${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255}, ${alpha})`;
   }
 
   private stepCape(anchor: V, p: Player, dt:number): void {

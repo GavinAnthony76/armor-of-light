@@ -39,7 +39,7 @@ async function boot(): Promise<void> {
   };
 
   const ui = new UI(document.getElementById('ui')!, {
-    play: (i) => startLevel(i),
+    play: (i, resumeRun = false) => startLevel(i, resumeRun),
     pause: () => pause(),
     resume: () => resume(),
     restart: () => {delete save.data.run;save.persist();startLevel(game.level);},
@@ -73,6 +73,8 @@ async function boot(): Promise<void> {
   input.bindButton(ui.ref('tJump'), 'jump');
   input.bindButton(ui.ref('tBlock'), 'block');
   input.bindButton(ui.ref('tDash'),'dash');
+  input.bindButton(ui.ref('tInteract'), 'interact');
+  input.bindButton(ui.ref('tSwap'), 'swap');
   const coarse = window.matchMedia?.('(pointer: coarse)').matches ?? false;
   if (coarse || params.has('touch')) input.setMode('touch');
   input.onModeChange = (m) => ui.showTouch(m === 'touch');
@@ -84,7 +86,7 @@ async function boot(): Promise<void> {
 
   // ---------------------------------------------------------- flow
 
-  function startLevel(i: number): void {
+  function startLevel(i: number, resumeRun = false): void {
     if(!Number.isInteger(i)||i<0||i>=STAGES.length||(!params.has('debug')&&i>save.data.unlocked)) return;
     if(!params.has('debug') && !document.body.dataset.chapterAccepted){
       input.enabled=false; input.releaseAll(); game.paused=true;
@@ -96,16 +98,21 @@ async function boot(): Promise<void> {
       panel.querySelector('#story-next')!.addEventListener('click',()=>{beat=Math.min(story.beats.length-1,beat+1);showBeat();});
       showBeat();document.body.append(panel); panel.showModal();
       const close=()=>{panel.close();panel.remove();game.paused=false;};
-      panel.querySelector('#chapter-enter')!.addEventListener('click',()=>{close();document.body.dataset.chapterAccepted='1';startLevel(i);delete document.body.dataset.chapterAccepted;});
+       panel.querySelector('#chapter-enter')!.addEventListener('click',()=>{close();document.body.dataset.chapterAccepted='1';startLevel(i,resumeRun);delete document.body.dataset.chapterAccepted;});
       panel.querySelector('#chapter-back')!.addEventListener('click',()=>{close();toMenu('levels');});
       panel.addEventListener('cancel',()=>{close();toMenu('levels');});
       return;
     }
+    if (!resumeRun && !params.has('debug')) {
+      delete save.data.run;
+      save.persist();
+    }
     game.start(i, save.data.settings.difficulty, { autoplay: params.has('autoplay') });
     const run=save.data.run,s=game.stage!;
-    if(run?.level===i&&run.difficulty===save.data.settings.difficulty){
+    if(resumeRun&&run?.level===i&&run.difficulty===save.data.settings.difficulty){
       s.nextEncounter=run.encounter;s.score=run.score;s.motes=run.motes;s.kills=run.kills;s.time=run.time;s.deaths=run.deaths;
       s.pickups.forEach((p,n)=>{if(run.collected.includes(n))p.taken=true;});
+      s.restoreWeaponState(run.weaponState);
       const next=s.def.encounters[run.encounter];
       const x=next?(next.checkpoint??next.arena[0]+70):s.def.encounters[s.def.encounters.length-1].arena[1]+30;
       s.player.x=x;s.player.y=s.terrain.groundAt(x)??450;s.player.lastSafe={x,y:s.player.y};s.checkpoint={x,y:s.player.y};
@@ -114,6 +121,8 @@ async function boot(): Promise<void> {
     }
     s.prevPlayerX=s.player.x;s.prevPlayerY=s.player.y;
     lastSavedEncounter=-1;
+    lastSavedWeaponRevision=-1;
+    lastSavedDeaths=-1;
     state = 'playing';
     input.enabled = true;
     input.releaseAll();
@@ -133,6 +142,7 @@ async function boot(): Promise<void> {
 
   function pause(): void {
     if (state !== 'playing') return;
+    persistRun(true);
     state = 'paused';
     game.paused = true;
     input.enabled = false;
@@ -159,6 +169,36 @@ async function boot(): Promise<void> {
   };
 
   // ---------------------------------------------------------- browser
+
+  let lastSavedEncounter=-1;
+  let lastSavedWeaponRevision=-1;
+  let lastSavedDeaths=-1;
+  let lastRunSaveAt=0;
+  function persistRun(force = false): void {
+    const s=game.stage;
+    if(state!=='playing'||!s||game.demo||params.has('debug')) return;
+    const periodic=performance.now()-lastRunSaveAt>=1500;
+    if(!force&&!periodic&&s.nextEncounter===lastSavedEncounter&&s.weaponRevision===lastSavedWeaponRevision&&s.deaths===lastSavedDeaths)return;
+    save.data.run={
+      level:game.level,
+      encounter:s.nextEncounter,
+      score:s.score,
+      motes:s.motes,
+      kills:s.kills,
+      time:s.time,
+      deaths:s.deaths,
+      collected:s.pickups.map((p,n)=>p.placed&&p.taken?n:-1).filter(n=>n>=0),
+      difficulty:s.diff.id,
+      weaponState:s.saveWeaponState(),
+    };
+    save.persist();
+    lastSavedEncounter=s.nextEncounter;
+    lastSavedWeaponRevision=s.weaponRevision;
+    lastSavedDeaths=s.deaths;
+    lastRunSaveAt=performance.now();
+  }
+  window.addEventListener('pagehide',()=>persistRun(true));
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')persistRun(true);});
 
   const unlock = () => audio.unlock();
   window.addEventListener('pointerdown', unlock, true);
@@ -193,7 +233,6 @@ async function boot(): Promise<void> {
 
   // ---------------------------------------------------------- loop
 
-  let lastSavedEncounter=-1;
   let menuPadPrev:number[]=[];
   let last = performance.now();
   let first = true;
@@ -214,10 +253,10 @@ async function boot(): Promise<void> {
     game.update(dt);
     if(state==='playing'&&game.stage&&!game.demo){
       const s=game.stage;
-      if(s.nextEncounter!==lastSavedEncounter&&s.phase==='play'){
-        lastSavedEncounter=s.nextEncounter;
-        save.data.run={level:game.level,encounter:s.nextEncounter,score:s.score,motes:s.motes,kills:s.kills,time:s.time,deaths:s.deaths,collected:s.pickups.map((p,n)=>p.placed&&p.taken?n:-1).filter(n=>n>=0),difficulty:s.diff.id};save.persist();
-      }
+      persistRun(s.phase==='play'&&s.nextEncounter!==lastSavedEncounter);
+      ui.setWeaponOffer(s.nearbyWeaponDrop,s.player,input.mode);
+    } else if (game.stage) {
+      ui.setWeaponOffer(null,game.stage.player,input.mode);
     }
     renderer.render(game, state === 'paused' ? 0 : dt, input.mode);
     if (first) {
