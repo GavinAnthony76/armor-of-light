@@ -1,0 +1,20 @@
+{
+  "name": "armor-of-light",
+  "private": true,
+  "version": "1.2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "build:single": "node tests/single-file.mjs",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx tests/run.ts && node --import tsx tests/campaign.ts && node --import tsx tests/action.ts",
+    "test:e2e": "python3 tests/e2e.py"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.0",
+    "typescript": "^5.6.0",
+    "vite": "^6.0.0"
+  }
+}

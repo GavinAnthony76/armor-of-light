@@ -1,0 +1,16 @@
+import {Player} from '../src/core/player';
+import {Stage} from '../src/core/stage';
+import {STAGES} from '../src/core/levels';
+import {NO_INPUT} from '../src/core/types';
+let n=0;const check=(v:unknown,m:string)=>{if(!v)throw new Error(m);n++;};
+const p=new Player(100,450,8);p.onGround=true;p.control({...NO_INPUT,right:true,dashPressed:true},1/60);
+check(p.dashTime>0&&p.vx===620,'dash begins immediately');check(p.invuln>0,'dash grants its brief evade window');
+const cooldown=p.dashCooldown;p.control({...NO_INPUT,dashPressed:true},1/60);check(p.dashCooldown<cooldown,'holding or tapping cannot restart dash cooldown');
+const q=new Player(100,450,8);q.onGround=true;q.control({...NO_INPUT,attackPressed:true},1/60);q.control({...NO_INPUT,attackPressed:true},1/60);
+for(let i=0;i<17;i++)q.control(NO_INPUT,1/60);check(q.combo===1&&q.attacking,'early second press is retained for the next combo strike');
+const j=new Player(100,450,8);j.onGround=true;j.state='attack';j.t=.17;j.control({...NO_INPUT,jumpPressed:true,jumpHeld:true},1/60);check(j.vy<0&&!j.onGround&&!j.attacking,'jump cancels attack recovery after the active frames');
+const def={...STAGES[0],ground:[[0,500,450],[500,620,280],[620,1500,450]] as [number,number,number][],platforms:[] as [number,number,number][],encounters:[]};
+const s=new Stage(def,'gentle');s.player.x=484;s.player.y=390;s.player.onGround=false;s.player.vy=600;s.player.vx=100;s.step({...NO_INPUT,right:true});
+check(s.player.wallGrace>0&&s.player.vy<=135,'solid wall contact enables a controlled slide');const x=s.player.x;s.step({...NO_INPUT,right:true,jumpPressed:true,jumpHeld:true});check(s.player.vy<0&&s.player.x<x&&s.player.facing===-1,'wall jump launches up and away from the wall');
+const g=new Stage(STAGES[0],'gentle');const e=g.def.encounters[0];g.player.x=e.trigger+1;g.step(NO_INPUT);check(!!g.active&&g.bounds.maxX===g.def.length,'road fights do not seal the route');g.player.x=e.arena[1]+100;const score=g.score;g.step(NO_INPUT);check(g.nextEncounter===1&&!g.active&&g.score===score,'passing a skirmish advances without a free clear bonus');
+console.log(`${n} action checks passed: dash, cooldown, evade window, combo buffer, jump cancel, wall slide/jump and open-road progression.`);
