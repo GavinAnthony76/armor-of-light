@@ -1,3 +1,5 @@
+import { drawWeapon } from './weapons';
+import { WEAPONS } from '../core/weapons';
 import type { Player } from '../core/player';
 import { drawWeaponSilhouette } from './weapon-art';
 
@@ -145,6 +147,7 @@ export class HeroView {
   private cape: { x: number; y: number; px: number; py: number }[] = [];
   private trail: { tip: V; hilt: V; age: number; color: string | null }[] = [];
   private lastTip: V | null = null;
+  private lastWeapon='hammer';
   private capeAccumulator=0;
   private time = 0;
   private pose:Pose={...BASE};
@@ -157,10 +160,18 @@ export class HeroView {
 
   update(p: Player, dt: number): void {
     this.time += dt;
+    if(p.weaponId!==this.lastWeapon){this.trail=[];this.lastTip=null;this.lastWeapon=p.weaponId;}
     this.shieldFlash = Math.max(0, this.shieldFlash - dt * 3);
     for (const t of this.trail) t.age += dt;
     this.trail = this.trail.filter((t) => t.age < 0.12);
     const target=poseFor(p,this.time);
+    if(p.weaponId==='tide'&&p.attacking){
+      const k=Math.min(1,p.t/p.swing.dur),thrust=Math.sin(Math.min(1,k/.55)*Math.PI/2);
+      target.armS=.6+thrust*.7;target.elS=.15;target.blade=Math.PI/2-target.armS-target.elS;target.lean=.10+thrust*.22;
+    }else if(p.weaponId==='thorn'&&!p.attacking){target.armS=-.55;target.elS=.35;target.blade=2.4;}
+    else if(p.weaponId==='iron'&&!p.attacking){target.armS=-.6;target.elS=.3;target.blade=2.1;}
+    else if(p.weaponId==='watch'&&p.attacking){target.armH=1.1+Math.sin(p.t/p.swing.dur*Math.PI)*.8;target.elH=.3;}
+    else if(p.weaponId==='river'&&!p.attacking){target.armS=-.4;target.elS=.25;target.blade=2.6;}
     this.pose=p.attacking?target:mix(this.pose,target,1-Math.exp(-dt*24));
     const pose=this.pose,f=p.facing;
     const hip={x:0,y:-30+pose.bob};
@@ -170,15 +181,7 @@ export class HeroView {
     const hand={x:shoulder.x+Math.sin(pose.armS)*12+Math.sin(fa)*11,y:shoulder.y+Math.cos(pose.armS)*12+Math.cos(fa)*11};
     const angle=fa+pose.blade;
     const W=(v:V):V=>({x:p.x+v.x*f,y:p.y+v.y});
-    if(p.attacking){
-      const profile=p.equippedWeapon;
-      const length=profile?.kind==='spear'?80:profile?.kind==='glaive'?66:profile?.kind==='greatsword'?64:profile?.kind==='maul'?50:profile?.kind==='twinblades'?48:profile?.kind==='sabre'?58:profile?58:36;
-      const grip=profile?Math.min(30,length*.48):22;
-      const tip=W({x:hand.x+Math.sin(angle)*length,y:hand.y+Math.cos(angle)*length});
-      const hilt=W({x:hand.x+Math.sin(angle)*grip,y:hand.y+Math.cos(angle)*grip});
-      if(this.lastTip)this.trail.push({tip,hilt,age:0,color:profile?.color??null});
-      this.lastTip=tip;
-    }else this.lastTip=null;
+    if(p.attacking){const tip=W({x:hand.x+Math.sin(angle)*WEAPONS[p.weaponId].length,y:hand.y+Math.cos(angle)*WEAPONS[p.weaponId].length});const hilt=W({x:hand.x+Math.sin(angle)*22,y:hand.y+Math.cos(angle)*22});if(this.lastTip)this.trail.push({tip,hilt,age:0});this.lastTip=tip;}else this.lastTip=null;
     if(this.trail.length>24)this.trail.splice(0,this.trail.length-24);
     this.capeAccumulator=Math.min(.05,this.capeAccumulator+dt);
     while(this.capeAccumulator>=1/120){this.stepCape(W({x:neck.x-4,y:neck.y+2}),p,1/120);this.capeAccumulator-=1/120;}
@@ -224,7 +227,7 @@ export class HeroView {
     ctx.globalCompositeOperation = 'source-over';
 
     this.drawCape(ctx);
-    this.drawTrail(ctx);
+    this.drawTrail(ctx, p);
 
     ctx.translate(p.x, p.y);
     ctx.scale(f, 1);
@@ -320,11 +323,8 @@ export class HeroView {
 
     // Keep the signature flame hammer intact; alternates use their own silhouettes.
     this.limb(ctx, shoulder, as.elbow, as.hand, 6, C.steel);
-    if (p.equippedWeapon) {
-      drawWeaponSilhouette(ctx, as.hand.x, as.hand.y, bladeA, p.equippedWeapon, p.weaponRank, 0.86);
-    } else {
-      this.hammer(ctx, as.hand, bladeA, p.state === 'attack');
-    }
+    drawWeapon(ctx,p.weaponId,p.weaponRank,as.hand,bladeA,this.time,p.attacking,false);
+    if(p.weaponId==='watch')drawWeapon(ctx,'watch',p.weaponRank,ah.hand,bladeA-.8,this.time,p.attacking,false);
 
     ctx.restore();
   }
@@ -396,57 +396,14 @@ export class HeroView {
     ctx.restore();
   }
 
-  private hammer(ctx: CanvasRenderingContext2D, hand: V, a: number, swinging: boolean): void {
-    const d={x:Math.sin(a),y:Math.cos(a)};
-    const head={x:hand.x+d.x*31,y:hand.y+d.y*31};
-    ctx.save();
-    // A compact halo and deterministic tongues of fire, behind the metal head.
-    ctx.globalCompositeOperation='lighter';
-    const glow=ctx.createRadialGradient(head.x,head.y,2,head.x,head.y,swinging?33:25);
-    glow.addColorStop(0,'rgba(255,220,110,0.55)');
-    glow.addColorStop(.45,'rgba(255,100,22,0.20)');
-    glow.addColorStop(1,'rgba(255,65,10,0)');
-    ctx.fillStyle=glow;ctx.fillRect(head.x-35,head.y-35,70,70);
-    ctx.globalCompositeOperation='source-over';
-    for(let i=0;i<5;i++){
-      const x=head.x+(i-2)*4;
-      const wave=Math.sin(this.time*11+i*2.3);
-      const y=head.y-4+Math.sin(i*1.9)*3;
-      const length=12+(swinging?10:4)+wave*3;
-      ctx.fillStyle=i%2?'#ff9c27cc':'#f25e20bb';
-      ctx.beginPath();ctx.moveTo(x-5,y+4);
-      ctx.bezierCurveTo(x-10,y-5,x+wave*6,y-length+5,x+wave*4,y-length);
-      ctx.bezierCurveTo(x+wave*4+2,y-length+9,x+9,y-3,x+5,y+4);
-      ctx.closePath();ctx.fill();
-      ctx.fillStyle='#ffe8a6dd';ctx.beginPath();ctx.moveTo(x-2,y+3);ctx.quadraticCurveTo(x+wave*3,y-length*.65,x+3,y+3);ctx.fill();
-    }
-    // Wrapped handle.
-    ctx.strokeStyle=C.outline;ctx.lineWidth=6.5;ctx.lineCap='round';
-    ctx.beginPath();ctx.moveTo(hand.x-d.x*5,hand.y-d.y*5);ctx.lineTo(head.x,head.y);ctx.stroke();
-    ctx.strokeStyle='#75432c';ctx.lineWidth=4;ctx.stroke();
-    const n={x:-d.y,y:d.x};
-    ctx.strokeStyle='#d6a24f';ctx.lineWidth=1.5;
-    for(let k=0;k<4;k++){const t=k*5;ctx.beginPath();ctx.moveTo(hand.x+d.x*t+n.x*2,hand.y+d.y*t+n.y*2);ctx.lineTo(hand.x+d.x*(t+2)-n.x*2,hand.y+d.y*(t+2)-n.y*2);ctx.stroke();}
-    // Broad forged head. Its face stays readable throughout the original combo.
-    ctx.translate(head.x,head.y);ctx.rotate(Math.atan2(d.y,d.x));
-    const metal=ctx.createLinearGradient(-7,-14,7,14);
-    metal.addColorStop(0,'#fff4cb');metal.addColorStop(.35,'#c7b9a1');metal.addColorStop(.55,'#6e6873');metal.addColorStop(1,'#b18a53');
-    ctx.fillStyle=metal;ctx.strokeStyle=C.outline;ctx.lineWidth=1.8;
-    ctx.beginPath();ctx.moveTo(-7,-10);ctx.lineTo(-3,-14);ctx.lineTo(5,-14);ctx.lineTo(9,-10);ctx.lineTo(9,10);ctx.lineTo(5,14);ctx.lineTo(-3,14);ctx.lineTo(-7,10);ctx.closePath();ctx.fill();ctx.stroke();
-    ctx.strokeStyle='#f7ca69';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-4,-11);ctx.lineTo(5,-11);ctx.moveTo(-4,11);ctx.lineTo(5,11);ctx.stroke();
-    ctx.fillStyle='#fff0ac';ctx.beginPath();ctx.arc(1,0,3.2,0,Math.PI*2);ctx.fill();
-    ctx.restore();
-  }
-
-  private drawTrail(ctx: CanvasRenderingContext2D): void {
+  private drawTrail(ctx: CanvasRenderingContext2D, p:Player): void {
     if (this.trail.length < 2) return;
     ctx.globalCompositeOperation = 'lighter';
     for (let i = 1; i < this.trail.length; i++) {
       const a = this.trail[i - 1];
       const b = this.trail[i];
       const k = 1 - b.age / 0.12;
-      const color = b.color;
-      ctx.fillStyle = color ? this.rgba(color, 0.62 * k) : `rgba(255, 139, 34, ${0.65 * k})`;
+      ctx.fillStyle = p.weaponId==='hammer'?`rgba(255, 139, 34, ${0.65 * k})`:WEAPONS[p.weaponId].color+Math.round(115*k).toString(16).padStart(2,'0');
       ctx.beginPath();
       ctx.moveTo(a.hilt.x, a.hilt.y);
       ctx.lineTo(a.tip.x, a.tip.y);

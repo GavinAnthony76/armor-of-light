@@ -1,203 +1,82 @@
+import { Stage } from '../src/core/stage';
+import { STAGES } from '../src/core/levels';
+import { NO_INPUT, type InputFrame } from '../src/core/types';
+import { LAND_WEAPONS, cleanJournal, type Rank } from '../src/core/weapons';
+import { SWINGS, AIR_SWING } from '../src/core/player';
+import { SaveStore } from '../src/save';
 import { Autopilot } from '../src/core/autopilot';
 import { createRng } from '../src/core/rng';
-import { STAGES } from '../src/core/levels';
-import { NO_INPUT } from '../src/core/types';
-import { Player, SWINGS } from '../src/core/player';
-import { Stage } from '../src/core/stage';
-import { LAND_WEAPONS, WEAPONS } from '../src/core/weapons';
-import { SaveStore } from '../src/save';
-
-let passed = 0;
-function check(condition: unknown, message: string): void {
-  if (!condition) throw new Error(`Weapon test failed: ${message}`);
-  passed++;
+let checks=0;
+function check(v:unknown,m:string){if(!v)throw Error(m);checks++;}
+const tick=(s:Stage,n=1,inp:InputFrame=NO_INPUT)=>{for(let i=0;i<n;i++){s.step(inp);s.takeEvents();}};
+const fixture=(land=0)=>{const s=new Stage(STAGES[land],'gentle',1);s.player.invuln=999;s.player.x=300;s.player.y=s.terrain.groundAt(300)??450;return s;};
+function kill(s:Stage,id:string,x=350,y?:number){const e=s.spawnEnemy('husk',x,y);e.cooldown=999;e.rewardId=id;e.state='move';e.takeHit(s,999,1,0);tick(s);return e;}
+function settle(s:Stage){tick(s,150);}
+function near(s:Stage){const d=s.weaponDrops[0];s.player.x=d.x;s.player.y=d.y;s.player.vx=0;s.player.vy=0;s.player.setState('move');s.player.onGround=true;tick(s,2);}
+function pickup(s:Stage){tick(s,1,{...NO_INPUT,interactPressed:true,interactHeld:true});tick(s,1);}
+// Reward eligibility and stable source identities, including the actual encounter spawner.
+for(let land=0;land<7;land++){
+ const s=fixture(land),enc=s.def.encounters[0];s.player.x=enc.trigger+1;tick(s,100);
+ const e=s.enemies.find(e=>e.rewardId);check(!!e,`land ${land}: eligible encounter foe`);
+ const x=e!.x,y=e!.center().y;e!.stagger(s,1);e!.takeHit(s,999,1,0);s.hitstop=0;tick(s);
+ check(s.weaponDrops[0]?.weapon===LAND_WEAPONS[land],`land ${land}: correct reward`);
+ check(Math.abs(s.weaponDrops[0].x-x)<4&&Math.abs(s.weaponDrops[0].y-y)<8,`land ${land}: physical drop starts at defeated foe`);
+ settle(s);check(s.weaponDrops[0].settled,`land ${land}: reward lands`);
 }
-
-function steps(stage: Stage, count: number): void {
-  for (let i = 0; i < count; i++) stage.step(NO_INPUT);
+const s=fixture();kill(s,'e0w0s0');check(s.weaponDrops.length===1,'eligible kill creates one reward');
+check(s.weaponDrops[0].vy<0,'reward launches upward');const spawn=s.weaponDrops[0].x;
+settle(s);check(s.weaponDrops[0].bounce===1&&s.weaponDrops[0].settled,'launch fall bounce settle');
+check(Math.abs(s.weaponDrops[0].x-spawn)<30,'reward never magnetizes');
+const deathX=s.weaponDrops[0].x;near(s);tick(s,20);check(s.player.weaponId==='hammer'&&s.weaponDrops.length===1,'walking over reward does not equip');
+// Press before range; held and repeated frames are rejected. A fresh press after release works.
+s.player.x=deathX-130;tick(s);tick(s,1,{...NO_INPUT,interactPressed:true,interactHeld:true});s.player.x=deathX;
+tick(s,20,{...NO_INPUT,interactPressed:true,interactHeld:true});check(s.player.weaponId==='hammer','held or buffered interaction cannot collect');
+tick(s);pickup(s);check(s.player.weaponId==='sunblade'&&s.weaponDrops.length===0,'explicit pickup equips visible identity');
+check(s.player.weaponRank===1,'first rank I');
+kill(s,'e0w1s0');settle(s);near(s);pickup(s);check(s.player.weaponRank===2,'copy upgrades rank II');
+kill(s,'e0w2s0');settle(s);near(s);pickup(s);check(s.player.weaponRank===3,'copy upgrades rank III');
+kill(s,'e0w3s0');check(s.weaponDrops.length===0,'suppress further max-rank rewards');
+s.weaponDrops.push({id:'e0w4s0',weapon:'sunblade',rank:1,copy:true,x:s.player.x,y:s.player.y,vx:0,vy:0,age:1,bounce:1,settled:true});s.issuedRewards.add('e0w4s0');near(s);pickup(s);
+check(s.weaponDrops.length===1&&s.player.weaponRank===3,'existing max-rank copy is not silently consumed');
+check(s.takeEvents().length===0,'test event draining independent of simulation');
+tick(s,1,{...NO_INPUT,swapPressed:true});check(s.player.weaponId==='hammer','swap returns signature hammer');
+tick(s,8,{...NO_INPUT,swapPressed:true,swapHeld:true});check(s.player.weaponId==='hammer','held swap cannot repeat');tick(s);tick(s,1,{...NO_INPUT,swapPressed:true});check(s.player.weaponId==='sunblade','fresh swap returns alternate');
+// Retry, save/Continue journal, source replay, and a fresh land attempt.
+const journal=s.weaponJournal();s.respawn();check(s.player.weaponId==='sunblade'&&s.player.weaponRank===3,'retry preserves equipment');
+const restored=fixture();restored.restoreWeapons(journal);check(restored.player.weaponRank===3,'Continue restores ranks');
+check(restored.weaponDrops.length===1,'Continue preserves declined copy');kill(restored,'e0w0s0');check(restored.weaponDrops.length===1,'replayed enemy cannot create duplicate reward');
+check(new Stage(STAGES[0],'gentle').player.equipment.alternate===null,'restarting land resets alternate');
+check(new Stage(STAGES[1],'gentle').player.weaponId==='hammer','new land starts signature hammer');
+// Uncollected unique opportunity survives repeated checkpoint reloads without multiplication.
+const pending=fixture();kill(pending,'e0w0s0');const saved=pending.weaponJournal();
+for(let i=0;i<8;i++){const a=fixture();a.restoreWeapons(saved);kill(a,'e0w0s0');settle(a);check(a.weaponDrops.length===1,'reload does not multiply unclaimed reward');near(a);pickup(a);kill(a,'e0w0s0');check(a.weaponDrops.length===0,'consumed source cannot be farmed');}
+// Real drop recovery from gaps, off-screen deaths, cliffs and locked arena boundaries.
+for(const def of STAGES){for(const x of [-80,def.length+80,...def.ground.map(g=>g[1]+10)]){
+ const a=fixture(def.id);kill(a,'e0w0s0',x,520);settle(a);const d=a.weaponDrops[0];
+ check(d.settled&&a.terrain.groundAt(d.x)===d.y&&d.x>=0&&d.x<=def.length,`${def.name} safe ground at ${x}`);
+ a.bounds={minX:def.encounters[0].arena[0],maxX:def.encounters[0].arena[1]};a.respawn();
+ check(d.x>a.bounds.minX&&d.x<a.bounds.maxX,'retry recovers rewards inside reachable bounds');
+}}
+// Two-slot replacement drops the old rank intact; cycling stored drops never forges them.
+const ex=fixture();ex.player.equipment={alternate:{id:'tide',rank:2},equipped:'alternate'};
+kill(ex,'e0w0s0');settle(ex);near(ex);pickup(ex);check(ex.player.weaponId==='sunblade','new alternate replaces slot');
+check(ex.weaponDrops.length===1&&ex.weaponDrops[0].weapon==='tide'&&ex.weaponDrops[0].rank===2&&!ex.weaponDrops[0].copy,'replaced alternate physically retained');
+for(let i=0;i<6;i++){settle(ex);near(ex);pickup(ex);check(ex.weaponDrops.length===1,'slot exchanges conserve weapon count');}
+// Hammer timing and geometry are the original objects. Alternate defensive windows never extend them.
+const p=fixture().player;for(let c=0;c<3;c++){p.combo=c;check(p.swing===SWINGS[c],'hammer retains exact swing definition');}p.airSwing=true;check(p.swing===AIR_SWING,'hammer air swing unchanged');
+for(const id of LAND_WEAPONS){p.airSwing=false;p.equipment={alternate:{id,rank:3},equipped:'alternate'};p.combo=0;check(p.swing.hitTo<=SWINGS[0].hitTo,'alternate defensive cancel no later than baseline');}
+// Migration and malicious/corrupt journal handling.
+let raw=JSON.stringify({version:1,unlocked:0,settings:{sfx:false,music:false},run:{level:0,encounter:1,score:30,motes:0,kills:1,time:20,deaths:0,collected:[],difficulty:'gentle'}});
+const store=new SaveStore({load:async()=>raw,save:async(x:string)=>{raw=x;}} as never);await store.load();
+check(store.data.version===2&&!!store.data.run,'old run migrated');check(store.data.run?.weapons?.equipment.alternate===null,'old save starts hammer safely');check(!store.data.settings.music&&!store.data.settings.sfx,'migration respects mute');
+store.data.run!.weapons=journal;store.persist();await store.flush();await store.load();check(store.data.run?.weapons?.equipment.alternate?.rank===3,'save roundtrip retains rank');
+const clean=cleanJournal({equipment:{alternate:{id:'__proto__',rank:9},equipped:'alternate'},drops:[{x:NaN}],issued:['bogus',1]},0,4900);check(clean.equipment.alternate===null&&clean.drops.length===0&&clean.issued.length===0,'invalid journal discarded');
+// Full seven-land completion with each land's alternate at I and III, both difficulties.
+let runs=0;
+for(const def of STAGES)for(const diff of ['gentle','challenging'] as const)for(const rank of [1,3] as Rank[]){
+ const a=new Stage(def,diff,2);a.player.equipment={alternate:{id:LAND_WEAPONS[def.id],rank},equipped:'alternate'};
+ const bot=new Autopilot(diff==='gentle'?.8:.92,createRng(26));let n=0;
+ while(!a.result&&n++<60*60*12){a.step(bot.decide(a));a.takeEvents();}
+ check(!!a.result,`${def.name} ${diff} alternate rank ${rank} completes; x=${a.player.x} encounter=${a.nextEncounter}`);runs++;
 }
-
-function killForWeapon(stage: Stage, x: number): void {
-  const enemy = stage.spawnEnemy('husk', x);
-  enemy.state = 'move';
-  enemy.cooldown = 99;
-  check(enemy.takeHit(stage, 999, 1, 0) === 'killed', 'a normal enemy can be defeated');
-  stage.step(NO_INPUT);
-}
-
-function positionDropAtPlayer(stage: Stage, index: number): void {
-  const drop = stage.weaponDrops[index];
-  drop.x = stage.player.x + 38;
-  drop.y = stage.player.y - 22;
-  drop.vx = 0;
-  drop.vy = 0;
-  drop.settled = true;
-  drop.onGround = true;
-}
-
-// The original hammer remains the unmodified, default combat implementation.
-{
-  const p = new Player(120, 450, 8);
-  p.onGround = true;
-  check(p.swing === SWINGS[0], 'hammer uses the original first swing definition');
-  p.control({ ...NO_INPUT, attackPressed: true }, 1 / 60);
-  check(p.swing === SWINGS[0] && p.combo === 0, 'hammer attack timing and combo index are unchanged');
-  check(SWINGS[0].dur === 0.27 && SWINGS[1].dur === 0.27 && SWINGS[2].dur === 0.41, 'original three-strike durations stay intact');
-  p.acquireWeapon('tide-spear');
-  check(p.swing.box.w > SWINGS[0].box.w && p.swing.box.h < SWINGS[0].box.h, 'spear has longer reach but narrower coverage');
-  p.acquireWeapon('sunblade');
-  check(p.swing.knock < SWINGS[0].knock, 'Sunblade trades hammer knockback for speed');
-}
-
-// Drops physically fall, bounce, settle on a real surface, and recover from pits.
-{
-  const stage = new Stage(STAGES[0], 'gentle');
-  killForWeapon(stage, 360);
-  check(stage.weaponDrops.length === 1, 'first regular kill offers the land weapon');
-  const drop = stage.weaponDrops[0];
-  steps(stage, 300);
-  check(drop.settled && drop.onGround, 'weapon drop settles after its bounce');
-  check(stage.terrain.surfaceBelow(drop.x, drop.y - 2) !== null, 'settled drop rests on valid terrain');
-  drop.x = 2000;
-  drop.y = 610;
-  drop.vx = 0;
-  drop.vy = 0;
-  drop.settled = false;
-  drop.onGround = false;
-  stage.step(NO_INPUT);
-  check(drop.settled && stage.terrain.surfaceBelow(drop.x, drop.y - 2) !== null, 'weapon falling below the world safely recovers to ground');
-}
-
-// Drops are optional and require a fresh deliberate press inside proximity.
-{
-  const stage = new Stage(STAGES[0], 'gentle');
-  killForWeapon(stage, 360);
-  const drop = stage.weaponDrops[0];
-  positionDropAtPlayer(stage, 0);
-  drop.x = stage.player.x + 130;
-  stage.step({ ...NO_INPUT, interactPressed: true });
-  check(stage.player.alternateWeapon === null && stage.weaponDrops.includes(drop), 'pressing outside proximity neither picks up nor consumes the drop');
-  drop.x = stage.player.x + 38;
-  stage.step(NO_INPUT);
-  check(stage.player.alternateWeapon === null, 'moving into range does not auto-pick up a weapon');
-  stage.step({ ...NO_INPUT, interactPressed: true });
-  check(stage.player.alternateWeapon === 'sunblade' && stage.player.weaponRank === 1, 'deliberate pickup equips rank I in the alternate slot');
-  check(!stage.weaponDrops.includes(drop), 'picked-up drop is removed once');
-}
-
-// Two repeated copies improve the owned weapon to rank III; swapping preserves the hammer.
-{
-  const stage = new Stage(STAGES[0], 'gentle');
-  for (const x of [360, 460, 560]) killForWeapon(stage, x);
-  check(stage.weaponDrops.length === 3 && stage.weaponDropsIssued === 3, 'only three deterministic drops can be issued in a run');
-  positionDropAtPlayer(stage, 0);
-  stage.step({ ...NO_INPUT, interactPressed: true });
-  check(stage.player.weaponRank === 1 && stage.player.equippedSlot === 'alternate', 'new weapon starts at rank I and is selected');
-
-  stage.step({ ...NO_INPUT, swapPressed: true });
-  check(stage.player.equippedSlot === 'hammer', 'swap returns to the permanent hammer');
-  stage.step({ ...NO_INPUT, swapPressed: true });
-  check(stage.player.equippedSlot === 'alternate', 'swap selects the optional weapon again');
-
-  positionDropAtPlayer(stage, 0);
-  stage.step({ ...NO_INPUT, swapPressed: true });
-  stage.step({ ...NO_INPUT, interactPressed: true });
-  check(stage.player.weaponRank === 2 && stage.player.equippedSlot === 'hammer', 'duplicate raises rank while preserving the selected slot');
-  positionDropAtPlayer(stage, 0);
-  stage.step({ ...NO_INPUT, interactPressed: true });
-  check(stage.player.weaponRank === 3, 'third copy reaches rank III');
-
-  const maxed = {
-    id: 'maxed-copy',
-    weapon: 'sunblade' as const,
-    x: stage.player.x + 38,
-    y: stage.player.y - 22,
-    vx: 0,
-    vy: 0,
-    bounces: 0,
-    settled: true,
-    w: 18,
-    h: 16,
-    onGround: true,
-  };
-  stage.weaponDrops.push(maxed);
-  stage.step({ ...NO_INPUT, interactPressed: true });
-  check(stage.player.weaponRank === 3 && stage.weaponDrops.includes(maxed), 'max-rank duplicate is not silently consumed');
-
-  stage.respawn();
-  check(stage.player.alternateWeapon === 'sunblade' && stage.player.weaponRank === 3, 'checkpoint respawn preserves weapon and rank');
-}
-
-// Retrying/reloading a rewarded enemy cannot farm a new copy, while its
-// uncollected physical reward and later opportunities remain available.
-{
-  const stage = new Stage(STAGES[0], 'gentle');
-  killForWeapon(stage, 360);
-  const originalId = stage.weaponDrops[0].id;
-  stage.respawn();
-  killForWeapon(stage, 360);
-  check(stage.weaponDrops.length === 1 && stage.weaponDropsIssued === 1, 'checkpoint retry cannot duplicate a rewarded source');
-  const resumed = new Stage(STAGES[0], 'gentle');
-  resumed.restoreWeaponState(stage.saveWeaponState());
-  killForWeapon(resumed, 360);
-  check(resumed.weaponDrops.length === 1 && resumed.weaponDrops[0].id === originalId, 'Continue retains the declined drop without duplicating it');
-  killForWeapon(resumed, 460);
-  check(resumed.weaponDrops.length === 2 && resumed.weaponDropsIssued === 2, 'a later enemy still offers another opportunity');
-}
-
-// Safe save migration, Continue restoration, new-attempt reset, and distinct land catalog.
-{
-  const stage = new Stage(STAGES[0], 'gentle');
-  killForWeapon(stage, 360);
-  positionDropAtPlayer(stage, 0);
-  stage.step({ ...NO_INPUT, interactPressed: true });
-  const weaponState = stage.saveWeaponState();
-  let raw: string | null = JSON.stringify({
-    version: 2,
-    unlocked: 0,
-    best: {},
-    settings: { sfx: true, music: true, difficulty: 'gentle' },
-    run: { level: 0, encounter: 0, score: 0, motes: 0, kills: 1, time: 4, deaths: 0, collected: [], difficulty: 'gentle', weaponState },
-  });
-  const platform = { load: async () => raw, save: async (value: string) => { raw = value; } };
-  const store = new SaveStore(platform as never);
-  await store.load();
-  check(store.data.run?.weaponState?.alternate === 'sunblade', 'valid weapon state survives save loading');
-  const resumed = new Stage(STAGES[0], 'gentle');
-  resumed.restoreWeaponState(store.data.run?.weaponState);
-  check(resumed.player.alternateWeapon === 'sunblade' && resumed.player.weaponRank === 1, 'Continue restores loadout');
-  check(resumed.player.equippedSlot === 'alternate', 'Continue restores selected weapon slot');
-
-  raw = JSON.stringify({
-    version: 1,
-    unlocked: 0,
-    best: {},
-    settings: { sfx: true, music: true, difficulty: 'gentle' },
-    run: { level: 0, encounter: 0, score: 0, motes: 0, kills: 0, time: 0, deaths: 0, collected: [], difficulty: 'gentle' },
-  });
-  await store.load();
-  check(store.data.run?.weaponState === undefined, 'legacy v1 run loads with safe hammer-only defaults');
-  const freshAttempt = new Stage(STAGES[0], 'gentle');
-  check(freshAttempt.player.alternateWeapon === null && freshAttempt.player.equippedSlot === 'hammer', 'fresh attempt starts with hammer only');
-  const nextLand = new Stage(STAGES[1], 'gentle');
-  check(nextLand.player.alternateWeapon === null, 'new land starts a new level-specific loadout');
-  check(new Set(LAND_WEAPONS).size === 7 && LAND_WEAPONS.every((id) => !!WEAPONS[id]), 'each land has its own distinct weapon');
-}
-
-// The alternate loadout remains viable across the entire campaign; baseline bots
-// separately prove hammer-only campaign completion.
-for (const [index, def] of STAGES.entries()) {
-  const stage = new Stage(def, 'gentle', 1);
-  stage.player.acquireWeapon(LAND_WEAPONS[index]);
-  const bot = new Autopilot(0.8, createRng(100 + index));
-  const limit = 60 * 60 * 12;
-  let i = 0;
-  while (!stage.result && i < limit) {
-    stage.step(bot.decide(stage));
-    stage.takeEvents();
-    i++;
-  }
-  check(!!stage.result, `${def.name} remains clearable with ${WEAPONS[LAND_WEAPONS[index]].name}`);
-}
-
-console.log(`${passed} weapon checks passed: drops, deliberate pickup, upgrades, swaps, checkpoints, Continue migration, safe recovery, seven lands and hammer baseline.`);
+console.log(`${checks} weapon checks passed; ${runs} alternate-loadout campaign runs completed.`);

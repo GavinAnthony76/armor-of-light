@@ -1,3 +1,4 @@
+import { freshEquipment, WEAPONS, type Equipment, type WeaponId, type Rank } from './weapons';
 import { PLAYER } from './config';
 import type { Body } from './terrain';
 import type { InputFrame, Rect } from './types';
@@ -27,6 +28,9 @@ export const AIR_SWING: SwingDef = {
 };
 
 export class Player implements Body {
+  equipment: Equipment = freshEquipment();
+  get weaponId(): WeaponId { return this.equipment.equipped==='alternate'&&this.equipment.alternate?this.equipment.alternate.id:'hammer'; }
+  get weaponRank(): Rank { return this.weaponId==='hammer'?1:this.equipment.alternate?.rank??1; }
   x: number;
   y: number;
   vx = 0;
@@ -77,52 +81,12 @@ export class Player implements Body {
 
   get swing(): SwingDef {
     const base = this.airSwing ? AIR_SWING : SWINGS[this.combo];
-    const weapon = this.equippedWeapon;
-    if (!weapon) return base;
-    const rankBonus = Math.max(0, this.weaponRank - 1) * 0.035;
-    const reach = weapon.reach + rankBonus;
-    const tempo = weapon.tempo * (1 + Math.max(0, this.weaponRank - 1) * 0.025);
-    const width = base.box.w * reach;
-    const height = base.box.h * (weapon.kind === 'spear' ? 0.78 : weapon.kind === 'glaive' ? 1.08 : weapon.kind === 'twinblades' ? 0.9 : 1);
-    return {
-      ...base,
-      dur: base.dur / tempo,
-      hitFrom: base.hitFrom / tempo,
-      hitTo: base.hitTo / tempo,
-      chainFrom: base.chainFrom / tempo,
-      box: {
-        dx: base.box.dx + (width - base.box.w) * 0.18,
-        dy: base.box.dy + (base.box.h - height) / 2,
-        w: width,
-        h: height,
-      },
-      knock: base.knock * weapon.knock,
-      lunge: base.lunge * weapon.lunge,
-    };
-  }
-
-  get equippedWeapon() {
-    return this.equippedSlot === 'alternate' && this.alternateWeapon
-      ? WEAPONS[this.alternateWeapon]
-      : null;
-  }
-
-  /** Adds or improves the single optional weapon slot. */
-  acquireWeapon(id: WeaponId): { upgraded: boolean; rank: number } {
-    if (this.alternateWeapon === id) {
-      this.weaponRank = Math.min(3, this.weaponRank + 1);
-      return { upgraded: true, rank: this.weaponRank };
-    }
-    this.alternateWeapon = id;
-    this.weaponRank = 1;
-    this.equippedSlot = 'alternate';
-    return { upgraded: false, rank: this.weaponRank };
-  }
-
-  swapWeapon(): boolean {
-    if (!this.alternateWeapon || this.state === 'attack' || this.state === 'hurt' || this.state === 'dead') return false;
-    this.equippedSlot = this.equippedSlot === 'hammer' ? 'alternate' : 'hammer';
-    return true;
+    if(this.weaponId==='hammer') return base;
+    const w=WEAPONS[this.weaponId], rank=this.weaponRank;
+    // Defensive cancel always opens no later than the signature hammer's window.
+    return {...base,dur:base.dur*w.tempo,hitFrom:base.hitFrom*Math.min(1,w.tempo),hitTo:base.hitTo*Math.min(1,w.tempo),chainFrom:base.chainFrom*w.tempo,
+      damage:base.damage*w.damage*(1+(rank-1)*.09),knock:base.knock*w.knock,
+      box:{...base.box,w:base.box.w*w.reach,h:this.weaponId==='tide'?38:base.box.h,dy:this.weaponId==='tide'?-65:base.box.dy}};
   }
 
   get blocking(): boolean {
