@@ -1,5 +1,4 @@
 node_modules/
-/generated-artifacts/
 dist-single/
 /generated-artifacts/
 .env

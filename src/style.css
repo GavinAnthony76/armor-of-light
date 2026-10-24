@@ -16,7 +16,6 @@
   --gy: 0px;
   --gw: 100vw;
   --gh: 100vh;
-  --viewport-h: 100vh;
   color-scheme: dark;
 }
 
@@ -105,45 +104,6 @@ body {
   top: calc(var(--gy) + 8px);
   width: 52px;
   height: 52px;
-}
-
-.weapon-offer {
-  position: absolute;
-  z-index: 4;
-  top: calc(var(--gy) + clamp(58px, var(--u) * 78, 94px));
-  left: 50%;
-  width: min(420px, calc(100vw - 32px));
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 10px 16px;
-  border: 1px solid color-mix(in srgb, var(--weapon-color, var(--gold)) 65%, transparent);
-  border-radius: 13px;
-  background: rgba(17, 13, 24, 0.86);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.38), 0 0 22px color-mix(in srgb, var(--weapon-color, var(--gold)) 17%, transparent);
-  text-align: center;
-  pointer-events: none;
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-}
-.weapon-offer strong {
-  color: var(--weapon-color, var(--gold));
-  font: 800 13px var(--sans);
-  letter-spacing: 1px;
-  text-transform: uppercase;
-}
-.weapon-offer span {
-  color: var(--ink);
-  font-size: 12px;
-  line-height: 1.35;
-}
-.weapon-offer small {
-  color: #fff2c6;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.5px;
 }
 
 /* ---------------------------------------------------------- brand */
@@ -718,35 +678,15 @@ kbd {
   width: 82px;
   height: 82px;
 }
-.tbtn.interact {
-  left: 0;
-  bottom: 110px;
-  width: 82px;
-  height: 82px;
-  border-color: rgba(255, 226, 137, 0.9);
-  background: rgba(86, 60, 18, 0.76);
-}
-.tbtn.swap {
-  left: 8px;
-  bottom: 202px;
-  width: 54px;
-  height: 54px;
-  border-color: rgba(255, 230, 180, 0.65);
-  background: rgba(30, 18, 48, 0.68);
-}
-.tbtn .touch-letter {
-  font: 900 22px var(--sans);
-  line-height: 1;
-}
 
 /* portrait: controls live in the space under the game view */
 #ui.portrait .pad {
   bottom: auto;
-  top: calc(var(--gy) + var(--gh) + max(24px, (var(--viewport-h) - var(--gy) - var(--gh) - 230px) / 2));
+  top: calc(var(--gy) + var(--gh) + max(24px, (100vh - var(--gy) - var(--gh) - 230px) / 2));
 }
 #ui.portrait .buttons {
   bottom: auto;
-  top: calc(var(--gy) + var(--gh) + max(10px, (var(--viewport-h) - var(--gy) - var(--gh) - 230px) / 2));
+  top: calc(var(--gy) + var(--gh) + max(10px, (100vh - var(--gy) - var(--gh) - 230px) / 2));
 }
 
 @media (max-height: 640px) {
