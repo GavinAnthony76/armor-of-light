@@ -266,8 +266,10 @@ export class UI {
     st.setProperty('--gx', `${l.ox}px`);
     st.setProperty('--gy', `${l.oy}px`);
     st.setProperty('--gw', `${l.viewW * l.scale}px`);
-    st.setProperty('--gh', `${540 * l.scale}px`);
+    st.setProperty('--gh', `${l.viewH * l.scale}px`);
     st.setProperty('--u', `${l.scale}px`);
+    st.setProperty('--dock-top', `${l.oy+l.viewH*l.scale}px`);
+    st.setProperty('--dock-height', `${l.controlsH}px`);
     this.root.classList.toggle('portrait', l.portrait);
   }
 

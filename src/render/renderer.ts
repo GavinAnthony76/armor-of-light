@@ -11,6 +11,8 @@ export interface Layout {
   h: number;
   dpr: number;
   scale: number; // CSS px per world unit
+  viewH: number; // visible vertical world span (camera framing, not physics)
+  controlsH: number; // CSS pixels reserved for the touch dock
   viewW: number; // world units visible horizontally
   ox: number; // CSS px offset of the game view
   oy: number;
@@ -21,14 +23,24 @@ export interface Layout {
 export const SERIF = '"Palatino Linotype", "Book Antiqua", Palatino, Georgia, "Times New Roman", serif';
 export const SANS = 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
-/** Landscape fills the screen; portrait puts the view on top and controls below. */
+/** Touch fills the safe viewport above a compact dock; desktop keeps its framing. */
 export function computeLayout(w:number,h:number,touch=false,insets={top:0,right:0,bottom:0,left:0}):Layout {
   const dpr=Math.min(window.devicePixelRatio||1,2),portrait=h>w*1.05;
-  const controls=touch?(portrait?164:94):0;
-  const aw=Math.max(1,w-insets.left-insets.right-12),ah=Math.max(1,h-insets.top-insets.bottom-controls-12);
+  const controlsH=touch?(portrait?164:76):0;
+  const aw=Math.max(1,w-insets.left-insets.right),ah=Math.max(1,h-insets.top-insets.bottom-controlsH);
+  if(touch){
+    // Landscape keeps Eliam readable; portrait adds sky rather than empty letterboxing.
+    const scale=portrait?aw/600:ah/Math.max(360,Math.min(VIEW_H,ah/.8));
+    return {w,h,dpr,scale,viewW:aw/scale,viewH:ah/scale,controlsH,ox:insets.left,oy:insets.top,portrait,zoom:1};
+  }
   const viewW=portrait?720:Math.max(VIEW_W_MIN,Math.min(VIEW_W_MAX,aw/ah*VIEW_H));
   const scale=Math.min(aw/viewW,ah/VIEW_H);
-  return {w,h,dpr,scale,viewW,ox:insets.left+(aw-viewW*scale)/2+6,oy:insets.top+(portrait?6:(ah-VIEW_H*scale)/2+6),portrait,zoom:1};
+  return {w,h,dpr,scale,viewW,viewH:VIEW_H,controlsH,ox:insets.left+(aw-viewW*scale)/2,oy:insets.top+(ah-VIEW_H*scale)/2,portrait,zoom:1};
+}
+
+/** Follow high traversal while retaining a little ground beneath Eliam. */
+export function cameraTop(viewH:number,playerY:number,zoom=1):number {
+  return Math.min(VIEW_H-viewH/zoom,playerY-Math.min(170,viewH/zoom*.4));
 }
 
 const SIGN_TEXT: Record<Sign['key'], Record<InputMode, string>> = {
@@ -80,7 +92,7 @@ export class Renderer {
     if (!s || !game.world) return;
     const Z = l.zoom;
     const worldW = l.viewW / Z;
-    const camTop = Math.min(VIEW_H - VIEW_H / Z, s.player.y-170); // keep the ground line anchored to the bottom
+    const camTop = cameraTop(l.viewH,s.player.y,Z); // keep the ground line anchored to the bottom
     game.viewW = worldW;
     const world = game.world;
     const k = l.scale * l.dpr;
@@ -92,10 +104,10 @@ export class Renderer {
     ctx.setTransform(k, 0, 0, k, l.ox * l.dpr, l.oy * l.dpr);
     ctx.save();
     ctx.beginPath();
-    ctx.rect(0, 0, l.viewW, VIEW_H);
+    ctx.rect(0, 0, l.viewW, l.viewH);
     ctx.clip();
 
-    world.drawBackground(ctx, game.camX, l.viewW, game.time);
+    world.drawBackground(ctx, game.camX, l.viewW, game.time,l.viewH);
 
     // ---------------- world space
     ctx.save();
@@ -130,21 +142,21 @@ export class Renderer {
     ctx.restore();
 
     // ---------------- screen space
-    world.drawWeather(ctx, camX, l.viewW, frameDt, game.time);
+    world.drawWeather(ctx, camX, l.viewW, frameDt, game.time,l.viewH);
     if (game.hurtFlash > 0) {
-      const g = ctx.createRadialGradient(l.viewW / 2, VIEW_H / 2, VIEW_H * 0.3, l.viewW / 2, VIEW_H / 2, l.viewW * 0.7);
+      const g = ctx.createRadialGradient(l.viewW / 2, l.viewH / 2, l.viewH * 0.3, l.viewW / 2, l.viewH / 2, l.viewW * 0.7);
       g.addColorStop(0, 'rgba(255, 40, 40, 0)');
       g.addColorStop(1, `rgba(200, 20, 40, ${game.hurtFlash * 0.55})`);
       ctx.fillStyle = g;
-      ctx.fillRect(0, 0, l.viewW, VIEW_H);
+      ctx.fillRect(0, 0, l.viewW, l.viewH);
     }
     if (game.whiteFlash > 0 && !game.reduceMotion) {
       ctx.fillStyle = `rgba(255, 248, 225, ${game.whiteFlash * 0.6})`;
-      ctx.fillRect(0, 0, l.viewW, VIEW_H);
+      ctx.fillRect(0, 0, l.viewW, l.viewH);
     }
     if (s.phase === 'dead') {
       ctx.fillStyle = `rgba(255, 244, 220, ${Math.min(0.5, s.phaseT * 0.5)})`;
-      ctx.fillRect(0, 0, l.viewW, VIEW_H);
+      ctx.fillRect(0, 0, l.viewW, l.viewH);
     }
     if (!game.demo) this.drawHud(game);
     this.drawBanners(game);
@@ -431,7 +443,7 @@ export class Renderer {
     if (b && b.alive) {
       const w = Math.min(520, l.viewW - 120);
       const x = (l.viewW - w) / 2;
-      const y = VIEW_H - 46;
+      const y = l.viewH - 46;
       ctx.save();
       ctx.font = `600 18px ${SERIF}`;
       ctx.textAlign = 'center';

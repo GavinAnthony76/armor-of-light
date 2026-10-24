@@ -282,11 +282,11 @@ export class WorldView {
   // ------------------------------------------------------------- drawing
 
   /** Sky, sun or moon, and parallax layers. Screen space (0..viewW). */
-  drawBackground(ctx: CanvasRenderingContext2D, camX: number, viewW: number, time: number): void {
-    if (this.skyCanvas) ctx.drawImage(this.skyCanvas, 0, 0, viewW, VIEW_H);
+  drawBackground(ctx: CanvasRenderingContext2D, camX: number, viewW: number, time: number, viewH=VIEW_H): void {
+    if (this.skyCanvas) ctx.drawImage(this.skyCanvas, 0, 0, viewW, viewH);
     const c = this.pal.celestial;
     const cx = viewW * c.x - camX * 0.02;
-    const cy = VIEW_H * c.y;
+    const cy = viewH * c.y;
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
     const g = ctx.createRadialGradient(cx, cy, c.r * 0.6, cx, cy, c.r * 4.5);
@@ -316,27 +316,28 @@ export class WorldView {
       const img = this.layers[i];
       if (!img) return;
       const off = -mod(camX * l.factor, TILE);
-      for (let x = off; x < viewW; x += TILE) ctx.drawImage(img, x, 0, TILE, VIEW_H);
+      for (let x = off; x < viewW; x += TILE) ctx.drawImage(img, x, 0, TILE, viewH);
     });
 
     const art=this.illustration;
     if(art?.complete && art.naturalWidth){
       ctx.save();
-      const h=VIEW_H, w=Math.max(viewW*1.18,art.naturalWidth/art.naturalHeight*h);
+      const ratio=art.naturalWidth/art.naturalHeight;
+      const h=Math.max(viewH,viewW/ratio), w=ratio*h;
       const travel=Math.min(1,Math.max(0,camX/Math.max(1,this.def.length-viewW)));
-      ctx.drawImage(art,-(w-viewW)*travel,0,w,h);
-      const shade=ctx.createLinearGradient(0,250,0,VIEW_H);
+      ctx.drawImage(art,-(w-viewW)*travel,(viewH-h)/2,w,h);
+      const shade=ctx.createLinearGradient(0,250,0,viewH);
       shade.addColorStop(0,'rgba(10,15,25,0)');shade.addColorStop(1,'rgba(10,15,25,0.3)');
-      ctx.fillStyle=shade;ctx.fillRect(0,0,viewW,VIEW_H);ctx.restore();
+      ctx.fillStyle=shade;ctx.fillRect(0,0,viewW,viewH);ctx.restore();
     }
 
     if (this.def.theme === 'flood') {
       // distant lake catching the light
-      const lg = ctx.createLinearGradient(0, 430, 0, VIEW_H);
+      const lg = ctx.createLinearGradient(0, viewH*430/VIEW_H, 0, viewH);
       lg.addColorStop(0, 'rgba(150, 185, 210, 0.45)');
       lg.addColorStop(1, 'rgba(40, 70, 95, 0.6)');
       ctx.fillStyle = lg;
-      ctx.fillRect(0, 440, viewW, VIEW_H - 440);
+      ctx.fillRect(0, viewH*440/VIEW_H, viewW, viewH*100/VIEW_H);
     }
   }
 
@@ -493,7 +494,7 @@ export class WorldView {
   }
 
   /** Weather and a light color wash over everything. Screen space. */
-  drawWeather(ctx: CanvasRenderingContext2D, camX: number, viewW: number, dt: number, time: number): void {
+  drawWeather(ctx: CanvasRenderingContext2D, camX: number, viewW: number, dt: number, time: number, viewH=VIEW_H): void {
     const kind = this.pal.ambient;
     const W = viewW + 100;
     if (kind === 'rain') {
@@ -503,8 +504,8 @@ export class WorldView {
       for (const a of this.ambient) {
         a.y += (620 + a.s * 200) * dt;
         a.x += -120 * dt;
-        if (a.y > VIEW_H) {
-          a.y -= VIEW_H + 20;
+        if (a.y > viewH) {
+          a.y -= viewH + 20;
           a.x = Math.random() * W;
         }
         const x = mod(a.x - camX * 0.9, W) - 50;
@@ -520,7 +521,7 @@ export class WorldView {
       if (this.flash > 0) {
         this.flash -= dt;
         ctx.fillStyle = `rgba(220, 235, 255, ${Math.max(0, this.flash) * 0.25})`;
-        ctx.fillRect(0, 0, viewW, VIEW_H);
+        ctx.fillRect(0, 0, viewW, viewH);
       }
     } else if (kind === 'sand') {
       ctx.fillStyle = 'rgba(255, 240, 210, 0.7)';
@@ -534,7 +535,7 @@ export class WorldView {
       for (const a of this.ambient) {
         a.x += (24 + a.s * 20) * dt;
         a.y += (18 + a.s * 10) * dt;
-        if (a.y > VIEW_H) a.y = -10;
+        if (a.y > viewH) a.y = -10;
         const x = mod(a.x - camX * 1.1, W) - 50;
         const r = a.p % 2 < 1;
         ctx.fillStyle = r ? 'rgba(255, 190, 210, 0.85)' : 'rgba(255, 250, 230, 0.85)';
@@ -548,13 +549,13 @@ export class WorldView {
       }
     }
     ctx.fillStyle = this.pal.grade;
-    ctx.fillRect(0, 0, viewW, VIEW_H);
+    ctx.fillRect(0, 0, viewW, viewH);
     // vignette
-    const v = ctx.createRadialGradient(viewW / 2, VIEW_H / 2, VIEW_H * 0.45, viewW / 2, VIEW_H / 2, viewW * 0.75);
+    const v = ctx.createRadialGradient(viewW / 2, viewH / 2, viewH * 0.45, viewW / 2, viewH / 2, Math.max(viewW,viewH) * 0.75);
     v.addColorStop(0, 'rgba(0,0,0,0)');
     v.addColorStop(1, this.def.theme === 'flood' ? 'rgba(5, 10, 25, 0.45)' : 'rgba(60, 25, 10, 0.25)');
     ctx.fillStyle = v;
-    ctx.fillRect(0, 0, viewW, VIEW_H);
+    ctx.fillRect(0, 0, viewW, viewH);
   }
 }
 

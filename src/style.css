@@ -801,3 +801,16 @@ kbd {
 #ui.portrait .equipment-hud{padding-right:8px}#ui.portrait .equipment-hud canvas{width:32px;height:32px}#ui.portrait .equipment-hud strong{font-size:11px}#ui.portrait .equipment-hud small{font-size:9px}
 #ui.touch-on .hud-btn{width:36px;height:36px;min-height:36px;padding:7px;left:calc(var(--gx) + 8px);top:calc(var(--gy) + 5px)}
 #ui:not(.touch-on) .equipment-hud{top:calc(var(--gy) + max(58px, var(--u) * 66))}
+
+/* Mobile viewport: the scene meets the dock edge, with no fixed-aspect inset box. */
+#ui.touch-on .touch::before{content:"";position:absolute;left:0;right:0;top:var(--dock-top);bottom:0;background:linear-gradient(#211b2b,#100b18);border-top:1px solid #eed29e38;pointer-events:none}
+#ui.touch-on:not(.portrait) .pad{bottom:calc(var(--safe-bottom) + 6px)}
+#ui.touch-on:not(.portrait) .buttons{bottom:calc(var(--safe-bottom) + 10px)}
+#ui.touch-on:not(.portrait) .equipment-buttons{bottom:calc(var(--safe-bottom) + 12px);right:max(270px,calc(var(--safe-right) + 270px));gap:6px}
+#ui.touch-on:not(.portrait) .equipment-buttons .tbtn{width:60px;height:48px}
+#ui.touch-on:not(.portrait) .equipment-hud{top:calc(var(--gy) + 44px);max-width:calc(var(--gw) - 20px)}
+#ui.touch-on:not(.portrait) .equipment-hud small{display:none}
+#ui.portrait .weapon-prompt{top:auto;bottom:calc(100% - var(--dock-top) + 10px)}
+#ui.touch-on.portrait .equipment-hud{top:calc(var(--gy) + 48px)}
+@media(max-height:450px){#ui.touch-on .weapon-prompt{top:auto;bottom:calc(100% - var(--dock-top) + 8px)}}
+@media(max-width:650px) and (orientation:landscape){#ui.touch-on .pad{width:88px;padding:0 8px}#ui.touch-on .equipment-buttons .tbtn{width:54px}}
