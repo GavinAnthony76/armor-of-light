@@ -1,3 +1,7 @@
+import { ROMAN, WEAPONS } from '../core/weapons';
+import type { Stage } from '../core/stage';
+import type { InputMode } from '../input';
+import { drawWeapon } from '../render/weapons';
 import {CHAPTERS} from '../story';
 import { asset } from '../assets';
 import { DIFFICULTIES, DifficultyId } from '../core/config';
@@ -22,6 +26,7 @@ export interface UIHandlers {
   setDifficulty(d: DifficultyId): void;
   toggleSfx(): void;
   toggleMusic(): void;
+  setMusicVolume(v:number):void;
   toggleMotion(): void;
   click(): void;
 }
@@ -64,7 +69,7 @@ export class UI {
         <p class="diff-blurb" data-ref="diffBlurb"></p>
         <div class="row">
           <button class="btn icon" data-act="sfx" aria-label="Sound effects"></button>
-          <button class="btn icon" data-act="music" aria-label="Music">${ICON.music}</button>
+          <button class="btn icon" data-act="music" aria-label="Music">${ICON.music}</button><label class="music-volume">Music <input aria-label="Music volume" data-volume type="range" min="0" max="100" step="5" value="80"></label>
           <button class="btn" data-act="motion" aria-pressed="false">Reduce motion</button><button class="btn icon" data-act="help" aria-label="How to play">${ICON.help}</button>
         </div>
       </section>
@@ -87,14 +92,15 @@ export class UI {
               <p><kbd>Space</kbd> or <kbd>W</kbd> jump</p>
               <p><kbd>J</kbd> or <kbd>X</kbd> strike</p>
               <p>Hold <kbd>K</kbd> or <kbd>C</kbd> to block</p>
-              <p><kbd>L</kbd> or <kbd>V</kbd> dash. Jump against a wall to kick away.</p><p><kbd>E</kbd> pick up a weapon · <kbd>Q</kbd> swap</p><p><kbd>Esc</kbd> pause</p></div>
+              <p><kbd>L</kbd> or <kbd>V</kbd> dash. Jump against a wall to kick away.</p><p><kbd>E</kbd> pick up · <kbd>Q</kbd> swap weapon</p><p><kbd>Esc</kbd> pause</p></div>
             <div><h3>Touch</h3>
               <p>Slide on the left pad to walk</p>
               <p><b>Strike</b>, <b>Jump</b> and <b>Shield</b> buttons on the right</p>
               <p>Nearby weapons show a deliberate <b>Pick up</b> button; tap <b>Swap</b> to switch.</p>
               <h3>Controller</h3>
-              <p>Stick walks · A jump · X strike · B block</p><p>D-pad up picks up a weapon · down swaps</p></div>
+              <p>Stick walks · A jump · X strike · B block · Y pick up · LT swap · LB dash</p></div>
           </div>
+          <p class="equipment-rules">Your Ember Hammer is always yours. Weapons stay where enemies drop them: press E / Y or tap PICK UP near one. Copies forge ranks I–III. Retry and Continue keep equipment; Restart or entering another land clears the alternate slot.</p>
           <div class="warn-key">
             <p><span class="w gold"></span><b>Gold warning:</b> block it. Block right as it flashes to <b>parry</b>, which stuns the foe.</p>
             <p><span class="w red"></span><b>Red warning:</b> it can’t be blocked. Jump or move away.</p>
@@ -104,6 +110,9 @@ export class UI {
       </section>
 
       <section class="screen hud" data-screen="hud">
+        <div class="equipment-hud" data-ref="equipment"><canvas data-ref="weaponIcon" width="68" height="68" aria-hidden="true"></canvas><div><strong data-ref="weaponName"></strong><small data-ref="weaponSlots"></small></div></div>
+        <div class="weapon-prompt" data-ref="weaponPrompt" role="status" hidden><strong data-ref="dropName"></strong><span data-ref="dropBenefit"></span><b data-ref="dropAction"></b></div>
+        <span class="audio-hint" data-ref="audioHint"></span>
         <button class="btn icon hud-btn" data-act="pause" aria-label="Pause">${ICON.pause}</button>
         <div class="weapon-offer" data-ref="weaponOffer" role="status" aria-live="polite" hidden>
           <strong data-ref="weaponOfferTitle"></strong>
@@ -115,13 +124,13 @@ export class UI {
       <section class="screen modal" data-screen="pause">
         <div class="card">
           <h2>Paused</h2>
-          <p class="card-sub" data-ref="pauseSub"></p>
+          <p class="card-sub" data-ref="pauseSub"></p><small class="equipment-rules">Continue keeps equipment. Restart or a new land resets the alternate; your hammer stays.</small>
           <button class="btn big primary" data-act="resume">${ICON.play}<span>Resume</span></button>
           <button class="btn" data-act="restart">${ICON.retry}<span>Restart level</span></button>
           <button class="btn" data-act="levels">${ICON.levels}<span>Levels</span></button>
           <div class="row">
             <button class="btn icon" data-act="sfx" aria-label="Sound effects"></button>
-            <button class="btn icon" data-act="music" aria-label="Music">${ICON.music}</button>
+            <button class="btn icon" data-act="music" aria-label="Music">${ICON.music}</button><label class="music-volume">Music <input aria-label="Music volume" data-volume type="range" min="0" max="100" step="5" value="80"></label>
           </div>
         </div>
       </section>
@@ -147,6 +156,7 @@ export class UI {
 
       <div class="touch" data-ref="touch" aria-hidden="true">
         <div class="pad" data-ref="pad"><span class="arrow l">◀</span><span class="knob" data-ref="knob"></span><span class="arrow r">▶</span></div>
+        <div class="equipment-buttons"><button class="tbtn interact" data-ref="tInteract" tabindex="-1">Pick up</button><button class="tbtn swap" data-ref="tSwap" tabindex="-1">Swap</button></div>
         <div class="buttons">
           <button class="tbtn dash" data-ref="tDash" tabindex="-1">${ICON.dash}<span>Dash</span></button><button class="tbtn block" data-ref="tBlock" tabindex="-1">${ICON.shield}<span>Shield</span></button>
           <button class="tbtn jump" data-ref="tJump" tabindex="-1">${ICON.jump}<span>Jump</span></button>
@@ -156,6 +166,7 @@ export class UI {
         </div>
       </div>
     `;
+    root.querySelectorAll<HTMLInputElement>('[data-volume]').forEach(el=>el.addEventListener('input',()=>this.h.setMusicVolume(Number(el.value)/100)));
     const q = (s: string) => root.querySelector(`[data-screen="${s}"]`) as HTMLElement;
     this.screens = { title: q('title'), levels: q('levels'), help: q('help'), hud: q('hud'), pause: q('pause'), results: q('results') };
     this.touch = this.ref('touch');
@@ -209,6 +220,7 @@ export class UI {
       el.toggleAttribute('inert', !on || (name === 'hud' && screen !== 'hud'));
     }
     this.root.classList.toggle('playing', screen === 'hud');
+    this.touch.setAttribute('aria-hidden',String(!(screen==='hud'&&this.root.classList.contains('touch-on'))));
     if (screen !== 'none' && screen !== 'hud' && this.keyboardMode) {
       const first = this.screens[screen].querySelector('button');
       if (first) requestAnimationFrame(() => (first as HTMLButtonElement).focus({ preventScroll: true }));
@@ -216,6 +228,7 @@ export class UI {
   }
 
   setSettings(s: SaveData['settings']): void {
+    this.root.querySelectorAll<HTMLInputElement>('[data-volume]').forEach(el=>el.value=String(Math.round((s.musicVolume??.8)*100)));
     this.root.querySelectorAll<HTMLButtonElement>('[data-act="sfx"]').forEach((b) => {
       b.innerHTML = s.sfx ? ICON.sound : ICON.soundOff;
       b.setAttribute('aria-pressed', String(s.sfx));
@@ -233,6 +246,31 @@ export class UI {
     });
     this.root.querySelectorAll('[data-act="motion"]').forEach(b=>b.setAttribute('aria-pressed',String(!!s.reduceMotion)));
     this.ref('diffBlurb').textContent = DIFFICULTIES[s.difficulty].blurb;
+  }
+
+  private weaponStamp='';
+  updateEquipment(s:Stage,mode:InputMode,audioReady:boolean,musicOn:boolean):void {
+    const p=s.player,w=WEAPONS[p.weaponId],eq=p.equipment;
+    const swap=mode==='keyboard'?'Q swap':mode==='gamepad'?'LT swap':'SWAP';
+    const pickup=mode==='keyboard'?'E':mode==='gamepad'?'Y':'PICK UP';
+    const stamp=`${p.weaponId}${p.weaponRank}${eq.alternate?.id}${eq.alternate?.rank}${mode}`;
+    if(stamp!==this.weaponStamp){
+      this.weaponStamp=stamp;
+      this.ref('weaponName').textContent=`${w.name} ${ROMAN[p.weaponRank]}`;
+      this.ref('weaponSlots').textContent=eq.alternate?`${swap} · ${p.weaponId==='hammer'?WEAPONS[eq.alternate.id].name+' '+ROMAN[eq.alternate.rank]:'Ember Hammer'} ready`:'Hammer kept · alternate empty';
+      const c=this.ref<HTMLCanvasElement>('weaponIcon'),ctx=c.getContext('2d')!;ctx.clearRect(0,0,68,68);ctx.save();ctx.translate(18,54);ctx.scale(.76,.76);drawWeapon(ctx,p.weaponId,p.weaponRank,{x:0,y:0},2.65,0);ctx.restore();
+    }
+    const d=s.nearbyWeapon(),prompt=this.ref('weaponPrompt');prompt.hidden=!d;
+    this.ref<HTMLButtonElement>('tInteract').disabled=!d;
+    this.ref<HTMLButtonElement>('tSwap').disabled=!eq.alternate;
+    if(d){
+      const max=eq.alternate?.id===d.weapon&&eq.alternate.rank===3;
+      const upgrade=eq.alternate?.id===d.weapon;
+      this.ref('dropName').textContent=`${WEAPONS[d.weapon].name} · ${ROMAN[upgrade?Math.min(3,(eq.alternate?.rank??1)+1):d.rank]}`;
+      this.ref('dropBenefit').textContent=WEAPONS[d.weapon].benefit;
+      this.ref('dropAction').textContent=max?'Maximum rank III · leave this copy':`${pickup} · ${upgrade?'Forge upgrade':'Equip'}  /  walk on to leave`;
+    }
+    this.ref('audioHint').textContent=!musicOn?'Music off · change in Pause':!audioReady?'Tap or press a key for audio':'';
   }
 
   setLayout(l: Layout): void {
@@ -281,6 +319,7 @@ export class UI {
 
   showTouch(on: boolean): void {
     this.root.classList.toggle('touch-on', on);
+    this.touch.setAttribute('aria-hidden',String(!(on&&this.current==='hud')));
   }
 
   showTitle(save: SaveData): void {

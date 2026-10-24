@@ -1,100 +1,43 @@
-export type WeaponId =
-  | 'sunblade'
-  | 'tide-spear'
-  | 'thorn-glaive'
-  | 'storm-sabre'
-  | 'iron-maul'
-  | 'watch-twinblades'
-  | 'river-greatsword';
-
-export type WeaponSlot = 'hammer' | 'alternate';
-
-export interface WeaponProfile {
-  id: WeaponId;
-  name: string;
-  kind: 'sword' | 'spear' | 'glaive' | 'sabre' | 'maul' | 'twinblades' | 'greatsword';
-  color: string;
-  shine: string;
-  reach: number;
-  tempo: number;
-  knock: number;
-  lunge: number;
-  advantage: string;
-  tradeoff: string;
+/** Equipment is local to one land attempt. Hammer timing is never modified. */
+export type WeaponId = 'hammer' | 'sunblade' | 'tide' | 'thorn' | 'storm' | 'iron' | 'watch' | 'river';
+export type Rank = 1 | 2 | 3;
+export interface WeaponDef {
+  name: string; shape: 'hammer'|'sword'|'spear'|'glaive'|'sabre'|'maul'|'twins'|'greatsword';
+  benefit: string; color: string; reach: number; tempo: number; damage: number; knock: number; length: number;
 }
-
-export const WEAPONS: Record<WeaponId, WeaponProfile> = {
-  sunblade: {
-    id: 'sunblade', name: 'Sunblade', kind: 'sword', color: '#f6bd48', shine: '#fff2ad',
-    reach: 1.02, tempo: 1.05, knock: 0.9, lunge: 1.05,
-    advantage: 'Balanced reach and speed', tradeoff: 'Lighter knockback than the hammer',
-  },
-  'tide-spear': {
-    id: 'tide-spear', name: 'Tide Spear', kind: 'spear', color: '#55c8e8', shine: '#d5fbff',
-    reach: 1.34, tempo: 0.96, knock: 0.9, lunge: 0.92,
-    advantage: 'Longest, narrow thrusts', tradeoff: 'Less coverage beside you',
-  },
-  'thorn-glaive': {
-    id: 'thorn-glaive', name: 'Thorn Glaive', kind: 'glaive', color: '#87cc72', shine: '#e2ffad',
-    reach: 1.22, tempo: 0.92, knock: 1.08, lunge: 1,
-    advantage: 'Wide, high-cleaving arcs', tradeoff: 'Slower recovery',
-  },
-  'storm-sabre': {
-    id: 'storm-sabre', name: 'Storm Sabre', kind: 'sabre', color: '#9db9ff', shine: '#eff5ff',
-    reach: 0.98, tempo: 1.2, knock: 0.82, lunge: 1.12,
-    advantage: 'Fast strikes and forward pressure', tradeoff: 'Light knockback',
-  },
-  'iron-maul': {
-    id: 'iron-maul', name: 'Iron Maul', kind: 'maul', color: '#d8a66f', shine: '#fff0cb',
-    reach: 0.9, tempo: 0.82, knock: 1.34, lunge: 0.84,
-    advantage: 'Heavy impact and knockback', tradeoff: 'Slow, shorter swings',
-  },
-  'watch-twinblades': {
-    id: 'watch-twinblades', name: 'Watch Twinblades', kind: 'twinblades', color: '#c9a6ff', shine: '#fff0ff',
-    reach: 0.86, tempo: 1.26, knock: 0.72, lunge: 1.16,
-    advantage: 'Quick, close-range combos', tradeoff: 'Shortest reach and knockback',
-  },
-  'river-greatsword': {
-    id: 'river-greatsword', name: 'River Greatsword', kind: 'greatsword', color: '#74d7b6', shine: '#e0fff3',
-    reach: 1.2, tempo: 0.87, knock: 1.2, lunge: 0.95,
-    advantage: 'Broad reach with strong knockback', tradeoff: 'Slower than a sabre',
-  },
+export const WEAPONS: Record<WeaponId, WeaponDef> = {
+  hammer: {name:'Ember Hammer',shape:'hammer',benefit:'Balanced force · flame never fades',color:'#ffac45',reach:1,tempo:1,damage:1,knock:1,length:36},
+  sunblade: {name:'Sunblade',shape:'sword',benefit:'Quicker cuts · lighter impact',color:'#ffe091',reach:1.03,tempo:.90,damage:.92,knock:.78,length:43},
+  tide: {name:'Tide Spear',shape:'spear',benefit:'Long thrust · narrow contact',color:'#8ee7f2',reach:1.38,tempo:1.03,damage:.94,knock:.8,length:68},
+  thorn: {name:'Thorn Glaive',shape:'glaive',benefit:'Wide sweep · slower recovery',color:'#bce6a1',reach:1.22,tempo:1.07,damage:1,knock:.9,length:58},
+  storm: {name:'Storm Sabre',shape:'sabre',benefit:'Swift arc · lighter knockback',color:'#b6c9ff',reach:1.02,tempo:.86,damage:.89,knock:.7,length:42},
+  iron: {name:'Iron Maul',shape:'maul',benefit:'Heavy impact · shorter reach',color:'#dfbb8d',reach:.89,tempo:1.1,damage:1.24,knock:1.3,length:33},
+  watch: {name:'Watch Twinblades',shape:'twins',benefit:'Rapid paired cuts · close range',color:'#d4b7ff',reach:.86,tempo:.81,damage:.85,knock:.65,length:30},
+  river: {name:'River Greatsword',shape:'greatsword',benefit:'Long powerful arc · deliberate tempo',color:'#a0e7da',reach:1.25,tempo:1.1,damage:1.12,knock:1.12,length:56},
 };
-
-export const LAND_WEAPONS: WeaponId[] = [
-  'sunblade',
-  'tide-spear',
-  'thorn-glaive',
-  'storm-sabre',
-  'iron-maul',
-  'watch-twinblades',
-  'river-greatsword',
-];
-
-export interface WeaponDropSave {
-  id: string;
-  weapon: WeaponId;
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  bounces: number;
-  settled: boolean;
-}
-
-export interface WeaponRunSave {
-  alternate: WeaponId | null;
-  rank: number;
-  equipped: WeaponSlot;
-  dropsIssued: number;
-  rewardedSources?: string[];
-  drops: WeaponDropSave[];
-}
-
-export function isWeaponId(value: unknown): value is WeaponId {
-  return typeof value === 'string' && Object.prototype.hasOwnProperty.call(WEAPONS, value);
-}
-
-export function romanRank(rank: number): string {
-  return ['—', 'I', 'II', 'III'][Math.max(0, Math.min(3, Math.floor(rank)))] ?? '—';
+export const LAND_WEAPONS: WeaponId[] = ['sunblade','tide','thorn','storm','iron','watch','river'];
+export const ROMAN = ['','I','II','III'];
+export interface Equipment { alternate: {id:WeaponId;rank:Rank}|null; equipped:'hammer'|'alternate' }
+export interface WeaponDrop { id:string; weapon:WeaponId; rank:Rank; copy:boolean; x:number;y:number;vx:number;vy:number;age:number;bounce:number;settled:boolean }
+export interface WeaponJournal { equipment:Equipment; issued:string[]; drops:WeaponDrop[]; serial:number }
+export const freshEquipment=():Equipment=>({alternate:null,equipped:'hammer'});
+export const validWeapon=(x:unknown):x is WeaponId=>typeof x==='string'&&Object.prototype.hasOwnProperty.call(WEAPONS,x);
+export const rankOf=(x:unknown):Rank=>x===2?2:x===3?3:1;
+/** Untrusted saves: only known identities, finite positions, bounded sizes; no aliasing. */
+export function cleanJournal(raw:unknown,land:number,length:number):WeaponJournal {
+  const r=raw as Partial<WeaponJournal>|null;
+  const equipment=freshEquipment();
+  const alt=r?.equipment?.alternate;
+  if(alt&&alt.id===LAND_WEAPONS[land])equipment.alternate={id:alt.id,rank:rankOf(alt.rank)};
+  if(equipment.alternate&&r?.equipment?.equipped==='alternate')equipment.equipped='alternate';
+  const issued=Array.isArray(r?.issued)?[...new Set(r.issued.filter(x=>typeof x==='string'&&/^e\d+w\d+s\d+$/.test(x)))].slice(0,100):[];
+  const seen=new Set<string>();
+  const drops:WeaponDrop[]=[];
+  for(const d of Array.isArray(r?.drops)?r.drops.slice(0,20):[]){
+    if(!d||typeof d.id!=='string'||seen.has(d.id)||d.weapon!==LAND_WEAPONS[land]||!Number.isFinite(d.x)||!Number.isFinite(d.y))continue;
+    if(d.copy&&!issued.includes(d.id))continue;
+    if(!d.copy&&!/^exchange\d+$/.test(d.id))continue;
+    seen.add(d.id);drops.push({id:d.id,weapon:d.weapon,rank:rankOf(d.rank),copy:!!d.copy,x:Math.max(24,Math.min(length-24,d.x)),y:Math.max(0,Math.min(500,d.y)),vx:0,vy:0,age:1,bounce:1,settled:false});
+  }
+  return {equipment,issued,drops,serial:Math.max(0,Math.min(10000,Math.floor(Number(r?.serial)||0)))};
 }

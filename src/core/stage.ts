@@ -1,3 +1,4 @@
+import { LAND_WEAPONS, ROMAN, WEAPONS, cleanJournal, type WeaponDrop, type WeaponJournal } from './weapons';
 import { DIFFICULTIES, Difficulty, DifficultyId, DT, SCORE, VIEW_H } from './config';
 import { Enemy, EnemyKind, KINDS, World } from './enemy';
 import type { Encounter, StageDef } from './levels';
@@ -84,10 +85,97 @@ export class Stage implements World {
   waves: Wave[] = [];
   pickups: Pickup[] = [];
   weaponDrops: WeaponDrop[] = [];
-  weaponDropsIssued = 0;
-  private rewardedWeaponSources = new Set<string>();
-  private weaponSources = new WeakMap<Enemy, string>();
-  weaponRevision = 0;
+  issuedRewards = new Set<string>();
+  equipmentRevision = 0;
+  private exchangeSerial = 0;
+  private nearbyLast: string | null = null;
+  private interactWasHeld = false;
+  private swapWasHeld = false;
+
+  weaponJournal(): WeaponJournal {
+    return JSON.parse(JSON.stringify({equipment:this.player.equipment,issued:[...this.issuedRewards],drops:this.weaponDrops,serial:this.exchangeSerial}));
+  }
+  restoreWeapons(raw:unknown):void {
+    const j=cleanJournal(raw,this.def.id,this.def.length);
+    this.player.equipment=j.equipment;this.issuedRewards=new Set(j.issued);this.weaponDrops=j.drops;this.exchangeSerial=j.serial;
+    this.recoverWeaponDrops();this.nearbyLast=null;this.equipmentRevision++;
+  }
+  nearbyWeapon():WeaponDrop|null {
+    const p=this.player;
+    if(this.phase!=='play'||p.state==='dead')return null;
+    return this.weaponDrops.filter(d=>d.settled&&Math.abs(d.x-p.x)<66&&Math.abs(d.y-p.y)<55)
+      .sort((a,b)=>Math.abs(a.x-p.x)-Math.abs(b.x-p.x)||a.id.localeCompare(b.id))[0]??null;
+  }
+  private safeWeaponGround(x:number):{x:number;y:number} {
+    const lo=this.bounds.minX+26,hi=this.bounds.maxX-26;
+    let best:{x:number;y:number}|null=null,dist=Infinity;
+    for(const g of this.terrain.ground){
+      const a=Math.max(lo,g.x0+26),b=Math.min(hi,g.x1-26);
+      if(a>b||g.y<90||g.y>500)continue;
+      const gx=Math.max(a,Math.min(b,x)),distance=Math.abs(gx-x);
+      if(distance<dist){dist=distance;best={x:gx,y:g.y};}
+    }
+    return best??{...this.checkpoint};
+  }
+  /** Called after a retry or Continue: keep an unclaimed opportunity inside the reachable arena. */
+  private recoverWeaponDrops():void {
+    for(const d of this.weaponDrops){const g=this.safeWeaponGround(d.x);d.x=g.x;d.y=g.y;d.vx=0;d.vy=0;d.bounce=1;d.settled=true;}
+  }
+  private updateWeapons(inp:InputFrame,dt:number):void {
+    for(const d of this.weaponDrops){
+      d.age+=dt;
+      if(d.settled)continue;
+      const g=this.safeWeaponGround(d.x);
+      // Recover pits, cliffs and off-screen death locations onto nearby walkable ground.
+      if(Math.abs(g.x-d.x)>1)d.x+=(g.x-d.x)*Math.min(1,dt*10);
+      d.vy+=1000*dt;d.x+=d.vx*dt;d.vx*=Math.exp(-dt*7);d.y+=d.vy*dt;
+      const surface=this.terrain.groundAt(d.x);
+      if(surface!==null&&d.y>=surface&&d.vy>=0){
+        d.y=surface;
+        if(d.bounce===0){d.vy=-85;d.vx=0;d.bounce=1;}else{d.vy=0;d.settled=true;}
+      }
+      if(d.age>2&&!d.settled){d.x=g.x;d.y=g.y;d.vx=0;d.vy=0;d.settled=true;}
+    }
+    const near=this.nearbyWeapon(),p=this.player;
+    const held=!!(inp.interactHeld||inp.interactPressed),swapHeld=!!(inp.swapHeld||inp.swapPressed);
+    const safe=p.state==='move'&&p.onGround&&p.dashTime<=0;
+    if(safe&&inp.swapPressed&&!this.swapWasHeld){
+      if(p.equipment.alternate){p.equipment.equipped=p.equipment.equipped==='hammer'?'alternate':'hammer';this.equipmentRevision++;
+        this.emit({type:'equipment',text:`Equipped ${WEAPONS[p.weaponId].name} ${ROMAN[p.weaponRank]}`});}
+      else this.emit({type:'equipment',text:'Ember Hammer ready · find an alternate'});
+    }
+    // A fresh press must start AFTER the prompt became eligible. No held/buffered pickup.
+    if(safe&&near&&near.id===this.nearbyLast&&inp.interactPressed&&!this.interactWasHeld)this.pickupWeapon(near);
+    this.nearbyLast=near?.id??null;this.interactWasHeld=held;this.swapWasHeld=swapHeld;
+  }
+  private pickupWeapon(d:WeaponDrop):void {
+    const eq=this.player.equipment,alt=eq.alternate;
+    if(alt?.id===d.weapon&&alt.rank===3){this.emit({type:'equipment',text:`${WEAPONS[d.weapon].name} · maximum rank III`});return;}
+    this.weaponDrops=this.weaponDrops.filter(x=>x!==d);
+    let text='';
+    if(alt?.id===d.weapon){
+      alt.rank=d.copy?Math.min(3,alt.rank+1) as 1|2|3:Math.max(alt.rank,d.rank) as 1|2|3;
+      text=`Forged to rank ${ROMAN[alt.rank]} · ${WEAPONS[d.weapon].name}`;
+    }else{
+      if(alt){
+        const g=this.safeWeaponGround(this.player.x-42*this.player.facing);
+        this.weaponDrops.push({id:`exchange${++this.exchangeSerial}`,weapon:alt.id,rank:alt.rank,copy:false,x:g.x,y:g.y-35,vx:0,vy:-100,age:0,bounce:0,settled:false});
+      }
+      eq.alternate={id:d.weapon,rank:d.rank};text=`Equipped ${WEAPONS[d.weapon].name} ${ROMAN[d.rank]} · hammer kept`;
+    }
+    eq.equipped='alternate';this.equipmentRevision++;
+    this.emit({type:'equipment',text});
+  }
+  private rewardWeapon(e:Enemy):void {
+    if(!e.rewardId||this.issuedRewards.has(e.rewardId))return;
+    this.issuedRewards.add(e.rewardId);this.equipmentRevision++;
+    const weapon=LAND_WEAPONS[this.def.id];
+    if(!weapon||this.player.equipment.alternate?.id===weapon&&this.player.equipment.alternate.rank===3)return;
+    if(this.weaponDrops.filter(d=>d.copy).length>=3)return; // readable reward density; later encounters remain opportunities
+    const c=e.center();
+    this.weaponDrops.push({id:e.rewardId,weapon,rank:1,copy:true,x:c.x,y:c.y,vx:e.facing*-28,vy:-190,age:0,bounce:0,settled:false});
+  }
+
   events: StageEvent[] = [];
   bounds: { minX: number; maxX: number };
   phase: Phase = 'play';
@@ -289,11 +377,7 @@ export class Stage implements World {
     this.updateOrbs(dt);
     this.updateWaves(dt);
     this.updatePickups(dt);
-    if (inp.swapPressed && this.phase === 'play' && p.swapWeapon()) {
-      this.weaponRevision++;
-      this.emit({ type: 'weaponSwap', x: p.x, y: p.y - 30, slot: p.equippedSlot });
-    }
-    if (inp.interactPressed && this.phase === 'play') this.tryPickupWeapon();
+    this.updateWeapons(inp,dt);
     this.updateEncounters(dt);
 
     // ---- end of stage
@@ -342,6 +426,7 @@ export class Stage implements World {
 
   private onEnemyKilled(e: Enemy): void {
     const c = e.center();
+    this.rewardWeapon(e);
     this.kills++;
     this.score += e.cfg.score;
     this.emit({ type: 'enemyDie', x: c.x, y: c.y, kind: e.kind, size: e.boss ? 3 : 1 });
@@ -675,6 +760,7 @@ export class Stage implements World {
     const cx = Math.max(def.arena[0] + 90, Math.min(def.arena[1] - 90, def.checkpoint ?? def.arena[0] + 110));
     this.checkpoint = { x: cx, y: this.terrain.groundAt(cx) ?? 450 };
     this.scoreAtCheckpoint = this.score;
+    this.recoverWeaponDrops();
     this.emit({ type: 'encounterStart', boss: !!def.boss });
     if (def.boss) {
       const k = KINDS[def.waves[0][0].kind];
@@ -685,10 +771,11 @@ export class Stage implements World {
   private spawnWave_(a: ActiveEncounter): void {
     const wave = a.def.waves[a.wave];
     if (a.wave > 0 || !a.def.boss) this.emit({ type: 'waveStart', index: a.wave, total: a.def.waves.length });
-    for (const [slot, s] of wave.entries()) {
+    for (const [spawnIndex,s] of wave.entries()) {
       const e = this.spawnEnemy(s.kind, s.x, s.y);
       this.weaponSources.set(e, `encounter:${a.index}:${a.wave}:${slot}`);
       e.wave = a.wave;
+      if(spawnIndex===0) e.rewardId=`e${a.index}w${a.wave}s${spawnIndex}`;
       e.cooldown = 0.8 + (s.delay ?? 0) + this.rng() * 0.6;
       if (e.boss) {
         this.boss = e;
@@ -780,6 +867,7 @@ export class Stage implements World {
     p.setState('move');
     this.phase = 'play';
     this.phaseT = 0;
+    this.recoverWeaponDrops();this.nearbyLast=null;this.interactWasHeld=true;this.equipmentRevision++;
     this.emit({ type: 'respawn', x: p.x, y: p.y });
   }
 
