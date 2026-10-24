@@ -418,6 +418,9 @@ export class WorldView {
         ctx.fillRect(s.x0, s.y + 8, w, VIEW_H - s.y);
         ctx.restore();
       }
+      // High-contrast landing edges and carved seams make the new climbable faces readable.
+      if(w<100){ctx.strokeStyle='rgba(255,231,174,.22)';ctx.lineWidth=1;
+        for(let y=s.y+28;y<VIEW_H;y+=30){ctx.beginPath();ctx.moveTo(s.x0+4,y);ctx.lineTo(s.x1-4,y);ctx.stroke();}}
       // top lip
       ctx.fillStyle = pal.groundTop;
       ctx.beginPath();

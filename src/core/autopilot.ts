@@ -46,6 +46,11 @@ export class Autopilot {
     }
     if(p.wallGrace>0 && !p.onGround && p.vy>0){inp.jumpPressed=true;inp.jumpHeld=true;this.jumpHold=.3;return inp;}
     if(p.dashCooldown<=0&&p.onGround&&!s.active&&s.terrain.groundAt(p.x+250)!==null&&s.terrain.groundAt(p.x+250)===p.y)inp.dashPressed=true;
+    // React to authored high ledges using the same extra jump available to the player.
+    if(!p.onGround&&p.airJumpReady&&p.vy>0){
+      const rise=s.terrain.groundAt(p.x+p.facing*75);
+      if(rise!==null&&rise<p.y-20){inp.jumpPressed=true;inp.jumpHeld=true;this.jumpHold=.3;}
+    }
     // ---------------------------------------------------- 1. red attacks
     for (const w of s.waves) {
       const toward = (p.x - w.x) * w.dir > 0;

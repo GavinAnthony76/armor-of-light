@@ -100,12 +100,12 @@ const steps = (s: Stage, n: number, inp: Partial<InputFrame> = {}) => {
   // unblockable shockwave hurts through a block, jumping avoids it
   const s = new Stage(STAGES[0], 'gentle');
   steps(s, 5);
-  s.spawnWave(s.player.x + 200, s.player.y, -1, 380, 600, true);
+  s.spawnWave(s.player.x + 80, s.player.y, -1, 380, 600, true);
   steps(s, 60, { blockHeld: true });
   check('red shockwave goes through block', s.player.hp === s.player.maxHp - 1, `hp=${s.player.hp}`);
   const s2 = new Stage(STAGES[0], 'gentle');
   steps(s2, 5);
-  s2.spawnWave(s2.player.x + 200, s2.player.y, -1, 380, 600, true);
+  s2.spawnWave(s2.player.x + 80, s2.player.y, -1, 380, 600, true);
   let jumped = false;
   for (let i = 0; i < 90; i++) {
     const w = s2.waves[0];
@@ -147,7 +147,9 @@ const steps = (s: Stage, n: number, inp: Partial<InputFrame> = {}) => {
 {
   // death: instant retry at checkpoint with full hearts, encounter restarts
   const s = new Stage(STAGES[0], 'challenging');
-  while (!s.active) s.step({ ...NO_INPUT, right: true, jumpPressed: s.player.onGround && s.player.x > 380 && s.player.x < 400, jumpHeld: true });
+  s.player.x=s.def.encounters[0].trigger+1;
+  for(let i=0;i<120&&!s.active;i++)s.step(NO_INPUT);
+  check("checkpoint encounter starts",!!s.active);
   steps(s, 90);
   s.player.hp = 1;
   s.player.invuln = 0;
@@ -163,6 +165,8 @@ const steps = (s: Stage, n: number, inp: Partial<InputFrame> = {}) => {
 {
   // falling in water costs one heart and returns you to safe ground
   const s = new Stage(STAGES[1], 'gentle');
+  const gap=Array.from({length:s.def.length},(_,x)=>x).find(x=>s.terrain.groundAt(x)===null)!;
+  s.player.x=gap;s.player.y=635;s.player.onGround=false;
   let splashed = false;
   for (let i = 0; i < 400; i++) {
     s.step({ ...NO_INPUT, right: !splashed });
