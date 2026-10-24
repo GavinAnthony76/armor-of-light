@@ -57,6 +57,8 @@ export class Player implements Body {
   wallGrace=0;
   wallLock=0;
   airAttackReady=true;
+  airJumpReady=true;
+  airJumpFlash=0;
   queuedEarly=false;
   blockTime = 0;
   airTime = 0;
@@ -116,6 +118,8 @@ export class Player implements Body {
     let jumped = false;
     let swung = false;
     this.t += dt;
+    this.airJumpFlash=Math.max(0,this.airJumpFlash-dt);
+    if(this.onGround)this.airJumpReady=true;
     this.invuln = Math.max(0, this.invuln - dt);
     this.coyote = this.onGround ? PLAYER.coyote : Math.max(0, this.coyote - dt);
     this.jumpBuffer = inp.jumpPressed ? PLAYER.jumpBuffer : Math.max(0, this.jumpBuffer - dt);
@@ -144,7 +148,7 @@ export class Player implements Body {
     }
     if(this.dashTime>0){this.dashTime=Math.max(0,this.dashTime-dt);this.vx=this.facing*620;this.vy*=.75;return {jumped,swung};}
     // Jump and block can cancel recovery, after the attack has dealt its damage.
-    if(this.attacking && this.jumpBuffer>0 && this.onGround && this.t>this.swing.hitTo)this.setState('move');
+    if(this.attacking && this.jumpBuffer>0 && (this.onGround||this.airJumpReady) && this.t>this.swing.hitTo)this.setState('move');
     // blocking cancels the tail end of a swing, so defense always feels responsive
     if (this.state === 'attack' && inp.blockHeld && this.onGround && this.t > this.swing.hitTo) {
       this.setState('move');
@@ -222,6 +226,11 @@ export class Player implements Body {
       this.jumpBuffer = 0;
       this.jumpCut = false;
       jumped = true;
+    }
+    // A deliberate second press spends one aerial jump. Holding jump cannot retrigger it.
+    if(!jumped && inp.jumpPressed && !this.onGround && this.coyote<=0 && this.airJumpReady){
+      this.vy=-PLAYER.jumpV*.92;this.airJumpReady=false;this.airJumpFlash=.24;
+      this.jumpBuffer=0;this.jumpCut=false;jumped=true;
     }
     // releasing jump early gives a shorter hop
     if (!inp.jumpHeld && this.vy < -260 && !this.jumpCut) {

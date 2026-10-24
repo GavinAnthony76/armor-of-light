@@ -31,7 +31,7 @@ export type Prop =
 
 export interface Sign {
   x: number;
-  key: 'move' | 'jump' | 'attack' | 'block' | 'parry' | 'red' | 'combo' | 'water' | 'shield' | 'dash' | 'wall';
+  key: 'move' | 'jump' | 'attack' | 'block' | 'parry' | 'red' | 'combo' | 'water' | 'shield' | 'dash' | 'wall' | 'double';
 }
 
 export interface StageDef {
@@ -394,3 +394,25 @@ STAGES[5].ground.push([2390,2470,286]);
 STAGES[5].platforms.push([2240,2370,360],[2490,2580,350]);
 
 STAGES[0].signs.push({x:650,key:'dash'},{x:1850,key:'wall'});
+
+
+// Authored traversal pockets: teach on a safe approach, then repeat between fights.
+// Arena floors and enemy wave positions are intentionally preserved.
+STAGES.forEach((s,land)=>{
+  const first=s.encounters[0].arena[0];
+  const x=Math.max(s.start+150,first-490);
+  const floor=s.ground.find(g=>x>=g[0]&&x+320<g[1])?.[2]??450;
+  // Opposing faces form a wall-spring corridor; the second summit rewards the air jump.
+  s.ground.push([x,x+54,floor-175],[x+230,x+290,floor-265]);
+  s.platforms.push([x+100,x+174,floor-100],[x+305,x+400,floor-150]);
+  s.motes.push(...arc(x+65,x+220,floor-205,30,5));
+  s.signs.push({x:x-65,key:'wall'},{x:x+120,key:'double'});
+  // Different silhouettes and spacing create a distinct second ascent in each land.
+  const a=s.encounters[0].arena[1]+70,b=s.encounters[1].arena[0]-50;
+  if(b-a>300){
+    const gy=s.ground.find(g=>a>=g[0]&&a+80<g[1])?.[2]??450;
+    s.ground.push([a,a+55,gy-150-(land%3)*18]);
+    s.platforms.push([a+100,a+185,gy-95],[b-80,b,gy-185]);
+    s.motes.push(...arc(a+100,b-30,gy-210,20,4));
+  }
+});

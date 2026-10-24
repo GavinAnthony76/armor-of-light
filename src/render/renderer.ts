@@ -32,6 +32,7 @@ export function computeLayout(w:number,h:number,touch=false,insets={top:0,right:
 }
 
 const SIGN_TEXT: Record<Sign['key'], Record<InputMode, string>> = {
+  double:{keyboard:'Tap jump again in the air · one extra leap per landing',touch:'Tap JUMP again in the air for your second leap',gamepad:'Press A again in the air · land to recharge'},
   dash:{keyboard:'L / V to dash · strike, then jump to keep moving',touch:'DASH past danger · jump after a strike',gamepad:'LB to dash · jump after a strike'},
   wall:{keyboard:'Hold toward the wall, then jump to kick away',touch:'Hold toward the wall and tap JUMP to kick away',gamepad:'Hold toward the wall and press A to kick away'},
   move: { keyboard: '← →  or  A D  to walk', touch: 'Slide on the pad to walk', gamepad: 'Stick or D-pad to walk' },
@@ -79,7 +80,7 @@ export class Renderer {
     if (!s || !game.world) return;
     const Z = l.zoom;
     const worldW = l.viewW / Z;
-    const camTop = VIEW_H - VIEW_H / Z; // keep the ground line anchored to the bottom
+    const camTop = Math.min(VIEW_H - VIEW_H / Z, s.player.y-170); // keep the ground line anchored to the bottom
     game.viewW = worldW;
     const world = game.world;
     const k = l.scale * l.dpr;
@@ -104,7 +105,7 @@ export class Renderer {
     world.drawProps(ctx, s.terrain, camX, worldW, game.time, game.gateOpen);
     this.drawExit(game);
     world.drawTerrain(ctx, s.terrain, camX, worldW, game.time);
-    if (!game.demo) for (const sign of s.def.signs) if (Math.abs(sign.x-s.player.x)<170) this.drawSign(sign, s.terrain.groundAt(sign.x) ?? 450, inputMode);
+    if (!game.demo) for (const sign of s.def.signs.filter(q=>Math.abs(q.x-s.player.x)<170).sort((a,b)=>Math.abs(a.x-s.player.x)-Math.abs(b.x-s.player.x)).slice(0,1)) this.drawSign(sign, s.terrain.groundAt(sign.x) ?? 450, inputMode);
     this.drawPickups(game);
     this.drawWeaponDrops(game);
     this.drawMarkers(game);

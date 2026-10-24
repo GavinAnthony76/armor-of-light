@@ -672,7 +672,7 @@ export class Stage implements World {
   /** Instant retry from the last checkpoint with full hearts. */
   respawn(): void {
     const p = this.player;
-    p.dashTime=0;p.dashCooldown=0;p.wallDir=0;p.wallGrace=0;p.wallLock=0;p.queuedEarly=false;p.airAttackReady=true;
+    p.airJumpReady=true;p.airJumpFlash=0;p.dashTime=0;p.dashCooldown=0;p.wallDir=0;p.wallGrace=0;p.wallLock=0;p.queuedEarly=false;p.airAttackReady=true;
     const a = this.active;
     if (a) {
       if (this.boss && this.diff.bossKeepsDamage && this.boss.hp > 0) this.bossCarryHp = this.boss.hp;

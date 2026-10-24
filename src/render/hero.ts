@@ -225,6 +225,7 @@ export class HeroView {
     ctx.fillRect(p.x - 140, p.y - 160, 280, 240);
     ctx.globalCompositeOperation = 'source-over';
 
+    if(p.airJumpFlash>0){ctx.save();ctx.strokeStyle='#ffe2a0';ctx.lineWidth=2;ctx.globalAlpha=p.airJumpFlash/.24;ctx.beginPath();ctx.ellipse(p.x,p.y-3,24+(1-p.airJumpFlash/.24)*22,7,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
     this.drawCape(ctx);
     this.drawTrail(ctx, p);
 

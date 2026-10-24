@@ -85,7 +85,7 @@ export class UI {
           <p>Seven fictional lands inspired by Scripture. Gameplay and animated characters are built on Claude’s original design; campaign expansion and illustrated environments are integrated in this edition. Original procedural music; no third-party recorded songs.</p><div class="help-grid">
             <div><h3>Keyboard</h3>
               <p><kbd>←</kbd><kbd>→</kbd> or <kbd>A</kbd><kbd>D</kbd> walk</p>
-              <p><kbd>Space</kbd> or <kbd>W</kbd> jump</p>
+              <p><kbd>Space</kbd> or <kbd>W</kbd> jump · press again for a double jump</p>
               <p><kbd>J</kbd> or <kbd>X</kbd> strike</p>
               <p>Hold <kbd>K</kbd> or <kbd>C</kbd> to block</p>
               <p><kbd>L</kbd> or <kbd>V</kbd> dash. Jump against a wall to kick away.</p><p><kbd>E</kbd> pick up · <kbd>Q</kbd> swap weapon</p><p><kbd>Esc</kbd> pause</p></div>
