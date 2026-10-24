@@ -22,8 +22,6 @@ const KEYS: Record<string, Action> = {
   KeyC: 'block',
   ShiftLeft: 'block',
   ShiftRight: 'block',
-  KeyE: 'interact',
-  KeyQ: 'swap',
 };
 
 /**
@@ -153,8 +151,6 @@ export class Input {
     if (b(3)) now.add('interact');
     if (b(6)) now.add('swap');
     if (b(1) || b(5) || b(7)) now.add('block');
-    if (b(12)) now.add('interact');
-    if (b(13)) now.add('swap');
     if (b(14) || ax < -0.4) now.add('left');
     if (b(15) || ax > 0.4) now.add('right');
     if (b(9)) now.add('start');
