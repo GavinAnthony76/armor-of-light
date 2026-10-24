@@ -52,6 +52,9 @@ export type StageEvent =
   | { type: 'shoot'; x: number; y: number }
   | { type: 'shockwave'; x: number; y: number; big: boolean }
   | { type: 'pickup'; x: number; y: number; kind: 'mote' | 'heart' }
+  | { type: 'weaponDrop'; x: number; y: number; weapon: string }
+  | { type: 'weaponPickup'; x: number; y: number; weapon: string; rank: number; upgraded: boolean }
+  | { type: 'weaponSwap'; x: number; y: number; slot: 'hammer' | 'alternate' }
   | { type: 'heal'; x: number; y: number }
   | { type: 'encounterStart'; boss: boolean }
   | { type: 'waveStart'; index: number; total: number }

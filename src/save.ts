@@ -3,6 +3,7 @@ import type { DifficultyId } from './core/config';
 import { STAGES } from './core/levels';
 import type { StageResult } from './core/stage';
 import type { PlatformAdapter } from './platform/types';
+import { isWeaponId, LAND_WEAPONS, type WeaponDropSave, type WeaponRunSave } from './core/weapons';
 
 export interface LevelRecord {
   score: number;
@@ -25,6 +26,54 @@ const defaults = (): SaveData => ({
   best: {},
   settings: { sfx: true, music: true, musicVolume:.8, difficulty: 'gentle' },
 });
+
+function readWeaponState(value: unknown, level: number): WeaponRunSave | undefined {
+  if (!value || typeof value !== 'object') return undefined;
+  const candidate = value as Partial<WeaponRunSave>;
+  const alternate = candidate.alternate === null || candidate.alternate === undefined
+    ? null
+    : isWeaponId(candidate.alternate) ? candidate.alternate : null;
+  const rank = alternate && Number.isFinite(candidate.rank)
+    ? Math.max(1, Math.min(3, Math.floor(candidate.rank!)))
+    : 0;
+  const rawDrops = Array.isArray(candidate.drops) ? candidate.drops : [];
+  const drops: WeaponDropSave[] = [];
+  const seen = new Set<string>();
+  for (const raw of rawDrops) {
+    if (!raw || typeof raw !== 'object') continue;
+    const drop = raw as Partial<WeaponDropSave>;
+    if (
+      typeof drop.id !== 'string'
+      || drop.id.length > 32
+      || seen.has(drop.id)
+      || !isWeaponId(drop.weapon)
+      || drop.weapon !== LAND_WEAPONS[level]
+      || ![drop.x, drop.y, drop.vx, drop.vy, drop.bounces].every(Number.isFinite)
+    ) continue;
+    seen.add(drop.id);
+    drops.push({
+      id: drop.id,
+      weapon: drop.weapon,
+      x: drop.x!,
+      y: drop.y!,
+      vx: drop.vx!,
+      vy: drop.vy!,
+      bounces: Math.max(0, Math.min(2, Math.floor(drop.bounces!))),
+      settled: !!drop.settled,
+    });
+    if (drops.length === 3) break;
+  }
+  return {
+    alternate,
+    rank,
+    equipped: candidate.equipped === 'alternate' && alternate ? 'alternate' : 'hammer',
+    dropsIssued: Math.max(drops.length, Math.min(3, Number.isFinite(candidate.dropsIssued) ? Math.floor(candidate.dropsIssued!) : drops.length)),
+    rewardedSources: Array.isArray(candidate.rewardedSources)
+      ? [...new Set(candidate.rewardedSources.filter((key): key is string => typeof key === 'string' && key.length <= 128))].slice(0, 3)
+      : [],
+    drops,
+  };
+}
 
 /** Progress and settings, stored through the platform adapter. */
 export class SaveStore {

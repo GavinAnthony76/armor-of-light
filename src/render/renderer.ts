@@ -5,6 +5,8 @@ import type { Sign } from '../core/levels';
 import type { Game } from '../game';
 import type { InputMode } from '../input';
 import { drawEnemy, WARN_RED } from './shadows';
+import { romanRank, WEAPONS } from '../core/weapons';
+import { drawWeaponSilhouette } from './weapon-art';
 
 export interface Layout {
   w: number; // CSS px viewport
@@ -245,6 +247,44 @@ export class Renderer {
       }
     }
     ctx.restore();
+  }
+
+  private drawWeaponDrops(game: Game): void {
+    const ctx = this.ctx;
+    const s = game.stage!;
+    for (const drop of s.weaponDrops) {
+      if (drop.x < game.camX - 60 || drop.x > game.camX + game.viewW + 60) continue;
+      const weapon = WEAPONS[drop.weapon];
+      const heldRank = s.player.alternateWeapon === drop.weapon ? s.player.weaponRank : 0;
+      const offerRank = Math.min(3, heldRank + 1) || 1;
+      const bob = drop.settled ? Math.sin(game.time * 3 + drop.x * 0.03) * 2 : 0;
+      const y = drop.y - 14 + bob;
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.globalAlpha = drop.settled ? 0.8 : 0.58;
+      const glow = ctx.createRadialGradient(drop.x, y, 2, drop.x, y, 26);
+      glow.addColorStop(0, `${weapon.color}88`);
+      glow.addColorStop(1, `${weapon.color}00`);
+      ctx.fillStyle = glow;
+      ctx.fillRect(drop.x - 28, y - 28, 56, 56);
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 0.3;
+      ctx.fillStyle = '#090b14';
+      ctx.beginPath();
+      ctx.ellipse(drop.x, drop.y - 1, 12, 3, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      const tilt = drop.settled ? -0.45 : Math.sin(game.time * 9 + drop.x) * 0.12;
+      drawWeaponSilhouette(ctx, drop.x - 4, y, tilt, weapon, offerRank, 0.58);
+      if (drop.bounces > 0 || s.player.alternateWeapon === drop.weapon) {
+        ctx.fillStyle = '#fff4d0';
+        ctx.font = `800 9px ${SANS}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(romanRank(offerRank), drop.x, y + 15);
+      }
+      ctx.restore();
+    }
   }
 
   private drawMarkers(game: Game): void {
