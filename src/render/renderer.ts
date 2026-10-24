@@ -3,6 +3,8 @@ import type { Sign } from '../core/levels';
 import type { Game } from '../game';
 import type { InputMode } from '../input';
 import { drawEnemy, WARN_RED } from './shadows';
+import { romanRank, WEAPONS } from '../core/weapons';
+import { drawWeaponSilhouette } from './weapon-art';
 
 export interface Layout {
   w: number; // CSS px viewport
@@ -59,7 +61,8 @@ export class Renderer {
   }
 
   resize(): Layout {
-    const l = computeLayout(window.innerWidth, window.innerHeight);
+    const viewport = window.visualViewport;
+    const l = computeLayout(viewport?.width ?? window.innerWidth, viewport?.height ?? window.innerHeight);
     this.canvas.width = Math.round(l.w * l.dpr);
     this.canvas.height = Math.round(l.h * l.dpr);
     this.canvas.style.width = `${l.w}px`;
@@ -105,6 +108,7 @@ export class Renderer {
     world.drawTerrain(ctx, s.terrain, camX, worldW, game.time);
     if (!game.demo) for (const sign of s.def.signs) if (Math.abs(sign.x-s.player.x)<170) this.drawSign(sign, s.terrain.groundAt(sign.x) ?? 450, inputMode);
     this.drawPickups(game);
+    this.drawWeaponDrops(game);
     this.drawMarkers(game);
     this.drawWaves(game);
     for(const e of s.enemies){
@@ -227,6 +231,44 @@ export class Renderer {
       }
     }
     ctx.restore();
+  }
+
+  private drawWeaponDrops(game: Game): void {
+    const ctx = this.ctx;
+    const s = game.stage!;
+    for (const drop of s.weaponDrops) {
+      if (drop.x < game.camX - 60 || drop.x > game.camX + game.viewW + 60) continue;
+      const weapon = WEAPONS[drop.weapon];
+      const heldRank = s.player.alternateWeapon === drop.weapon ? s.player.weaponRank : 0;
+      const offerRank = Math.min(3, heldRank + 1) || 1;
+      const bob = drop.settled ? Math.sin(game.time * 3 + drop.x * 0.03) * 2 : 0;
+      const y = drop.y - 14 + bob;
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.globalAlpha = drop.settled ? 0.8 : 0.58;
+      const glow = ctx.createRadialGradient(drop.x, y, 2, drop.x, y, 26);
+      glow.addColorStop(0, `${weapon.color}88`);
+      glow.addColorStop(1, `${weapon.color}00`);
+      ctx.fillStyle = glow;
+      ctx.fillRect(drop.x - 28, y - 28, 56, 56);
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 0.3;
+      ctx.fillStyle = '#090b14';
+      ctx.beginPath();
+      ctx.ellipse(drop.x, drop.y - 1, 12, 3, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      const tilt = drop.settled ? -0.45 : Math.sin(game.time * 9 + drop.x) * 0.12;
+      drawWeaponSilhouette(ctx, drop.x - 4, y, tilt, weapon, offerRank, 0.58);
+      if (drop.bounces > 0 || s.player.alternateWeapon === drop.weapon) {
+        ctx.fillStyle = '#fff4d0';
+        ctx.font = `800 9px ${SANS}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(romanRank(offerRank), drop.x, y + 15);
+      }
+      ctx.restore();
+    }
   }
 
   private drawMarkers(game: Game): void {
@@ -381,7 +423,17 @@ export class Renderer {
       const lost = !full && i < p.hp + 1 && game.hurtFlash > 0;
       heart(ctx, x, top, 11, full ? '#ff5d7a' : lost ? '#ffffff' : 'rgba(40, 20, 50, 0.55)', full ? '#ffd0da' : 'rgba(255,255,255,0.35)');
     }
-    ctx.save();ctx.font=`600 11px ${SANS}`;ctx.fillStyle='#e9d5a3';ctx.fillText(`ELIAM · ${p.dashCooldown>0?'DASH RECHARGING':'L / LB · DASH'}`,left-10,top+29);ctx.restore();
+    ctx.save();
+    ctx.font=`600 11px ${SANS}`;
+    ctx.fillStyle='#e9d5a3';
+    ctx.fillText(`ELIAM · ${p.dashCooldown>0?'DASH RECHARGING':'DASH READY'}`,left-10,top+29);
+    const equipped = p.equippedWeapon
+      ? `${p.equippedWeapon.name} · RANK ${romanRank(p.weaponRank)}`
+      : 'BURNING HAMMER';
+    ctx.font=`700 11px ${SANS}`;
+    ctx.fillStyle=p.equippedWeapon?.color ?? '#ffd877';
+    ctx.fillText(equipped,left-10,top+45);
+    ctx.restore();
     // motes + score (leaves room on the right for the pause button)
     const rx = l.viewW - 24;
     ctx.save();

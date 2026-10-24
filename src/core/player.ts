@@ -1,6 +1,7 @@
 import { PLAYER } from './config';
 import type { Body } from './terrain';
 import type { InputFrame, Rect } from './types';
+import { WEAPONS, type WeaponId, type WeaponSlot } from './weapons';
 
 export type PlayerState = 'move' | 'attack' | 'block' | 'hurt' | 'dead';
 
@@ -62,6 +63,9 @@ export class Player implements Body {
   hitsTaken = 0;
   /** Set by the stage when the player is close to a gap edge. */
   lastHurtDir = 1;
+  alternateWeapon: WeaponId | null = null;
+  weaponRank = 0;
+  equippedSlot: WeaponSlot = 'hammer';
 
   constructor(x: number, y: number, hearts: number) {
     this.x = x;
@@ -72,7 +76,53 @@ export class Player implements Body {
   }
 
   get swing(): SwingDef {
-    return this.airSwing ? AIR_SWING : SWINGS[this.combo];
+    const base = this.airSwing ? AIR_SWING : SWINGS[this.combo];
+    const weapon = this.equippedWeapon;
+    if (!weapon) return base;
+    const rankBonus = Math.max(0, this.weaponRank - 1) * 0.035;
+    const reach = weapon.reach + rankBonus;
+    const tempo = weapon.tempo * (1 + Math.max(0, this.weaponRank - 1) * 0.025);
+    const width = base.box.w * reach;
+    const height = base.box.h * (weapon.kind === 'spear' ? 0.78 : weapon.kind === 'glaive' ? 1.08 : weapon.kind === 'twinblades' ? 0.9 : 1);
+    return {
+      ...base,
+      dur: base.dur / tempo,
+      hitFrom: base.hitFrom / tempo,
+      hitTo: base.hitTo / tempo,
+      chainFrom: base.chainFrom / tempo,
+      box: {
+        dx: base.box.dx + (width - base.box.w) * 0.18,
+        dy: base.box.dy + (base.box.h - height) / 2,
+        w: width,
+        h: height,
+      },
+      knock: base.knock * weapon.knock,
+      lunge: base.lunge * weapon.lunge,
+    };
+  }
+
+  get equippedWeapon() {
+    return this.equippedSlot === 'alternate' && this.alternateWeapon
+      ? WEAPONS[this.alternateWeapon]
+      : null;
+  }
+
+  /** Adds or improves the single optional weapon slot. */
+  acquireWeapon(id: WeaponId): { upgraded: boolean; rank: number } {
+    if (this.alternateWeapon === id) {
+      this.weaponRank = Math.min(3, this.weaponRank + 1);
+      return { upgraded: true, rank: this.weaponRank };
+    }
+    this.alternateWeapon = id;
+    this.weaponRank = 1;
+    this.equippedSlot = 'alternate';
+    return { upgraded: false, rank: this.weaponRank };
+  }
+
+  swapWeapon(): boolean {
+    if (!this.alternateWeapon || this.state === 'attack' || this.state === 'hurt' || this.state === 'dead') return false;
+    this.equippedSlot = this.equippedSlot === 'hammer' ? 'alternate' : 'hammer';
+    return true;
   }
 
   get blocking(): boolean {
