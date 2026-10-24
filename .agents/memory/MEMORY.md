@@ -1,0 +1,1 @@
+- [Approved game and run-local weapons](game-direction.md) — enhance the original game rather than replace it; level-specific equipment resets on fresh attempts.

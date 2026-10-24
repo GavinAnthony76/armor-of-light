@@ -4,6 +4,7 @@ import { DifficultyId, DT } from './core/config';
 import { STAGES } from './core/levels';
 import { Stage, StageResult } from './core/stage';
 import { NO_INPUT, StageEvent } from './core/types';
+import { romanRank, WEAPONS, type WeaponId } from './core/weapons';
 import type { Input } from './input';
 import { Fx } from './render/fx';
 import { HeroView } from './render/hero';
@@ -198,6 +199,9 @@ export class Game {
     const sound = this.say(e);
     const s = this.stage!;
     switch (e.type) {
+      case 'equipment':
+        if(sound)a.play('pickup',2);
+        this.banners.push({text:e.text,t:0,dur:2.6,big:false});break;
       case 'dash':
         for(let i=0;i<9;i++)fx.add('ember',e.x-e.facing*i*5,e.y-22,{vx:-e.facing*100,vy:-30,life:.2+i*.015,size:2,color:'#ffb05f'});
         if(sound)a.play('swing',0);break;
@@ -261,6 +265,30 @@ export class Game {
         this.pickupClock = 0.5;
         if (e.kind === 'heart') this.texts.push({ x: e.x, y: e.y - 20, text: '+1 ♥', color: '#ff9db0', t: 0 });
         break;
+      case 'weaponDrop': {
+        const color = WEAPONS[e.weapon as WeaponId]?.color ?? '#ffd25e';
+        fx.sparks(e.x, e.y - 10, 5, color, 130);
+        break;
+      }
+      case 'weaponPickup': {
+        const profile = WEAPONS[e.weapon as WeaponId];
+        const color = profile?.color ?? '#ffd25e';
+        fx.sparks(e.x, e.y - 12, 8, color, 210);
+        fx.ring(e.x, e.y - 10, 52, color, 0.28);
+        this.texts.push({
+          x: e.x,
+          y: e.y - 30,
+          text: `${profile?.name ?? 'WEAPON'} · RANK ${romanRank(e.rank)}`,
+          color,
+          t: 0,
+        });
+        if (sound) a.play('pickup', this.pickupChain++);
+        break;
+      }
+      case 'weaponSwap': {
+        if (sound) a.play('click');
+        break;
+      }
       case 'heal':
         for (let i = 0; i < 14; i++) fx.add('wisp', e.x + (Math.random() - 0.5) * 40, e.y + 20, { vy: -60 - Math.random() * 80, life: 1, size: 3, color: '#c8ffb0' });
         if (sound) a.play('heal');

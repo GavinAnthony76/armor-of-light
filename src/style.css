@@ -16,6 +16,7 @@
   --gy: 0px;
   --gw: 100vw;
   --gh: 100vh;
+  --viewport-h: 100vh;
   color-scheme: dark;
 }
 
@@ -104,6 +105,45 @@ body {
   top: calc(var(--gy) + 8px);
   width: 52px;
   height: 52px;
+}
+
+.weapon-offer {
+  position: absolute;
+  z-index: 4;
+  top: calc(var(--gy) + clamp(58px, var(--u) * 78, 94px));
+  left: 50%;
+  width: min(420px, calc(100vw - 32px));
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 16px;
+  border: 1px solid color-mix(in srgb, var(--weapon-color, var(--gold)) 65%, transparent);
+  border-radius: 13px;
+  background: rgba(17, 13, 24, 0.86);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.38), 0 0 22px color-mix(in srgb, var(--weapon-color, var(--gold)) 17%, transparent);
+  text-align: center;
+  pointer-events: none;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+.weapon-offer strong {
+  color: var(--weapon-color, var(--gold));
+  font: 800 13px var(--sans);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.weapon-offer span {
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.35;
+}
+.weapon-offer small {
+  color: #fff2c6;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
 }
 
 /* ---------------------------------------------------------- brand */
@@ -678,15 +718,35 @@ kbd {
   width: 82px;
   height: 82px;
 }
+.tbtn.interact {
+  left: 0;
+  bottom: 110px;
+  width: 82px;
+  height: 82px;
+  border-color: rgba(255, 226, 137, 0.9);
+  background: rgba(86, 60, 18, 0.76);
+}
+.tbtn.swap {
+  left: 8px;
+  bottom: 202px;
+  width: 54px;
+  height: 54px;
+  border-color: rgba(255, 230, 180, 0.65);
+  background: rgba(30, 18, 48, 0.68);
+}
+.tbtn .touch-letter {
+  font: 900 22px var(--sans);
+  line-height: 1;
+}
 
 /* portrait: controls live in the space under the game view */
 #ui.portrait .pad {
   bottom: auto;
-  top: calc(var(--gy) + var(--gh) + max(24px, (100vh - var(--gy) - var(--gh) - 230px) / 2));
+  top: calc(var(--gy) + var(--gh) + max(24px, (var(--viewport-h) - var(--gy) - var(--gh) - 230px) / 2));
 }
 #ui.portrait .buttons {
   bottom: auto;
-  top: calc(var(--gy) + var(--gh) + max(10px, (100vh - var(--gy) - var(--gh) - 230px) / 2));
+  top: calc(var(--gy) + var(--gh) + max(10px, (var(--viewport-h) - var(--gy) - var(--gh) - 230px) / 2));
 }
 
 @media (max-height: 640px) {
@@ -769,3 +829,35 @@ kbd {
 .tbtn.dash{right:110px;bottom:122px;width:64px;height:64px;border-color:#edaa79}.tbtn.dash svg{width:25px;height:25px}
 
 .story-beat{border-left:3px solid #e0b56b;padding:12px 20px;background:linear-gradient(90deg,#bc934212,transparent);min-height:135px}.story-beat>span{font:700 12px system-ui;letter-spacing:1.3px;text-transform:uppercase;color:#f6cb85}.story-beat>p{font:19px/1.65 Georgia;color:#f5e7d7;margin:12px 0}.story-beat>small{font-size:11px;color:#a5a2b1}.chapter-land{color:#c0b3c6;font-size:13px}.chapter-art{height:clamp(120px,26vh,240px)}.chapter-copy blockquote{font-size:16px;margin:15px 0}.chapter-dialog .guardian-preview img{width:58px;height:58px}.ending{line-height:1.65;max-width:580px}.title .tag{letter-spacing:1px}
+
+/* Weapon discovery: equipment stays outside the action; prompts require a deliberate press. */
+:root{--safe-top:env(safe-area-inset-top,0px);--safe-right:env(safe-area-inset-right,0px);--safe-bottom:env(safe-area-inset-bottom,0px);--safe-left:env(safe-area-inset-left,0px)}
+.screen.title,.screen.modal{overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y}
+.equipment-hud{position:absolute;left:calc(var(--gx) + 10px);top:calc(var(--gy) + 58px);display:flex;align-items:center;gap:4px;background:#111627df;border:1px solid #b69c6355;border-radius:12px;padding:2px 10px 2px 0;max-width:calc(var(--gw) - 20px);color:#f7e5c3;pointer-events:none}
+.equipment-hud canvas{width:42px;height:42px}.equipment-hud strong{display:block;font-size:12px}.equipment-hud small{display:block;font-size:10px;color:#c3bfbc;margin-top:3px}
+.weapon-prompt{position:absolute;left:50%;transform:translateX(-50%);top:calc(var(--gy) + var(--gh) - 106px);width:min(360px,calc(100% - 24px));padding:10px 14px;border:1px solid #d0b27e;background:#111727f2;border-radius:12px;box-shadow:0 3px 16px #0006;text-align:center;font-size:12px;pointer-events:none}
+.weapon-prompt strong,.weapon-prompt span,.weapon-prompt b{display:block}.weapon-prompt strong{color:#fff0cb;font-size:14px}.weapon-prompt span{color:#cbc8c6;margin:4px 0}.weapon-prompt b{font-size:11px;color:#f5cf83}
+.audio-hint{position:absolute;left:50%;transform:translateX(-50%);top:calc(var(--gy) + 4px);font-size:11px;background:#131827ce;color:#e4c58b;border-radius:5px;padding:2px 7px}.audio-hint:empty{display:none}
+.music-volume{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:#dcc7a2}.music-volume input{width:90px;accent-color:#edbf67;touch-action:pan-x}
+.equipment-rules{line-height:1.6;font-size:13px;color:#dac6a2}.equipment-buttons{position:absolute;right:max(282px,calc(env(safe-area-inset-right) + 282px));bottom:max(12px,env(safe-area-inset-bottom));display:flex;gap:8px;pointer-events:none}.equipment-buttons .tbtn{position:relative;width:64px;height:52px;font-size:10px;letter-spacing:0;border-radius:14px;background:#192030e8}.tbtn:disabled{opacity:.35;pointer-events:none}
+/* Dedicated control strip leaves the whole world visible, including the full jump arc. */
+#ui.touch-on .pad{left:max(10px,env(safe-area-inset-left));bottom:max(10px,env(safe-area-inset-bottom));top:auto;width:116px;height:64px}.pad .knob{width:44px;height:44px;margin:-22px 0 0 -22px}
+#ui.touch-on .buttons{right:max(10px,env(safe-area-inset-right));bottom:max(10px,env(safe-area-inset-bottom));top:auto;width:244px;height:62px}
+#ui.touch-on .buttons .tbtn{bottom:0;top:auto;width:54px;height:56px;font-size:9px;letter-spacing:0;border-radius:17px;background:#192030e8}
+#ui.touch-on .buttons .tbtn svg{width:24px;height:24px}#ui.touch-on .tbtn.attack{right:0}#ui.touch-on .tbtn.jump{right:62px}#ui.touch-on .tbtn.block{right:124px}#ui.touch-on .tbtn.dash{right:186px}
+#ui.portrait.touch-on .pad{width:100px;height:76px;bottom:max(30px,env(safe-area-inset-bottom));top:auto}
+#ui.portrait.touch-on .buttons{width:120px;height:120px;bottom:max(16px,env(safe-area-inset-bottom));top:auto}
+#ui.portrait.touch-on .tbtn.attack{right:0;bottom:0}#ui.portrait.touch-on .tbtn.jump{right:62px;bottom:0}#ui.portrait.touch-on .tbtn.block{right:0;bottom:64px}#ui.portrait.touch-on .tbtn.dash{right:62px;bottom:64px}
+#ui.portrait .equipment-buttons{right:144px;bottom:max(28px,env(safe-area-inset-bottom));flex-direction:column;gap:8px}
+#ui.portrait .equipment-buttons .tbtn{height:44px;width:68px}
+#ui.touch-on:not(.portrait) .equipment-hud{top:calc(var(--gy) + 43px)}
+#ui.touch-on:not(.portrait) .equipment-hud canvas{height:30px;width:30px}
+#ui.touch-on:not(.portrait) .equipment-hud strong{font-size:10px}#ui.touch-on:not(.portrait) .equipment-hud small{font-size:9px}
+#ui.portrait .weapon-prompt{top:calc(var(--gy) + var(--gh) + 12px)}
+@media(max-width:360px){#ui.portrait .equipment-buttons{right:138px}#ui.portrait .equipment-buttons .tbtn{width:60px}#ui.portrait.touch-on .pad{width:82px;padding:0 8px}.equipment-hud{padding-right:5px}}
+@media(max-height:450px){.screen.title{gap:5px;padding:10px}.brand h1{font-size:37px}.brand .eyebrow{font-size:9px}.tag{font-size:12px!important}.btn.big{min-height:40px;font-size:16px}.screen.title .menu{gap:5px}.screen.title .btn:not(.big){min-height:32px;padding:5px 12px}.diff-blurb{margin:0;font-size:11px}.screen.title .row{gap:6px}.screen.title .brand p{margin:3px}.chapter-art{height:95px}.chapter-copy{padding:15px}.weapon-prompt{top:calc(var(--gy) + 80px);padding:7px 12px}}
+.qa-panel{position:fixed;z-index:200;left:6px;bottom:6px;max-width:310px;padding:5px;border:1px solid #8c849b;background:#161625eb;color:#fff;font:10px system-ui;pointer-events:auto;border-radius:8px}.qa-panel summary{cursor:pointer}.qa-panel button,.qa-panel select{font:10px system-ui;margin:3px;padding:4px}.qa-panel output{display:block;padding:3px}
+.screen.modal,.screen.help{justify-content:flex-start}.screen.modal>.card,.screen.help>.card{margin:auto}
+#ui.portrait .equipment-hud{padding-right:8px}#ui.portrait .equipment-hud canvas{width:32px;height:32px}#ui.portrait .equipment-hud strong{font-size:11px}#ui.portrait .equipment-hud small{font-size:9px}
+#ui.touch-on .hud-btn{width:36px;height:36px;min-height:36px;padding:7px;left:calc(var(--gx) + 8px);top:calc(var(--gy) + 5px)}
+#ui:not(.touch-on) .equipment-hud{top:calc(var(--gy) + max(58px, var(--u) * 66))}

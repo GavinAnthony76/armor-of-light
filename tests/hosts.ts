@@ -1,0 +1,10 @@
+import {YouTubePlatform} from '../src/platform/youtube';
+let n=0;const check=(v:unknown,m:string)=>{if(!v)throw Error(m);n++;};
+let saved='',first=0,ready=0,score=0,audioCallback:(on:boolean)=>void=()=>{},pauseCallback=()=>{},resumeCallback=()=>{};
+(globalThis as unknown as {window:unknown}).window={ytgame:{game:{loadData:async()=>saved,saveData:async(v:string)=>{saved=v;},firstFrameReady:()=>first++,gameReady:()=>ready++},engagement:{sendScore:(v:{value:number})=>score=v.value},system:{isAudioEnabled:()=>false,onAudioEnabledChange:(cb:typeof audioCallback)=>audioCallback=cb,onPause:(cb:()=>void)=>pauseCallback=cb,onResume:(cb:()=>void)=>resumeCallback=cb}}};
+(globalThis as unknown as {requestAnimationFrame:unknown}).requestAnimationFrame=(cb:(t:number)=>void)=>{cb(0);return 1;};
+const p=new YouTubePlatform();await p.init();p.firstFrameReady();p.gameReady();check(first===1&&ready===1,'SDK ready sent once');
+await p.save('{"version":2}');check(await p.load()==='{"version":2}','SDK saves v2 data');check(!p.isAudioAllowed(),'SDK initial mute respected');
+let allowed=false;p.onAudioAllowedChange(on=>allowed=on);audioCallback(true);check(allowed,'SDK audio change routed');
+let paused=false,resumed=false;p.onPause(()=>paused=true);p.onResume(()=>resumed=true);pauseCallback();resumeCallback();check(paused&&resumed,'SDK lifecycle callbacks routed');p.submitScore(123);check(score===123,'SDK score routed');
+console.log(`${n} YouTube adapter checks passed with local SDK mock; actual YouTube hosting not tested.`);

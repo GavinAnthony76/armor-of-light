@@ -1,3 +1,4 @@
+import { LAND_WEAPONS, ROMAN, WEAPONS, cleanJournal, type WeaponDrop, type WeaponJournal } from './weapons';
 import { DIFFICULTIES, Difficulty, DifficultyId, DT, SCORE, VIEW_H } from './config';
 import { Enemy, EnemyKind, KINDS, World } from './enemy';
 import type { Encounter, StageDef } from './levels';
@@ -5,6 +6,7 @@ import { Player } from './player';
 import { createRng } from './rng';
 import { Terrain } from './terrain';
 import { InputFrame, overlaps, Rect, StageEvent } from './types';
+import { isWeaponId, LAND_WEAPONS, type WeaponDropSave, type WeaponRunSave } from './weapons';
 
 export interface Orb {
   x: number;
@@ -39,6 +41,12 @@ export interface Pickup {
   placed: boolean;
   t: number;
   taken: boolean;
+}
+
+export interface WeaponDrop extends WeaponDropSave {
+  w: number;
+  h: number;
+  onGround: boolean;
 }
 
 export interface StageResult {
@@ -76,6 +84,98 @@ export class Stage implements World {
   orbs: Orb[] = [];
   waves: Wave[] = [];
   pickups: Pickup[] = [];
+  weaponDrops: WeaponDrop[] = [];
+  issuedRewards = new Set<string>();
+  equipmentRevision = 0;
+  private exchangeSerial = 0;
+  private nearbyLast: string | null = null;
+  private interactWasHeld = false;
+  private swapWasHeld = false;
+
+  weaponJournal(): WeaponJournal {
+    return JSON.parse(JSON.stringify({equipment:this.player.equipment,issued:[...this.issuedRewards],drops:this.weaponDrops,serial:this.exchangeSerial}));
+  }
+  restoreWeapons(raw:unknown):void {
+    const j=cleanJournal(raw,this.def.id,this.def.length);
+    this.player.equipment=j.equipment;this.issuedRewards=new Set(j.issued);this.weaponDrops=j.drops;this.exchangeSerial=j.serial;
+    this.recoverWeaponDrops();this.nearbyLast=null;this.equipmentRevision++;
+  }
+  nearbyWeapon():WeaponDrop|null {
+    const p=this.player;
+    if(this.phase!=='play'||p.state==='dead')return null;
+    return this.weaponDrops.filter(d=>d.settled&&Math.abs(d.x-p.x)<66&&Math.abs(d.y-p.y)<55)
+      .sort((a,b)=>Math.abs(a.x-p.x)-Math.abs(b.x-p.x)||a.id.localeCompare(b.id))[0]??null;
+  }
+  private safeWeaponGround(x:number):{x:number;y:number} {
+    const lo=this.bounds.minX+26,hi=this.bounds.maxX-26;
+    let best:{x:number;y:number}|null=null,dist=Infinity;
+    for(const g of this.terrain.ground){
+      const a=Math.max(lo,g.x0+26),b=Math.min(hi,g.x1-26);
+      if(a>b||g.y<90||g.y>500)continue;
+      const gx=Math.max(a,Math.min(b,x)),distance=Math.abs(gx-x);
+      if(distance<dist){dist=distance;best={x:gx,y:g.y};}
+    }
+    return best??{...this.checkpoint};
+  }
+  /** Called after a retry or Continue: keep an unclaimed opportunity inside the reachable arena. */
+  private recoverWeaponDrops():void {
+    for(const d of this.weaponDrops){const g=this.safeWeaponGround(d.x);d.x=g.x;d.y=g.y;d.vx=0;d.vy=0;d.bounce=1;d.settled=true;}
+  }
+  private updateWeapons(inp:InputFrame,dt:number):void {
+    for(const d of this.weaponDrops){
+      d.age+=dt;
+      if(d.settled)continue;
+      const g=this.safeWeaponGround(d.x);
+      // Recover pits, cliffs and off-screen death locations onto nearby walkable ground.
+      if(Math.abs(g.x-d.x)>1)d.x+=(g.x-d.x)*Math.min(1,dt*10);
+      d.vy+=1000*dt;d.x+=d.vx*dt;d.vx*=Math.exp(-dt*7);d.y+=d.vy*dt;
+      const surface=this.terrain.groundAt(d.x);
+      if(surface!==null&&d.y>=surface&&d.vy>=0){
+        d.y=surface;
+        if(d.bounce===0){d.vy=-85;d.vx=0;d.bounce=1;}else{d.vy=0;d.settled=true;}
+      }
+      if(d.age>2&&!d.settled){d.x=g.x;d.y=g.y;d.vx=0;d.vy=0;d.settled=true;}
+    }
+    const near=this.nearbyWeapon(),p=this.player;
+    const held=!!(inp.interactHeld||inp.interactPressed),swapHeld=!!(inp.swapHeld||inp.swapPressed);
+    const safe=p.state==='move'&&p.onGround&&p.dashTime<=0;
+    if(safe&&inp.swapPressed&&!this.swapWasHeld){
+      if(p.equipment.alternate){p.equipment.equipped=p.equipment.equipped==='hammer'?'alternate':'hammer';this.equipmentRevision++;
+        this.emit({type:'equipment',text:`Equipped ${WEAPONS[p.weaponId].name} ${ROMAN[p.weaponRank]}`});}
+      else this.emit({type:'equipment',text:'Ember Hammer ready · find an alternate'});
+    }
+    // A fresh press must start AFTER the prompt became eligible. No held/buffered pickup.
+    if(safe&&near&&near.id===this.nearbyLast&&inp.interactPressed&&!this.interactWasHeld)this.pickupWeapon(near);
+    this.nearbyLast=near?.id??null;this.interactWasHeld=held;this.swapWasHeld=swapHeld;
+  }
+  private pickupWeapon(d:WeaponDrop):void {
+    const eq=this.player.equipment,alt=eq.alternate;
+    if(alt?.id===d.weapon&&alt.rank===3){this.emit({type:'equipment',text:`${WEAPONS[d.weapon].name} · maximum rank III`});return;}
+    this.weaponDrops=this.weaponDrops.filter(x=>x!==d);
+    let text='';
+    if(alt?.id===d.weapon){
+      alt.rank=d.copy?Math.min(3,alt.rank+1) as 1|2|3:Math.max(alt.rank,d.rank) as 1|2|3;
+      text=`Forged to rank ${ROMAN[alt.rank]} · ${WEAPONS[d.weapon].name}`;
+    }else{
+      if(alt){
+        const g=this.safeWeaponGround(this.player.x-42*this.player.facing);
+        this.weaponDrops.push({id:`exchange${++this.exchangeSerial}`,weapon:alt.id,rank:alt.rank,copy:false,x:g.x,y:g.y-35,vx:0,vy:-100,age:0,bounce:0,settled:false});
+      }
+      eq.alternate={id:d.weapon,rank:d.rank};text=`Equipped ${WEAPONS[d.weapon].name} ${ROMAN[d.rank]} · hammer kept`;
+    }
+    eq.equipped='alternate';this.equipmentRevision++;
+    this.emit({type:'equipment',text});
+  }
+  private rewardWeapon(e:Enemy):void {
+    if(!e.rewardId||this.issuedRewards.has(e.rewardId))return;
+    this.issuedRewards.add(e.rewardId);this.equipmentRevision++;
+    const weapon=LAND_WEAPONS[this.def.id];
+    if(!weapon||this.player.equipment.alternate?.id===weapon&&this.player.equipment.alternate.rank===3)return;
+    if(this.weaponDrops.filter(d=>d.copy).length>=3)return; // readable reward density; later encounters remain opportunities
+    const c=e.center();
+    this.weaponDrops.push({id:e.rewardId,weapon,rank:1,copy:true,x:c.x,y:c.y,vx:e.facing*-28,vy:-190,age:0,bounce:0,settled:false});
+  }
+
   events: StageEvent[] = [];
   bounds: { minX: number; maxX: number };
   phase: Phase = 'play';
@@ -157,6 +257,7 @@ export class Stage implements World {
     const gy = this.terrain.groundAt(x) ?? 450;
     const ey = y ?? (cfg.flying ? gy - 110 : gy);
     const e = new Enemy(kind, x, ey, this.diff);
+    this.weaponSources.set(e, `loose:${kind}:${x}:${ey}`);
     if (!cfg.flying && kind !== 'serpent') e.onGround = true;
     e.facing = this.player.x < x ? -1 : 1;
     this.enemies.push(e);
@@ -219,6 +320,7 @@ export class Stage implements World {
     const p = this.player;
 
     if (this.phase === 'dead') {
+      this.updateWeaponDrops(dt);
       p.control({ ...inp, left: false, right: false, jumpPressed: false, attackPressed: false }, dt);
       this.terrain.move(p, dt, this.bounds.minX, this.bounds.maxX);
       if (this.phaseT > 1.5) this.respawn();
@@ -233,6 +335,7 @@ export class Stage implements World {
     if (acts.jumped) this.emit({ type: 'jump', x: p.x, y: p.y });
     if (acts.swung) this.emit({ type: 'swing', x: p.x, y: p.y - 40, step: p.airSwing ? 3 : p.combo, facing: p.facing, air: p.airSwing });
     const mv = this.terrain.move(p, dt, this.bounds.minX, this.bounds.maxX);
+    this.updateWeaponDrops(dt);
     if(p.onGround&&p.dashTime<=0)p.stride+=Math.abs(p.x-this.prevPlayerX)*.045;
     const direction=(inp.right?1:0)-(inp.left?1:0);
     if(!p.onGround && mv.hitWall && direction && p.x>this.bounds.minX+22 && p.x<this.bounds.maxX-22){
@@ -274,6 +377,7 @@ export class Stage implements World {
     this.updateOrbs(dt);
     this.updateWaves(dt);
     this.updatePickups(dt);
+    this.updateWeapons(inp,dt);
     this.updateEncounters(dt);
 
     // ---- end of stage
@@ -322,6 +426,7 @@ export class Stage implements World {
 
   private onEnemyKilled(e: Enemy): void {
     const c = e.center();
+    this.rewardWeapon(e);
     this.kills++;
     this.score += e.cfg.score;
     this.emit({ type: 'enemyDie', x: c.x, y: c.y, kind: e.kind, size: e.boss ? 3 : 1 });
@@ -335,6 +440,7 @@ export class Stage implements World {
     if (!e.boss && p.hp < p.maxHp && this.rng() < heartChance) {
       this.pickups.push({ x: c.x, y: c.y, vx: 0, vy: -300, kind: 'heart', placed: false, t: 0, taken: false });
     }
+    this.dropStageWeapon(e, c.x, c.y);
     if (e.boss) {
       this.emit({ type: 'bossDefeated', x: c.x, y: c.y });
       this.shake(12);
@@ -464,6 +570,160 @@ export class Stage implements World {
     this.pickups = this.pickups.filter((k) => !k.taken || k.placed);
   }
 
+  private dropStageWeapon(e: Enemy, x: number, y: number): void {
+    if (e.boss || this.weaponDropsIssued >= 3) return;
+    const source = this.weaponSources.get(e);
+    if (!source || this.rewardedWeaponSources.has(source)) return;
+    const weapon = LAND_WEAPONS[this.def.id];
+    if (this.player.alternateWeapon === weapon && this.player.weaponRank >= 3) return;
+    this.rewardedWeaponSources.add(source);
+    const serial = this.weaponDropsIssued++;
+    const dir = this.rng() < 0.5 ? -1 : 1;
+    const drop: WeaponDrop = {
+      id: `${this.def.id}:${serial}`,
+      weapon,
+      x,
+      y,
+      vx: dir * (70 + this.rng() * 50),
+      vy: -280 - this.rng() * 80,
+      bounces: 0,
+      settled: false,
+      w: 18,
+      h: 16,
+      onGround: false,
+    };
+    this.weaponDrops.push(drop);
+    this.weaponRevision++;
+    this.emit({ type: 'weaponDrop', x, y, weapon });
+  }
+
+  private updateWeaponDrops(dt: number): void {
+    for (const drop of this.weaponDrops) {
+      if (drop.settled) continue;
+      const impact = this.terrain.move(drop, dt, this.bounds.minX, this.bounds.maxX, { gravity: 1500 });
+      if (impact.landed) {
+        if (impact.impact > 110 && drop.bounces < 2) {
+          drop.vy = -Math.min(230, impact.impact * 0.24);
+          drop.vx *= 0.68;
+          drop.bounces++;
+          drop.onGround = false;
+        } else {
+          drop.vx *= 0.55;
+          if (Math.abs(drop.vx) < 14) {
+            drop.vx = 0;
+            drop.vy = 0;
+            drop.settled = true;
+            drop.onGround = true;
+          } else {
+            drop.vy = -Math.min(85, impact.impact * 0.08);
+            drop.onGround = false;
+          }
+        }
+      }
+      if (drop.y > VIEW_H + 50) this.recoverWeaponDrop(drop);
+      if (drop.x < this.bounds.minX + drop.w / 2 || drop.x > this.bounds.maxX - drop.w / 2) {
+        drop.x = Math.max(this.bounds.minX + drop.w / 2, Math.min(this.bounds.maxX - drop.w / 2, drop.x));
+        drop.vx *= -0.3;
+      }
+    }
+  }
+
+  private recoverWeaponDrop(drop: WeaponDrop): void {
+    let bestX: number | null = null;
+    let bestY: number | null = null;
+    for (let offset = 0; offset <= 240; offset += 12) {
+      for (const x of offset === 0 ? [drop.x] : [drop.x - offset, drop.x + offset]) {
+        if (x < this.bounds.minX + 10 || x > this.bounds.maxX - 10) continue;
+        const y = this.terrain.surfaceBelow(x, -1, true);
+        if (y !== null) {
+          bestX = x;
+          bestY = y;
+          break;
+        }
+      }
+      if (bestX !== null) break;
+    }
+    const x = bestX ?? this.player.lastSafe.x;
+    const y = bestY ?? this.player.lastSafe.y;
+    drop.x = x;
+    drop.y = y;
+    drop.vx = 0;
+    drop.vy = 0;
+    drop.settled = true;
+    drop.onGround = true;
+  }
+
+  private tryPickupWeapon(): void {
+    const p = this.player;
+    if (p.state === 'attack' || p.state === 'hurt' || p.state === 'dead') return;
+    const drop = this.nearbyWeaponDrop;
+    if (!drop) return;
+    if (p.alternateWeapon === drop.weapon && p.weaponRank >= 3) return;
+    const result = p.acquireWeapon(drop.weapon);
+    drop.settled = true;
+    this.weaponDrops = this.weaponDrops.filter((candidate) => candidate !== drop);
+    this.weaponRevision++;
+    this.emit({
+      type: 'weaponPickup',
+      x: drop.x,
+      y: drop.y,
+      weapon: drop.weapon,
+      rank: result.rank,
+      upgraded: result.upgraded,
+    });
+  }
+
+  get nearbyWeaponDrop(): WeaponDrop | null {
+    const p = this.player;
+    const px = p.x;
+    const py = p.y - 30;
+    let nearest: WeaponDrop | null = null;
+    let nearestDistance = 92;
+    for (const drop of this.weaponDrops) {
+      const distance = Math.hypot(px - drop.x, py - (drop.y - 8));
+      if (distance < nearestDistance) {
+        nearest = drop;
+        nearestDistance = distance;
+      }
+    }
+    return nearest;
+  }
+
+  saveWeaponState(): WeaponRunSave {
+    return {
+      alternate: this.player.alternateWeapon,
+      rank: this.player.weaponRank,
+      equipped: this.player.equippedSlot,
+      dropsIssued: this.weaponDropsIssued,
+      rewardedSources: [...this.rewardedWeaponSources],
+      drops: this.weaponDrops.map(({ id, weapon, x, y, vx, vy, bounces, settled }) => ({
+        id, weapon, x, y, vx, vy, bounces, settled,
+      })),
+    };
+  }
+
+  restoreWeaponState(state: WeaponRunSave | undefined): void {
+    if (!state) return;
+    this.rewardedWeaponSources = new Set(state.rewardedSources ?? []);
+    if (state.alternate && isWeaponId(state.alternate) && state.rank >= 1 && state.rank <= 3) {
+      this.player.alternateWeapon = state.alternate;
+      this.player.weaponRank = state.rank;
+      this.player.equippedSlot = state.equipped === 'alternate' ? 'alternate' : 'hammer';
+    }
+    this.weaponDrops = state.drops.map((drop) => ({
+      ...drop,
+      x: Math.max(0, Math.min(this.def.length, drop.x)),
+      y: Math.max(0, Math.min(VIEW_H + 40, drop.y)),
+      vx: Math.max(-360, Math.min(360, drop.vx)),
+      vy: Math.max(-600, Math.min(600, drop.vy)),
+      bounces: Math.max(0, Math.min(2, drop.bounces | 0)),
+      w: 18,
+      h: 16,
+      onGround: drop.settled,
+    }));
+    this.weaponDropsIssued = Math.max(this.weaponDrops.length, Math.min(3, state.dropsIssued | 0));
+  }
+
   private updateEncounters(dt: number): void {
     const p = this.player;
     if (!this.active) {
@@ -500,6 +760,7 @@ export class Stage implements World {
     const cx = Math.max(def.arena[0] + 90, Math.min(def.arena[1] - 90, def.checkpoint ?? def.arena[0] + 110));
     this.checkpoint = { x: cx, y: this.terrain.groundAt(cx) ?? 450 };
     this.scoreAtCheckpoint = this.score;
+    this.recoverWeaponDrops();
     this.emit({ type: 'encounterStart', boss: !!def.boss });
     if (def.boss) {
       const k = KINDS[def.waves[0][0].kind];
@@ -510,9 +771,11 @@ export class Stage implements World {
   private spawnWave_(a: ActiveEncounter): void {
     const wave = a.def.waves[a.wave];
     if (a.wave > 0 || !a.def.boss) this.emit({ type: 'waveStart', index: a.wave, total: a.def.waves.length });
-    for (const s of wave) {
+    for (const [spawnIndex,s] of wave.entries()) {
       const e = this.spawnEnemy(s.kind, s.x, s.y);
+      this.weaponSources.set(e, `encounter:${a.index}:${a.wave}:${slot}`);
       e.wave = a.wave;
+      if(spawnIndex===0) e.rewardId=`e${a.index}w${a.wave}s${spawnIndex}`;
       e.cooldown = 0.8 + (s.delay ?? 0) + this.rng() * 0.6;
       if (e.boss) {
         this.boss = e;
@@ -604,6 +867,7 @@ export class Stage implements World {
     p.setState('move');
     this.phase = 'play';
     this.phaseT = 0;
+    this.recoverWeaponDrops();this.nearbyLast=null;this.interactWasHeld=true;this.equipmentRevision++;
     this.emit({ type: 'respawn', x: p.x, y: p.y });
   }
 

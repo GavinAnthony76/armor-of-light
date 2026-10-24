@@ -11,6 +11,7 @@ raw=JSON.stringify({unlocked:2,best:{2:{score:300,lamps:2,time:150}},settings:{d
 await save.load();assert.equal(save.data.unlocked,2);assert.equal(save.data.best[2].score,300);
 for(let i=0;i<7;i++) save.record({stageId:i,score:1000,lamps:2,time:100,difficulty:'gentle'} as never);
 assert.equal(save.data.unlocked,6);assert.equal(save.totalLamps(),14);
+await save.flush();
 const reloaded=new SaveStore(platform as never);await reloaded.load();assert.equal(reloaded.data.unlocked,6);
 raw=JSON.stringify({unlocked:6,run:{level:6,encounter:4,score:40,motes:2,kills:1,time:40,deaths:0,collected:[1,2],difficulty:'gentle'}});
 await reloaded.load();assert.equal(reloaded.data.run?.level,6);

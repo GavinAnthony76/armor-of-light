@@ -15,6 +15,10 @@ export interface InputFrame {
   attackPressed: boolean;
   blockPressed: boolean;
   dashPressed?: boolean;
+  interactPressed?: boolean;
+  interactHeld?: boolean;
+  swapPressed?: boolean;
+  swapHeld?: boolean;
 }
 
 export const NO_INPUT: InputFrame = {
@@ -33,6 +37,7 @@ export function overlaps(a: Rect, b: Rect): boolean {
 
 /** Things the presentation layer reacts to (sound, particles, shake). */
 export type StageEvent =
+  | { type: 'equipment'; text:string }
   | { type: 'dash'; x:number; y:number; facing:number }
   | { type: 'swing'; x: number; y: number; step: number; facing: number; air: boolean }
   | { type: 'hit'; x: number; y: number; heavy: boolean; boss: boolean }
@@ -47,6 +52,9 @@ export type StageEvent =
   | { type: 'shoot'; x: number; y: number }
   | { type: 'shockwave'; x: number; y: number; big: boolean }
   | { type: 'pickup'; x: number; y: number; kind: 'mote' | 'heart' }
+  | { type: 'weaponDrop'; x: number; y: number; weapon: string }
+  | { type: 'weaponPickup'; x: number; y: number; weapon: string; rank: number; upgraded: boolean }
+  | { type: 'weaponSwap'; x: number; y: number; slot: 'hammer' | 'alternate' }
   | { type: 'heal'; x: number; y: number }
   | { type: 'encounterStart'; boss: boolean }
   | { type: 'waveStart'; index: number; total: number }

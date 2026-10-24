@@ -35,11 +35,12 @@ async function boot(): Promise<void> {
     game.reduceMotion=!!save.data.settings.reduceMotion;
     audio.setSfx(save.data.settings.sfx);
     audio.setMusic(save.data.settings.music);
+    audio.setMusicVolume(save.data.settings.musicVolume??.8);
     ui.setSettings(save.data.settings);
   };
 
   const ui = new UI(document.getElementById('ui')!, {
-    play: (i) => startLevel(i),
+    play: (i, resumeRun = false) => startLevel(i, resumeRun),
     pause: () => pause(),
     resume: () => resume(),
     restart: () => {delete save.data.run;save.persist();startLevel(game.level);},
@@ -57,6 +58,7 @@ async function boot(): Promise<void> {
       applySettings();
     },
     toggleMotion: () => {save.data.settings.reduceMotion=!save.data.settings.reduceMotion;save.persist();applySettings();},
+    setMusicVolume: (v) => {save.data.settings.musicVolume=v;save.persist();applySettings();},
     toggleMusic: () => {
       save.data.settings.music = !save.data.settings.music;
       save.persist();
@@ -73,6 +75,8 @@ async function boot(): Promise<void> {
   input.bindButton(ui.ref('tJump'), 'jump');
   input.bindButton(ui.ref('tBlock'), 'block');
   input.bindButton(ui.ref('tDash'),'dash');
+  input.bindButton(ui.ref('tInteract'),'interact');
+  input.bindButton(ui.ref('tSwap'),'swap');
   const coarse = window.matchMedia?.('(pointer: coarse)').matches ?? false;
   if (coarse || params.has('touch')) input.setMode('touch');
   input.onModeChange = (m) => ui.showTouch(m === 'touch');
@@ -84,36 +88,42 @@ async function boot(): Promise<void> {
 
   // ---------------------------------------------------------- flow
 
-  function startLevel(i: number): void {
+  function startLevel(i: number, resumeRun = false): void {
     if(!Number.isInteger(i)||i<0||i>=STAGES.length||(!params.has('debug')&&i>save.data.unlocked)) return;
     if(!params.has('debug') && !document.body.dataset.chapterAccepted){
       input.enabled=false; input.releaseAll(); game.paused=true;
       const def=STAGES[i], story=CHAPTERS[i], panel=document.createElement('dialog');
       panel.className='chapter-dialog scrollable';
-      panel.innerHTML=`<div class="chapter-art" style="background-image:url('${asset(def.background)}')"></div><div class="chapter-copy"><p class="eyebrow">LAND ${i+1} OF ${STAGES.length} · ${def.inspiration}</p><h2>${story.title}</h2><p class="chapter-land">${def.name} · Eliam, Keeper of the Ember</p><div class="story-beat"><span id="story-speaker"></span><p id="story-line"></p><small id="story-page"></small></div><blockquote>“${def.verse.text}”<small>${def.verse.ref}</small></blockquote><div class="guardian-preview"><img src="${asset(def.bossArt)}" alt="Guardian concept art"><span>Guardian ahead<br><strong>${def.encounters[def.encounters.length-1].waves[0][0].kind==='king'?'The Hollow King':def.name==='The Garden Gates'?'Thorn Sentinel':['Dune Warden','Tide Serpent','Thorn Sentinel','Storm Watcher','Iron Colossus','Keeper of Shadows','Hollow King'][i]}</strong></span></div><p class="chapter-note">A fictional adventure inspired by biblical themes.</p><button class="btn" id="story-next">Continue story →</button><button class="btn primary" id="chapter-enter">Enter this land →</button><button class="btn" id="chapter-back">Back</button></div>`;
+      panel.innerHTML=`<div class="chapter-art" style="background-image:url('${asset(def.background)}')"></div><div class="chapter-copy"><p class="eyebrow">LAND ${i+1} OF ${STAGES.length} · ${def.inspiration}</p><h2>${story.title}</h2><p class="chapter-land">${def.name} · Eliam, Keeper of the Ember</p><div class="story-beat"><span id="story-speaker"></span><p id="story-line"></p><small id="story-page"></small></div><blockquote>“${def.verse.text}”<small>${def.verse.ref}</small></blockquote><div class="guardian-preview"><img src="${asset(def.bossArt)}" alt="Guardian concept art"><span>Guardian ahead<br><strong>${def.encounters[def.encounters.length-1].waves[0][0].kind==='king'?'The Hollow King':def.name==='The Garden Gates'?'Thorn Sentinel':['Dune Warden','Tide Serpent','Thorn Sentinel','Storm Watcher','Iron Colossus','Keeper of Shadows','Hollow King'][i]}</strong></span></div><p class="chapter-note">The Ember Hammer stays with Eliam. Optional weapons forge through ranks I–III in this land. Retry and Continue keep them; Restart and the next land reset them.</p><p class="chapter-note">A fictional adventure inspired by biblical themes.</p><button class="btn" id="story-next">Continue story →</button><button class="btn primary" id="chapter-enter">Enter this land →</button><button class="btn" id="chapter-back">Back</button></div>`;
       let beat=0;
       const showBeat=()=>{panel.querySelector('#story-speaker')!.textContent=story.beats[beat].speaker;panel.querySelector('#story-line')!.textContent=story.beats[beat].text;panel.querySelector('#story-page')!.textContent=`${beat+1} / ${story.beats.length}`;(panel.querySelector('#story-next') as HTMLButtonElement).hidden=beat===story.beats.length-1;};
       panel.querySelector('#story-next')!.addEventListener('click',()=>{beat=Math.min(story.beats.length-1,beat+1);showBeat();});
       showBeat();document.body.append(panel); panel.showModal();
       const close=()=>{panel.close();panel.remove();game.paused=false;};
-      panel.querySelector('#chapter-enter')!.addEventListener('click',()=>{close();document.body.dataset.chapterAccepted='1';startLevel(i);delete document.body.dataset.chapterAccepted;});
+       panel.querySelector('#chapter-enter')!.addEventListener('click',()=>{close();document.body.dataset.chapterAccepted='1';startLevel(i,resumeRun);delete document.body.dataset.chapterAccepted;});
       panel.querySelector('#chapter-back')!.addEventListener('click',()=>{close();toMenu('levels');});
       panel.addEventListener('cancel',()=>{close();toMenu('levels');});
       return;
     }
+    if (!resumeRun && !params.has('debug')) {
+      delete save.data.run;
+      save.persist();
+    }
     game.start(i, save.data.settings.difficulty, { autoplay: params.has('autoplay') });
     const run=save.data.run,s=game.stage!;
-    if(run?.level===i&&run.difficulty===save.data.settings.difficulty){
+    if(resumeRun&&run?.level===i&&run.difficulty===save.data.settings.difficulty){
       s.nextEncounter=run.encounter;s.score=run.score;s.motes=run.motes;s.kills=run.kills;s.time=run.time;s.deaths=run.deaths;
       s.pickups.forEach((p,n)=>{if(run.collected.includes(n))p.taken=true;});
+      s.restoreWeaponState(run.weaponState);
       const next=s.def.encounters[run.encounter];
       const x=next?(next.checkpoint??next.arena[0]+70):s.def.encounters[s.def.encounters.length-1].arena[1]+30;
       s.player.x=x;s.player.y=s.terrain.groundAt(x)??450;s.player.lastSafe={x,y:s.player.y};s.checkpoint={x,y:s.player.y};
       if(!next){s.pathOpen=true;for(const g of s.def.afterBoss??[])s.terrain.ground.push({x0:g[0],x1:g[1],y:g[2]});}
+      s.restoreWeapons(run.weapons);
       game.camX=Math.max(0,x-game.viewW*.35);
     }
     s.prevPlayerX=s.player.x;s.prevPlayerY=s.player.y;
-    lastSavedEncounter=-1;
+    lastSavedEncounter=-1;lastEquipmentRevision=-1;
     state = 'playing';
     input.enabled = true;
     input.releaseAll();
@@ -122,6 +132,7 @@ async function boot(): Promise<void> {
 
   function toMenu(which: 'title' | 'levels'): void {
     state = 'menu';
+    audio.resume();
     input.enabled = false;
     input.releaseAll();
     if (!game.demo || !game.stage) game.start(0, 'gentle', { demo: true });
@@ -133,10 +144,12 @@ async function boot(): Promise<void> {
 
   function pause(): void {
     if (state !== 'playing') return;
+    persistRun(true);
     state = 'paused';
     game.paused = true;
     input.enabled = false;
     input.releaseAll();
+    audio.suspend();
     ui.showPause(save.data.settings.difficulty, game.level);
   }
 
@@ -159,6 +172,36 @@ async function boot(): Promise<void> {
   };
 
   // ---------------------------------------------------------- browser
+
+  let lastSavedEncounter=-1;
+  let lastSavedWeaponRevision=-1;
+  let lastSavedDeaths=-1;
+  let lastRunSaveAt=0;
+  function persistRun(force = false): void {
+    const s=game.stage;
+    if(state!=='playing'||!s||game.demo||params.has('debug')) return;
+    const periodic=performance.now()-lastRunSaveAt>=1500;
+    if(!force&&!periodic&&s.nextEncounter===lastSavedEncounter&&s.weaponRevision===lastSavedWeaponRevision&&s.deaths===lastSavedDeaths)return;
+    save.data.run={
+      level:game.level,
+      encounter:s.nextEncounter,
+      score:s.score,
+      motes:s.motes,
+      kills:s.kills,
+      time:s.time,
+      deaths:s.deaths,
+      collected:s.pickups.map((p,n)=>p.placed&&p.taken?n:-1).filter(n=>n>=0),
+      difficulty:s.diff.id,
+      weaponState:s.saveWeaponState(),
+    };
+    save.persist();
+    lastSavedEncounter=s.nextEncounter;
+    lastSavedWeaponRevision=s.weaponRevision;
+    lastSavedDeaths=s.deaths;
+    lastRunSaveAt=performance.now();
+  }
+  window.addEventListener('pagehide',()=>persistRun(true));
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')persistRun(true);});
 
   const unlock = () => audio.unlock();
   window.addEventListener('pointerdown', unlock, true);
@@ -183,7 +226,8 @@ async function boot(): Promise<void> {
     input.releaseAll();
     audio.suspend();
   });
-  platform.onResume(() => audio.resume());
+  platform.onResume(() => {if(state!=='paused')audio.resume();});
+  window.addEventListener('pageshow',()=>{if(state!=='paused')audio.resume();});
 
   const relayout = () => ui.setLayout(renderer.resize());
   window.addEventListener('resize', relayout);
@@ -193,7 +237,7 @@ async function boot(): Promise<void> {
 
   // ---------------------------------------------------------- loop
 
-  let lastSavedEncounter=-1;
+  let lastSavedEncounter=-1,lastEquipmentRevision=-1;
   let menuPadPrev:number[]=[];
   let last = performance.now();
   let first = true;
@@ -214,11 +258,12 @@ async function boot(): Promise<void> {
     game.update(dt);
     if(state==='playing'&&game.stage&&!game.demo){
       const s=game.stage;
-      if(s.nextEncounter!==lastSavedEncounter&&s.phase==='play'){
-        lastSavedEncounter=s.nextEncounter;
-        save.data.run={level:game.level,encounter:s.nextEncounter,score:s.score,motes:s.motes,kills:s.kills,time:s.time,deaths:s.deaths,collected:s.pickups.map((p,n)=>p.placed&&p.taken?n:-1).filter(n=>n>=0),difficulty:s.diff.id};save.persist();
+      if((s.nextEncounter!==lastSavedEncounter||s.equipmentRevision!==lastEquipmentRevision)&&s.phase==='play'){
+        lastSavedEncounter=s.nextEncounter;lastEquipmentRevision=s.equipmentRevision;
+        save.data.run={level:game.level,encounter:s.nextEncounter,score:s.score,motes:s.motes,kills:s.kills,time:s.time,deaths:s.deaths,collected:s.pickups.map((p,n)=>p.placed&&p.taken?n:-1).filter(n=>n>=0),difficulty:s.diff.id,weapons:s.weaponJournal()};save.persist();
       }
     }
+    if(state==='playing'&&game.stage)ui.updateEquipment(game.stage,input.mode,audio.ready,save.data.settings.music);
     renderer.render(game, state === 'paused' ? 0 : dt, input.mode);
     if (first) {
       first = false;
@@ -234,6 +279,7 @@ async function boot(): Promise<void> {
 
   if (params.has('debug')) {
     game.speed = Math.max(1, Math.min(8, Number(params.get('speed')) || 1));
+    if(params.has('qa'))void import('./qa').then(m=>m.mountQA(game,save,startLevel,audio));
     (window as unknown as Record<string, unknown>).__aol = { game, save, ui, startLevel, getState: () => state, input, audio };
   }
 }
