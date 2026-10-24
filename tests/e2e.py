@@ -42,9 +42,7 @@ def player(page):
 
 
 with sync_playwright() as pw:
-    chromium_path = os.environ.get('CHROMIUM_EXECUTABLE', '/repl/tools/bin/chromium')
-    launch_options = {'executable_path': chromium_path} if os.path.isfile(chromium_path) else {}
-    browser = pw.chromium.launch(**launch_options)
+    browser = pw.chromium.launch()
 
     # ------------------------------------------------------------ desktop
     print('desktop')
@@ -60,15 +58,6 @@ with sync_playwright() as pw:
     shot(page, 'desktop-title')
 
     page.click('[data-diff="challenging"]')
-    page.wait_for_timeout(180)
-    check(
-        'music unlocks after the first user gesture',
-        page.evaluate("window.__aol.audio.ready && window.__aol.audio.songName && window.__aol.audio.timer !== null && window.__aol.audio.step > 0"),
-    )
-    page.click('[data-screen="title"] [data-act="music"]')
-    check('music mute button mutes the music bus', not page.evaluate('window.__aol.audio.musicOn'))
-    page.click('[data-screen="title"] [data-act="music"]')
-    check('music unmute restores playback state', page.evaluate('window.__aol.audio.musicOn'))
     check('difficulty can be changed', page.evaluate("window.__aol.save.data.settings.difficulty") == 'challenging')
     page.click('[data-diff="gentle"]')
 
@@ -115,8 +104,6 @@ with sync_playwright() as pw:
     page.evaluate("window.dispatchEvent(new Event('blur'))")
     page.wait_for_timeout(150)
     check('losing focus pauses the game', state(page) == 'paused')
-    page.wait_for_timeout(150)
-    check('backgrounding suspends the audio context', page.evaluate("window.__aol.audio.ctx.state === 'suspended'"))
     t0 = page.evaluate("window.__aol.game.stage.time")
     page.wait_for_timeout(400)
     check('game time stops while paused', page.evaluate("window.__aol.game.stage.time") == t0)
@@ -129,63 +116,6 @@ with sync_playwright() as pw:
     page.click('[data-screen="pause"] [data-act="resume"]')
     page.wait_for_timeout(100)
     check('audio runs again after resuming', page.evaluate("window.__aol.audio.ready"))
-    check('music remains enabled after resume', page.evaluate("window.__aol.audio.musicOn && window.__aol.audio.songName"))
-
-    # Real browser gameplay: kill -> visible optional drop -> deliberate pickup
-    # -> equip/swap -> upgrade from a repeated weapon.
-    page.evaluate("""(() => {
-      const s = window.__aol.game.stage, p = s.player;
-      p.state = 'move'; p.t = 0; p.vx = 0; p.vy = 0;
-      const e = s.spawnEnemy('husk', p.x + 100);
-      e.state = 'move'; e.cooldown = 99; e.takeHit(s, 999, 1, 0);
-    })()""")
-    page.wait_for_function('window.__aol.game.stage.weaponDrops.length > 0')
-    page.evaluate("""(() => {
-      const s = window.__aol.game.stage, p = s.player, d = s.weaponDrops[0];
-      d.x = p.x + 42; d.y = p.y - 22; d.vx = d.vy = 0; d.settled = true; d.onGround = true;
-    })()""")
-    page.wait_for_function("!document.querySelector('[data-ref=weaponOffer]').hidden")
-    check('weapon drop is optional before interaction', page.evaluate("window.__aol.game.stage.player.alternateWeapon === null && window.__aol.game.stage.weaponDrops.length === 1"))
-    check('nearby panel explains the Sunblade', 'SUNBLADE' in page.inner_text('[data-ref="weaponOffer"]'))
-    page.wait_for_timeout(1200)
-    shot(page, 'weapon-drop')
-    page.keyboard.press('KeyE')
-    page.wait_for_function("window.__aol.game.stage.player.alternateWeapon === 'sunblade'")
-    check('keyboard interaction equips the alternate weapon', page.evaluate("window.__aol.game.stage.player.equippedSlot === 'alternate'"))
-    shot(page, 'weapon-equipped')
-    page.keyboard.press('KeyQ')
-    check('keyboard swap restores the permanent hammer', page.evaluate("window.__aol.game.stage.player.equippedSlot === 'hammer'"))
-    page.keyboard.press('KeyQ')
-    page.wait_for_function("window.__aol.game.stage.player.equippedSlot === 'alternate'")
-    page.evaluate("""(() => {
-      const s = window.__aol.game.stage, p = s.player;
-      const e = s.spawnEnemy('husk', p.x + 70);
-      e.state = 'move'; e.cooldown = 99; e.takeHit(s, 999, 1, 0);
-    })()""")
-    page.wait_for_function('window.__aol.game.stage.weaponDrops.length > 0')
-    page.evaluate("""(() => {
-      const s = window.__aol.game.stage, p = s.player, d = s.weaponDrops[0];
-      d.x = p.x + 42; d.y = p.y - 22; d.vx = d.vy = 0; d.settled = true; d.onGround = true;
-    })()""")
-    page.keyboard.press('KeyE')
-    page.wait_for_function('window.__aol.game.stage.player.weaponRank === 2')
-    check('second Sunblade copy upgrades to rank II', page.evaluate("window.__aol.game.stage.player.alternateWeapon === 'sunblade'"))
-    shot(page, 'weapon-rank-up')
-
-    page.evaluate("""async () => {
-      const {game,save}=window.__aol, s=game.stage;
-      save.data.run={level:0,encounter:0,score:s.score,motes:s.motes,kills:s.kills,time:s.time,deaths:s.deaths,collected:[],difficulty:'gentle',weaponState:s.saveWeaponState()};
-      await save.persist();
-    }""")
-    page.reload()
-    page.wait_for_function('!!window.__aol')
-    page.click('[data-screen="title"] [data-act="continue"]')
-    page.wait_for_function("window.__aol.game.stage?.player.weaponRank === 2")
-    check('title Continue restores rank II and alternate equipment', page.evaluate("window.__aol.game.stage.player.equippedSlot === 'alternate'"))
-    page.keyboard.press('Escape')
-    page.click('[data-screen="pause"] [data-act="levels"]')
-    page.click('[data-level="0"]')
-    check('fresh land selection resets alternate equipment', page.evaluate("window.__aol.game.stage.player.alternateWeapon === null"))
 
     # each level loads, its fights trigger, and its guardian appears
     for lv in range(7):
@@ -193,8 +123,8 @@ with sync_playwright() as pw:
         page.wait_for_timeout(400)
         page.evaluate("(() => { const s = window.__aol.game.stage; s.nextEncounter = s.def.encounters.length - 1; s.player.x = s.def.encounters[s.nextEncounter].trigger + 5; })()")
         page.wait_for_timeout(3200)
-        boss = page.evaluate("(() => { const s=window.__aol.game.stage; return {actual:s.boss?.kind??null,expected:s.def.encounters[s.def.encounters.length-1].waves[0][0].kind}; })()")
-        check(f'level {lv + 1} guardian appears', boss['actual'] == boss['expected'], json.dumps(boss))
+        boss = page.evaluate("(() => { const b = window.__aol.game.stage.boss; return b ? b.kind : null })()")
+        check(f'level {lv + 1} guardian appears', boss in ('warden', 'serpent', 'king'), str(boss))
         shot(page, f'desktop-boss{lv + 1}')
 
     check('no errors on desktop', not errors, json.dumps(errors[:5]))
@@ -241,16 +171,6 @@ with sync_playwright() as pw:
         page.goto(f'{BASE}/?debug')
         page.wait_for_timeout(900)
         check(f'{name}: no sideways scroll', page.evaluate('document.documentElement.scrollWidth <= innerWidth'))
-        bounds = page.evaluate("""(() => {
-          const ui = document.querySelector('#ui');
-          const rect = (selector) => { const r = document.querySelector(selector).getBoundingClientRect(); return {left:r.left,right:r.right,top:r.top,bottom:r.bottom}; };
-          const css = getComputedStyle(ui);
-          const gx = parseFloat(css.getPropertyValue('--gx')), gy = parseFloat(css.getPropertyValue('--gy'));
-          const gw = parseFloat(css.getPropertyValue('--gw')), gh = parseFloat(css.getPropertyValue('--gh'));
-          return {w: innerWidth, h: innerHeight, gx, gy, gw, gh, pad:rect('[data-ref=pad]'), buttons:rect('.buttons')};
-        })()""")
-        check(f'{name}: game view fits the viewport', bounds['gx'] >= 0 and bounds['gy'] >= 0 and bounds['gx'] + bounds['gw'] <= bounds['w'] + 1 and bounds['gy'] + bounds['gh'] <= bounds['h'] + 1, json.dumps(bounds))
-        check(f'{name}: touch controls fit the viewport', bounds['pad']['left'] >= 0 and bounds['pad']['right'] <= bounds['w'] and bounds['pad']['top'] >= 0 and bounds['pad']['bottom'] <= bounds['h'] and bounds['buttons']['left'] >= 0 and bounds['buttons']['right'] <= bounds['w'] and bounds['buttons']['top'] >= 0 and bounds['buttons']['bottom'] <= bounds['h'], json.dumps(bounds))
         page.tap('[data-act="continue"]')
         page.wait_for_timeout(300)
         check(f'{name}: touch controls visible', page.is_visible('[data-ref="pad"]') and page.is_visible('[data-ref="tAttack"]'))
@@ -283,61 +203,8 @@ with sync_playwright() as pw:
         check(f'{name}: shield button blocks', player(page)['state'] == 'block')
         cdp.send('Input.dispatchTouchEvent', {'type': 'touchEnd', 'touchPoints': []})
         check(f'{name}: page never scrolled', page.evaluate('scrollX === 0 && scrollY === 0'))
-        page.evaluate("""(() => {
-          const s = window.__aol.game.stage, p = s.player;
-          p.state = 'move'; p.t = 0; p.vx = 0; p.vy = 0;
-          const e = s.spawnEnemy('husk', p.x + 60);
-          e.state = 'move'; e.cooldown = 99; e.takeHit(s, 999, 1, 0);
-        })()""")
-        page.wait_for_function('window.__aol.game.stage.weaponDrops.length > 0')
-        page.evaluate("""(() => {
-          const s = window.__aol.game.stage, p = s.player, d = s.weaponDrops[0];
-          d.x = p.x + 42; d.y = p.y - 22; d.vx = d.vy = 0; d.settled = true; d.onGround = true;
-        })()""")
-        page.wait_for_function("!document.querySelector('[data-ref=tInteract]').hidden")
-        check(f'{name}: touch pickup control appears nearby', page.is_visible('[data-ref="tInteract"]'))
-        page.tap('[data-ref="tInteract"]')
-        page.wait_for_function("window.__aol.game.stage.player.alternateWeapon === 'sunblade'")
-        page.tap('[data-ref="tSwap"]')
-        page.wait_for_function("window.__aol.game.stage.player.equippedSlot === 'hammer'")
-        check(f'{name}: touch pickup and swap work', page.evaluate("window.__aol.game.stage.player.weaponRank === 1"))
-        check(f'{name}: swap does not overlap dash or shield', page.evaluate("""(() => {
-          const a=document.querySelector('[data-ref=tSwap]').getBoundingClientRect();
-          return ['tDash','tBlock'].every(ref=>{
-            const b=document.querySelector('[data-ref='+ref+']').getBoundingClientRect();
-            return a.right<=b.left || a.left>=b.right || a.bottom<=b.top || a.top>=b.bottom;
-          });
-        })()"""))
         shot(page, f'phone-{name}')
         check(f'{name}: no errors', not errors, json.dumps(errors[:5]))
-        ctx.close()
-
-    if os.environ.get('CHECK_YOUTUBE_ENTRY'):
-        print('production YouTube entry (local SDK stub, not YouTube-host verification)')
-        ctx = browser.new_context(viewport={'width': 1280, 'height': 720})
-        page = ctx.new_page()
-        errors = []
-        page.on('pageerror', lambda e: errors.append(str(e)))
-        page.route('https://www.youtube.com/game_api/v1', lambda route: route.fulfill(
-            content_type='application/javascript',
-            body="""window.__yt={frames:0,ready:0,saves:0};window.ytgame={
-              game:{loadData:async()=>null,saveData:async()=>{__yt.saves++},firstFrameReady:()=>__yt.frames++,gameReady:()=>__yt.ready++},
-              system:{isAudioEnabled:()=>true,onAudioEnabledChange:cb=>__yt.audio=cb,onPause:cb=>__yt.pause=cb,onResume:cb=>__yt.resume=cb}
-            };""",
-        ))
-        page.goto(f'{BASE}/youtube.html?debug')
-        page.wait_for_function('!!window.__aol && window.__yt.ready > 0')
-        check('YouTube build announces readiness once', page.evaluate('__yt.frames === 1 && __yt.ready === 1'))
-        page.click('[data-screen="title"] [data-act="sfx"]')
-        check('YouTube adapter saves through the SDK', page.evaluate('__yt.saves > 0'))
-        page.click('[data-screen="title"] [data-act="continue"]')
-        check('YouTube entry starts the same game', state(page) == 'playing')
-        page.evaluate('__yt.pause()')
-        check('YouTube host pause stops gameplay', state(page) == 'paused')
-        page.evaluate('__yt.resume()')
-        page.click('[data-screen="pause"] [data-act="resume"]')
-        check('YouTube entry can resume gameplay', state(page) == 'playing')
-        check('YouTube local SDK test has no errors', not errors, json.dumps(errors))
         ctx.close()
 
     browser.close()

@@ -1,7 +1,6 @@
 import { drawWeapon } from './weapons';
 import { WEAPONS } from '../core/weapons';
 import type { Player } from '../core/player';
-import { drawWeaponSilhouette } from './weapon-art';
 
 /**
  * The traveler is a small procedural rig: joint angles are computed from the
@@ -145,7 +144,7 @@ type V = { x: number; y: number };
 
 export class HeroView {
   private cape: { x: number; y: number; px: number; py: number }[] = [];
-  private trail: { tip: V; hilt: V; age: number; color: string | null }[] = [];
+  private trail: { tip: V; hilt: V; age: number }[] = [];
   private lastTip: V | null = null;
   private lastWeapon='hammer';
   private capeAccumulator=0;
@@ -321,7 +320,7 @@ export class HeroView {
     this.limb(ctx, shoulder, ah.elbow, ah.hand, 6, C.steelMid);
     this.shield(ctx, ah.hand, p.blocking);
 
-    // Keep the signature flame hammer intact; alternates use their own silhouettes.
+    // Hammer follows the original hand and swing poses; combat timing is unchanged.
     this.limb(ctx, shoulder, as.elbow, as.hand, 6, C.steel);
     drawWeapon(ctx,p.weaponId,p.weaponRank,as.hand,bladeA,this.time,p.attacking,false);
     if(p.weaponId==='watch')drawWeapon(ctx,'watch',p.weaponRank,ah.hand,bladeA-.8,this.time,p.attacking,false);
@@ -413,12 +412,6 @@ export class HeroView {
       ctx.fill();
     }
     ctx.globalCompositeOperation = 'source-over';
-  }
-
-  private rgba(hex: string, alpha: number): string {
-    const clean = hex.replace('#', '');
-    const value = Number.parseInt(clean, 16);
-    return `rgba(${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255}, ${alpha})`;
   }
 
   private stepCape(anchor: V, p: Player, dt:number): void {

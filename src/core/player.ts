@@ -2,7 +2,6 @@ import { freshEquipment, WEAPONS, type Equipment, type WeaponId, type Rank } fro
 import { PLAYER } from './config';
 import type { Body } from './terrain';
 import type { InputFrame, Rect } from './types';
-import { WEAPONS, type WeaponId, type WeaponSlot } from './weapons';
 
 export type PlayerState = 'move' | 'attack' | 'block' | 'hurt' | 'dead';
 
@@ -67,9 +66,6 @@ export class Player implements Body {
   hitsTaken = 0;
   /** Set by the stage when the player is close to a gap edge. */
   lastHurtDir = 1;
-  alternateWeapon: WeaponId | null = null;
-  weaponRank = 0;
-  equippedSlot: WeaponSlot = 'hammer';
 
   constructor(x: number, y: number, hearts: number) {
     this.x = x;
