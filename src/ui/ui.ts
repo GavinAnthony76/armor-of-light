@@ -80,7 +80,8 @@ export class UI {
       </section>
 
       <section class="screen help" data-screen="help">
-        <div class="card wide scrollable">
+        <div class="card wide help-card">
+          <div class="sheet-scroll">
           <h2>How to play</h2>
           <p>Seven fictional lands inspired by Scripture. Gameplay and animated characters are built on Claude’s original design; campaign expansion and illustrated environments are integrated in this edition. Original procedural music; no third-party recorded songs.</p><div class="help-grid">
             <div><h3>Keyboard</h3>
@@ -100,7 +101,7 @@ export class UI {
             <p><span class="w gold"></span><b>Gold warning:</b> block it. Block right as it flashes to <b>parry</b>, which stuns the foe.</p>
             <p><span class="w red"></span><b>Red warning:</b> it can’t be blocked. Jump or move away.</p>
           </div>
-          <button class="btn primary" data-act="home">${ICON.back}<span>Back</span></button>
+          </div><footer class="sheet-actions"><button class="btn primary" data-act="home">${ICON.back}<span>Back</span></button></footer>
         </div>
       </section>
 
@@ -112,24 +113,32 @@ export class UI {
       </section>
 
       <section class="screen modal" data-screen="pause">
-        <div class="card">
-          <h2>Paused</h2>
-          <p class="card-sub" data-ref="pauseSub"></p><small class="equipment-rules">Continue keeps equipment. Restart or a new land resets the alternate; your hammer stays.</small>
-          <button class="btn big primary" data-act="resume">${ICON.play}<span>Resume</span></button>
-          <button class="btn" data-act="restart">${ICON.retry}<span>Restart level</span></button>
-          <button class="btn" data-act="levels">${ICON.levels}<span>Levels</span></button>
-          <div class="row">
-            <button class="btn icon" data-act="sfx" aria-label="Sound effects"></button>
-            <button class="btn icon" data-act="music" aria-label="Music">${ICON.music}</button><label class="music-volume">Music <input aria-label="Music volume" data-volume type="range" min="0" max="100" step="5" value="80"></label>
+        <div class="card pause-card">
+          <div class="sheet-scroll">
+            <h2>Paused</h2>
+            <p class="card-sub" data-ref="pauseSub"></p>
+            <p class="equipment-rules">Continue keeps your weapons. Restart or the next land resets your alternate. The hammer stays.</p>
+            <div class="row audio-settings">
+              <button class="btn icon" data-act="sfx" aria-label="Sound effects"></button>
+              <button class="btn icon" data-act="music" aria-label="Music">${ICON.music}</button><label class="music-volume">Music <input aria-label="Music volume" data-volume type="range" min="0" max="100" step="5" value="80"></label>
+            </div>
           </div>
+          <footer class="sheet-actions">
+            <button class="btn big primary" data-act="resume">${ICON.play}<span>Resume</span></button>
+            <button class="btn" data-act="restart">${ICON.retry}<span>Restart level</span></button>
+            <button class="btn" data-act="levels">${ICON.levels}<span>Levels</span></button>
+          </footer>
         </div>
       </section>
 
       <section class="screen modal" data-screen="results">
         <div class="card results">
+          <div class="sheet-scroll result-content">
+          <header class="result-heading">
           <p class="card-sub" data-ref="resLevel"></p>
           <h2 data-ref="resTitle">Level complete</h2>
           <div data-ref="resLamps"></div>
+          </header>
           <dl class="stats">
             <div><dt>Score</dt><dd data-ref="resScore"></dd></div>
             <div><dt>Time</dt><dd data-ref="resTime"></dd></div>
@@ -138,9 +147,12 @@ export class UI {
           </dl>
           <p class="badge" data-ref="resBadge">New best!</p>
           <p class="ending" data-ref="resEnding"></p>
+          </div>
+          <footer class="sheet-actions">
           <button class="btn big primary" data-act="next" data-ref="nextBtn">${ICON.next}<span>Next land</span></button>
           <button class="btn" data-act="restart" data-ref="replayBtn">${ICON.retry}<span>Play again</span></button>
           <button class="btn" data-act="levels">${ICON.levels}<span>Levels</span></button>
+          </footer>
         </div>
       </section>
 
@@ -250,7 +262,9 @@ export class UI {
     }
     const d=s.nearbyWeapon(),prompt=this.ref('weaponPrompt');prompt.hidden=!d;
     this.ref<HTMLButtonElement>('tInteract').disabled=!d;
+    this.ref<HTMLButtonElement>('tInteract').setAttribute('aria-label',d?`Pick up ${WEAPONS[d.weapon].name}`:'Pick up weapon');
     this.ref<HTMLButtonElement>('tSwap').disabled=!eq.alternate;
+    this.ref<HTMLButtonElement>('tSwap').setAttribute('aria-label','Swap weapon');
     if(d){
       const max=eq.alternate?.id===d.weapon&&eq.alternate.rank===3;
       const upgrade=eq.alternate?.id===d.weapon;
@@ -271,6 +285,8 @@ export class UI {
     st.setProperty('--dock-top', `${l.oy+l.viewH*l.scale}px`);
     st.setProperty('--dock-height', `${l.controlsH}px`);
     this.root.classList.toggle('portrait', l.portrait);
+    this.root.classList.toggle('mobile-layout',l.touch);
+    st.setProperty('--view-bottom',`${l.oy+l.viewH*l.scale}px`);
   }
 
   showTouch(on: boolean): void {

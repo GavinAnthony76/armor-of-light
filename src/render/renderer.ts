@@ -12,6 +12,7 @@ export interface Layout {
   dpr: number;
   scale: number; // CSS px per world unit
   viewH: number; // visible vertical world span (camera framing, not physics)
+  touch: boolean;
   controlsH: number; // CSS pixels reserved for the touch dock
   viewW: number; // world units visible horizontally
   ox: number; // CSS px offset of the game view
@@ -26,21 +27,21 @@ export const SANS = 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Ne
 /** Touch fills the safe viewport above a compact dock; desktop keeps its framing. */
 export function computeLayout(w:number,h:number,touch=false,insets={top:0,right:0,bottom:0,left:0}):Layout {
   const dpr=Math.min(window.devicePixelRatio||1,2),portrait=h>w*1.05;
-  const controlsH=touch?(portrait?164:76):0;
+  const controlsH=touch&&portrait?184:0;
   const aw=Math.max(1,w-insets.left-insets.right),ah=Math.max(1,h-insets.top-insets.bottom-controlsH);
   if(touch){
     // Landscape keeps Eliam readable; portrait adds sky rather than empty letterboxing.
-    const scale=portrait?aw/600:ah/Math.max(360,Math.min(VIEW_H,ah/.8));
-    return {w,h,dpr,scale,viewW:aw/scale,viewH:ah/scale,controlsH,ox:insets.left,oy:insets.top,portrait,zoom:1};
+    const scale=portrait?aw/540:ah/Math.max(320,Math.min(VIEW_H,ah/.85));
+    return {w,h,dpr,scale,viewW:aw/scale,viewH:ah/scale,touch,controlsH,ox:insets.left,oy:insets.top,portrait,zoom:1};
   }
   const viewW=portrait?720:Math.max(VIEW_W_MIN,Math.min(VIEW_W_MAX,aw/ah*VIEW_H));
   const scale=Math.min(aw/viewW,ah/VIEW_H);
-  return {w,h,dpr,scale,viewW,viewH:VIEW_H,controlsH,ox:insets.left+(aw-viewW*scale)/2,oy:insets.top+(ah-VIEW_H*scale)/2,portrait,zoom:1};
+  return {w,h,dpr,scale,viewW,viewH:VIEW_H,touch,controlsH,ox:insets.left+(aw-viewW*scale)/2,oy:insets.top+(ah-VIEW_H*scale)/2,portrait,zoom:1};
 }
 
 /** Follow high traversal while retaining a little ground beneath Eliam. */
-export function cameraTop(viewH:number,playerY:number,zoom=1):number {
-  return Math.min(VIEW_H-viewH/zoom,playerY-Math.min(170,viewH/zoom*.4));
+export function cameraTop(viewH:number,playerY:number,zoom=1,footRoom=90):number {
+  return Math.min(450+footRoom-viewH/zoom,playerY-Math.min(170,viewH/zoom*.4));
 }
 
 const SIGN_TEXT: Record<Sign['key'], Record<InputMode, string>> = {
@@ -74,6 +75,7 @@ export class Renderer {
     const touch=(window.matchMedia?.('(pointer: coarse)').matches??false)||new URLSearchParams(location.search).has('touch');
     const l=computeLayout(w,h,touch,{top:inset('top'),right:inset('right'),bottom:inset('bottom'),left:inset('left')});
     document.body.style.width=`${w}px`;document.body.style.height=`${h}px`;
+    document.body.classList.toggle('mobile-layout',touch);
     this.canvas.width = Math.round(l.w * l.dpr);
     this.canvas.height = Math.round(l.h * l.dpr);
     this.canvas.style.width = `${l.w}px`;
@@ -92,7 +94,7 @@ export class Renderer {
     if (!s || !game.world) return;
     const Z = l.zoom;
     const worldW = l.viewW / Z;
-    const camTop = cameraTop(l.viewH,s.player.y,Z); // keep the ground line anchored to the bottom
+    const camTop = cameraTop(l.viewH,s.player.y,Z,l.touch&&!l.portrait?Math.max(90,106/l.scale):90); // keep the ground line anchored to the bottom
     game.viewW = worldW;
     const world = game.world;
     const k = l.scale * l.dpr;
@@ -116,7 +118,7 @@ export class Renderer {
     const camX = game.camX;
     world.drawProps(ctx, s.terrain, camX, worldW, game.time, game.gateOpen);
     this.drawExit(game);
-    world.drawTerrain(ctx, s.terrain, camX, worldW, game.time);
+    world.drawTerrain(ctx, s.terrain, camX, worldW, game.time,Math.max(VIEW_H,camTop+l.viewH/Z));
     if (!game.demo) for (const sign of s.def.signs.filter(q=>Math.abs(q.x-s.player.x)<170).sort((a,b)=>Math.abs(a.x-s.player.x)-Math.abs(b.x-s.player.x)).slice(0,1)) this.drawSign(sign, s.terrain.groundAt(sign.x) ?? 450, inputMode);
     this.drawPickups(game);
     this.drawWeaponDrops(game);
@@ -404,15 +406,15 @@ export class Renderer {
     const l = this.layout;
     const p = s.player;
     // hearts
-    const top = 26;
-    const left = Math.max(86, 80 / l.scale); // clear of the pause button
+    const top = l.touch?22/l.scale:26;
+    const left = l.touch?60/l.scale:Math.max(86, 80 / l.scale); // clear of the pause button
     for (let i = 0; i < p.maxHp; i++) {
-      const x = left + i * 28;
+      const x = left + i * (l.touch?16/l.scale:28);
       const full = i < p.hp;
       const lost = !full && i < p.hp + 1 && game.hurtFlash > 0;
-      heart(ctx, x, top, 11, full ? '#ff5d7a' : lost ? '#ffffff' : 'rgba(40, 20, 50, 0.55)', full ? '#ffd0da' : 'rgba(255,255,255,0.35)');
+      heart(ctx, x, top, l.touch?7/l.scale:11, full ? '#ff5d7a' : lost ? '#ffffff' : 'rgba(40, 20, 50, 0.55)', full ? '#ffd0da' : 'rgba(255,255,255,0.35)');
     }
-    ctx.save();ctx.font=`600 11px ${SANS}`;ctx.fillStyle='#e9d5a3';ctx.fillText(`ELIAM · ${p.dashCooldown>0?'DASH RECHARGING':'DASH READY'}`,left-10,top+29);ctx.restore();
+    ctx.save();ctx.font=`600 ${l.touch?8/l.scale:11}px ${SANS}`;ctx.fillStyle='#e9d5a3';ctx.fillText(`ELIAM · ${p.dashCooldown>0?'DASH RECHARGING':'DASH READY'}`,left-10,top+(l.touch?16/l.scale:29));ctx.restore();
     // motes + score (leaves room on the right for the pause button)
     const rx = l.viewW - 24;
     ctx.save();
@@ -441,9 +443,9 @@ export class Renderer {
     // guardian health
     const b = s.boss;
     if (b && b.alive) {
-      const w = Math.min(520, l.viewW - 120);
+      const w = l.touch?Math.min(340/l.scale,l.viewW-32/l.scale):Math.min(520, l.viewW - 120);
       const x = (l.viewW - w) / 2;
-      const y = l.viewH - 46;
+      const y = l.touch?102/l.scale:l.viewH - 46;
       ctx.save();
       ctx.font = `600 18px ${SERIF}`;
       ctx.textAlign = 'center';

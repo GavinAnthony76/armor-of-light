@@ -19,10 +19,15 @@ for(const {w,h,insets} of phones){
  check(Math.abs(l.oy+l.viewH*l.scale+l.controlsH+insets.bottom-h)<.01,`${tag}: dock directly meets scene and safe bottom`);
  check(64*l.scale>=32,`${tag}: Eliam remains readable`);
  for(const y of [450,275,120,0,-100]){
-  const top=cameraTop(l.viewH,y);
+  const room=l.touch&&!l.portrait?Math.max(90,106/l.scale):90;
+  const top=cameraTop(l.viewH,y,1,room);
   check(y-64-top>=0&&y-top<=l.viewH,`${tag}: player stays inside scene at height ${y}`);
  }
  check(cameraTop(l.viewH,450)+l.viewH>=450,`${tag}: landing surface remains visible`);
+ if(!l.portrait){
+  const floor=(450-cameraTop(l.viewH,450,1,Math.max(90,106/l.scale)))*l.scale;
+  check(l.viewH*l.scale-floor>=105.9,`${tag}: landing line clears the thumb controls`);
+ }
 }
 const desktop=computeLayout(1440,900,false);
 check(desktop.viewH===540&&desktop.controlsH===0,'desktop framing retained');

@@ -368,7 +368,7 @@ export class WorldView {
   }
 
   /** Ground blocks, platforms and water. World space. */
-  drawTerrain(ctx: CanvasRenderingContext2D, terrain: Terrain, camX: number, viewW: number, time: number): void {
+  drawTerrain(ctx: CanvasRenderingContext2D, terrain: Terrain, camX: number, viewW: number, time: number, bottom=VIEW_H): void {
     const pal = this.pal;
     const x0 = camX - 40;
     const x1 = camX + viewW + 40;
@@ -376,11 +376,11 @@ export class WorldView {
     if (pal.water) {
       // water fills everything below the banks
       const wy = 462;
-      const g = ctx.createLinearGradient(0, wy, 0, VIEW_H);
+      const g = ctx.createLinearGradient(0, wy, 0, bottom);
       g.addColorStop(0, pal.water.top);
       g.addColorStop(1, pal.water.deep);
       ctx.fillStyle = g;
-      ctx.fillRect(x0, wy, x1 - x0, VIEW_H - wy + 40);
+      ctx.fillRect(x0, wy, x1 - x0, bottom - wy + 40);
       ctx.strokeStyle = pal.water.shine;
       ctx.lineWidth = 2;
       ctx.beginPath();
@@ -399,29 +399,29 @@ export class WorldView {
     } else {
       // dark pit below the world
       ctx.fillStyle = '#1b1020';
-      ctx.fillRect(x0, 470, x1 - x0, VIEW_H);
+      ctx.fillRect(x0, 470, x1 - x0, bottom);
     }
 
     for (const s of terrain.ground) {
       if (s.x1 < x0 || s.x0 > x1) continue;
       const w = s.x1 - s.x0;
-      const g = ctx.createLinearGradient(0, s.y, 0, VIEW_H);
+      const g = ctx.createLinearGradient(0, s.y, 0, bottom);
       g.addColorStop(0, pal.groundA);
       g.addColorStop(1, pal.groundB);
       ctx.fillStyle = g;
       ctx.beginPath();
-      ctx.roundRect(s.x0, s.y, w, VIEW_H - s.y + 30, [10, 10, 0, 0]);
+      ctx.roundRect(s.x0, s.y, w, bottom - s.y + 30, [10, 10, 0, 0]);
       ctx.fill();
       if (this.groundPattern) {
         ctx.save();
         ctx.fillStyle = this.groundPattern;
         ctx.globalAlpha = 0.9;
-        ctx.fillRect(s.x0, s.y + 8, w, VIEW_H - s.y);
+        ctx.fillRect(s.x0, s.y + 8, w, bottom - s.y);
         ctx.restore();
       }
       // High-contrast landing edges and carved seams make the new climbable faces readable.
       if(w<100){ctx.strokeStyle='rgba(255,231,174,.22)';ctx.lineWidth=1;
-        for(let y=s.y+28;y<VIEW_H;y+=30){ctx.beginPath();ctx.moveTo(s.x0+4,y);ctx.lineTo(s.x1-4,y);ctx.stroke();}}
+        for(let y=s.y+28;y<bottom;y+=30){ctx.beginPath();ctx.moveTo(s.x0+4,y);ctx.lineTo(s.x1-4,y);ctx.stroke();}}
       // top lip
       ctx.fillStyle = pal.groundTop;
       ctx.beginPath();
@@ -432,10 +432,10 @@ export class WorldView {
       ctx.strokeStyle = pal.groundEdge;
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(s.x0, VIEW_H);
+      ctx.moveTo(s.x0, bottom);
       ctx.lineTo(s.x0, s.y + 6);
       ctx.moveTo(s.x1, s.y + 6);
-      ctx.lineTo(s.x1, VIEW_H);
+      ctx.lineTo(s.x1, bottom);
       ctx.stroke();
       if (this.def.theme === 'garden') this.grass(ctx, s.x0, s.x1, s.y, time);
       if (this.def.theme === 'flood') this.moss(ctx, s.x0, s.x1, s.y);
