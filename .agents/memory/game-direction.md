@@ -5,11 +5,11 @@ description: User direction for preserving the original game and keeping weapons
 
 Use the approved upstream original game as the foundation; enhance it rather than rebuilding its gameplay or replacing its visual identity.
 
-The user selected the ChatGPT implementation on upstream `dev/weapon-discovery` as the single version to use going forward, superseding the independent Replit weapon implementation.
+The approved `dev/weapon-discovery` implementation has been reconciled into GitHub main. GitHub main is now the shared source of truth, superseding experimental branches and the independent Replit weapon implementation.
 
-**Why:** The user said that version was better and asked to pull it in, match it, and have one game.
+**Why:** The user selected that implementation as better. A later merge mixed the competing systems and broke the build; the user then asked to synchronize from repaired main so there is one consistent game.
 
-**How to apply:** Start future game changes from the selected upstream implementation; do not merge back the competing weapon implementation merely to retain prior Replit work.
+**How to apply:** Fetch and inspect current origin/main before synchronization, preserve local work, and verify the approved repair ancestry. Never merge back the superseded weapon implementation merely to retain prior work. Put any necessary Replit integration fixes on a separate integration branch for a PR, not directly on main.
 
 **Why:** The user rejected the earlier implementation because it looked and acted nothing like the original. Ninja Gaiden NES is a reference for responsive combat, intense pacing, and movement—not a request to replace the game's art.
 
