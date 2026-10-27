@@ -1,11 +1,13 @@
-import { LAND_WEAPONS, ROMAN, WEAPONS, cleanJournal, type WeaponDrop, type WeaponJournal } from './weapons';
+import { ROMAN, WEAPONS, cleanJournal, type WeaponDrop, type WeaponJournal } from './weapons';
 import { DIFFICULTIES, Difficulty, DifficultyId, DT, SCORE, VIEW_H } from './config';
 import { Enemy, EnemyKind, KINDS, World } from './enemy';
 import type { Encounter, StageDef } from './levels';
 import { Player } from './player';
 import { createRng } from './rng';
+import { RangedCombat } from './ranged';
+import { rewardForSource, rewardForSpawn } from './rewards';
 import { Terrain } from './terrain';
-import { InputFrame, overlaps, Rect, StageEvent } from './types';
+import { InputFrame, NO_INPUT, overlaps, Rect, StageEvent } from './types';
 
 export interface Orb {
   x: number;
@@ -162,7 +164,7 @@ export class Stage implements World {
   private rewardWeapon(e:Enemy):void {
     if(!e.rewardId||this.issuedRewards.has(e.rewardId))return;
     this.issuedRewards.add(e.rewardId);this.equipmentRevision++;
-    const weapon=LAND_WEAPONS[this.def.id];
+    const weapon=rewardForSource(this.def.id,e.rewardId);
     if(!weapon||this.player.equipment.alternate?.id===weapon&&this.player.equipment.alternate.rank===3)return;
     if(this.weaponDrops.filter(d=>d.copy).length>=3)return; // readable reward density; later encounters remain opportunities
     const c=e.center();
@@ -178,6 +180,13 @@ export class Stage implements World {
   motes = 0;
   deaths = 0;
   hitstop = 0;
+  readonly ranged = new RangedCombat();
+  comboHits=0;
+  comboBest=0;
+  comboTimer=0;
+  finisherFlash=0;
+  private finisherCooldown=0;
+  private frozenInput:InputFrame={...NO_INPUT};
   prevPlayerX=0;
   prevPlayerY=0;
   shakeAmount = 0;
@@ -280,6 +289,7 @@ export class Stage implements World {
     if (p.invuln > 0) return 'miss';
     const damage = heavy ? this.diff.heavyDamage : dmg;
     p.hp = Math.max(0, p.hp - damage);
+    this.comboHits=0;this.comboTimer=0;
     p.hitsTaken++;
     p.invuln = this.diff.invuln;
     const dir = p.x >= src.x ? 1 : -1;
@@ -303,10 +313,27 @@ export class Stage implements World {
     for(const e of this.enemies){e.prevX=e.x;e.prevY=e.y;}
 
     this.shakeAmount = Math.max(0, this.shakeAmount - dt * 30);
+    this.finisherCooldown=Math.max(0,this.finisherCooldown-dt);
+    this.finisherFlash=Math.max(0,this.finisherFlash-dt);
+    this.comboTimer=Math.max(0,this.comboTimer-dt);
+    if(this.comboTimer===0)this.comboHits=0;
     if (this.hitstop > 0) {
+      this.frozenInput={...NO_INPUT,
+        attackPressed:inp.attackPressed||this.frozenInput.attackPressed,
+        heavyPressed:inp.heavyPressed||this.frozenInput.heavyPressed,
+        jumpPressed:inp.jumpPressed||this.frozenInput.jumpPressed,
+        blockPressed:inp.blockPressed||this.frozenInput.blockPressed,
+        dashPressed:inp.dashPressed||this.frozenInput.dashPressed};
       this.hitstop = Math.max(0, this.hitstop - dt);
       return;
     }
+    inp={...inp,attackPressed:inp.attackPressed||this.frozenInput.attackPressed,
+      heavyPressed:inp.heavyPressed||this.frozenInput.heavyPressed,
+      jumpPressed:inp.jumpPressed||this.frozenInput.jumpPressed,
+      blockPressed:inp.blockPressed||this.frozenInput.blockPressed,
+      blockHeld:inp.blockHeld||this.frozenInput.blockPressed,
+      dashPressed:inp.dashPressed||this.frozenInput.dashPressed};
+    this.frozenInput={...NO_INPUT};
     if (this.phase === 'play') this.time += dt;
     this.phaseT += dt;
     const p = this.player;
@@ -342,7 +369,12 @@ export class Stage implements World {
 
     // ---- player attacks
     const box = p.swingBox();
-    if (box) this.resolveSwing(box);
+    if (box) {
+      if(p.weaponId==='sling'){
+        if(!p.struck.has(-1)){p.struck.add(-1);this.ranged.fire(this);}
+      }else this.resolveSwing(box);
+    }
+    this.ranged.update(this,dt);
 
     // ---- enemies
     for (const e of this.enemies){
@@ -393,15 +425,15 @@ export class Stage implements World {
       const c = e.center();
       const hx = (Math.max(box.x, c.x - e.w / 2) + Math.min(box.x + box.w, c.x + e.w / 2)) / 2;
       if (r === 'guarded') {
+        if(p.heavySwing)e.stagger(this,.65);
         this.emit({ type: 'clang', x: hx, y: c.y });
         p.vx = -p.facing * 200;
         this.hitstop = Math.max(this.hitstop, 0.06);
       } else if (r === 'hit' || r === 'killed') {
         const heavy = s.damage > 1 || r === 'killed';
-        this.emit({ type: 'hit', x: hx, y: c.y, heavy, boss: e.boss });
+        this.recordCombatHit(r,hx,c.y,s.damage,e.boss,p.heavySwing||p.combo===2);
         this.hitstop = Math.max(this.hitstop, heavy ? 0.07 : 0.04);
         if (heavy) this.shake(5);
-        this.score += 10;
       }
     }
     // swords cut shadow orbs out of the air
@@ -411,6 +443,16 @@ export class Stage implements World {
         o.dead = true;
         this.emit({ type: 'clang', x: o.x, y: o.y });
       }
+    }
+  }
+
+  recordCombatHit(result:'hit'|'killed',x:number,y:number,damage:number,boss:boolean,finishing:boolean):void {
+    this.comboHits++;this.comboTimer=2.4;this.comboBest=Math.max(this.comboBest,this.comboHits);
+    this.score+=10;
+    this.emit({type:'hit',x,y,heavy:damage>1||result==='killed',boss});
+    if(result==='killed'&&finishing&&!boss&&this.finisherCooldown<=0){
+      this.finisherCooldown=3;this.finisherFlash=.4;
+      this.emit({type:'finisher',x,y});
     }
   }
 
@@ -609,7 +651,7 @@ export class Stage implements World {
     for (const [spawnIndex,s] of wave.entries()) {
       const e = this.spawnEnemy(s.kind, s.x, s.y);
       e.wave = a.wave;
-      if(spawnIndex===0) e.rewardId=`e${a.index}w${a.wave}s${spawnIndex}`;
+      if(rewardForSpawn(this.def.id,a.index,a.wave,spawnIndex)) e.rewardId=`e${a.index}w${a.wave}s${spawnIndex}`;
       e.cooldown = 0.8 + (s.delay ?? 0) + this.rng() * 0.6;
       if (e.boss) {
         this.boss = e;
@@ -643,6 +685,8 @@ export class Stage implements World {
 
   private fellInPit(): void {
     const p = this.player;
+    p.clearActionBuffers();p.dashTime=0;
+    this.comboHits=0;this.comboTimer=0;
     this.emit({ type: 'splash', x: p.x, y: 450 });
     p.hp = Math.max(0, p.hp - 1);
     p.hitsTaken++;
@@ -662,6 +706,7 @@ export class Stage implements World {
 
   private killPlayer(): void {
     const p = this.player;
+    p.clearActionBuffers();this.frozenInput={...NO_INPUT};
     p.setState('dead');
     this.phase = 'dead';
     this.phaseT = 0;
@@ -672,6 +717,8 @@ export class Stage implements World {
   /** Instant retry from the last checkpoint with full hearts. */
   respawn(): void {
     const p = this.player;
+    p.clearActionBuffers();p.heavySwing=false;this.frozenInput={...NO_INPUT};
+    this.ranged.clear();this.comboHits=0;this.comboTimer=0;this.finisherFlash=0;
     p.airJumpReady=true;p.airJumpFlash=0;p.dashTime=0;p.dashCooldown=0;p.wallDir=0;p.wallGrace=0;p.wallLock=0;p.queuedEarly=false;p.airAttackReady=true;
     const a = this.active;
     if (a) {

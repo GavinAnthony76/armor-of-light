@@ -1,5 +1,5 @@
-import {CHAPTERS} from './story';
-import { asset } from './assets';
+import { showOpening } from './ui/opening';
+import { showChapterIntro } from './ui/chapter';
 import './polyfill';
 import './style.css';
 import './mobile.css';
@@ -31,6 +31,7 @@ async function boot(): Promise<void> {
   const renderer = new Renderer(canvas);
   const game = new Game(audio, input);
   let state: AppState = 'menu';
+  let chapterPending=false;
 
   const applySettings = () => {
     game.reduceMotion=!!save.data.settings.reduceMotion;
@@ -73,6 +74,7 @@ async function boot(): Promise<void> {
 
   input.bindPad(ui.ref('pad'), ui.ref('knob'));
   input.bindButton(ui.ref('tAttack'), 'attack');
+  input.bindButton(ui.ref('tHeavy'), 'heavy');
   input.bindButton(ui.ref('tJump'), 'jump');
   input.bindButton(ui.ref('tBlock'), 'block');
   input.bindButton(ui.ref('tDash'),'dash');
@@ -91,19 +93,17 @@ async function boot(): Promise<void> {
 
   function startLevel(i: number): void {
     if(!Number.isInteger(i)||i<0||i>=STAGES.length||(!params.has('debug')&&i>save.data.unlocked)) return;
-    if(!params.has('debug') && !document.body.dataset.chapterAccepted){
+    if(!params.has('debug') && !document.body.dataset.chapterAccepted && save.data.run?.level!==i){
+      if(chapterPending)return;
+      chapterPending=true;
+      ui.show('none');
       input.enabled=false; input.releaseAll(); game.paused=true;
-      const def=STAGES[i], story=CHAPTERS[i], panel=document.createElement('dialog');
-      panel.className='chapter-dialog scrollable';
-      panel.innerHTML=`<div class="chapter-body"><div class="chapter-art" style="background-image:url('${asset(def.background)}')"></div><div class="chapter-copy"><p class="eyebrow">LAND ${i+1} OF ${STAGES.length} · ${def.inspiration}</p><h2>${story.title}</h2><p class="chapter-land">${def.name} · Eliam, Keeper of the Ember</p><div class="story-beat"><span id="story-speaker"></span><p id="story-line"></p><small id="story-page"></small></div><blockquote>“${def.verse.text}”<small>${def.verse.ref}</small></blockquote><div class="guardian-preview"><img src="${asset(def.bossArt)}" alt="Guardian concept art"><span>Guardian ahead<br><strong>${def.encounters[def.encounters.length-1].waves[0][0].kind==='king'?'The Hollow King':def.name==='The Garden Gates'?'Thorn Sentinel':['Dune Warden','Tide Serpent','Thorn Sentinel','Storm Watcher','Iron Colossus','Keeper of Shadows','Hollow King'][i]}</strong></span></div><p class="chapter-note">The Ember Hammer stays with Eliam. Optional weapons forge through ranks I–III in this land. Retry and Continue keep them; Restart and the next land reset them.</p><p class="chapter-note">A fictional adventure inspired by biblical themes.</p></div></div><footer class="chapter-actions"><button class="btn" id="story-next">Continue story →</button><button class="btn primary" id="chapter-enter">Enter this land →</button><button class="btn" id="chapter-back">Back</button></footer>`;
-      let beat=0;
-      const showBeat=()=>{panel.querySelector('#story-speaker')!.textContent=story.beats[beat].speaker;panel.querySelector('#story-line')!.textContent=story.beats[beat].text;panel.querySelector('#story-page')!.textContent=`${beat+1} / ${story.beats.length}`;(panel.querySelector('#story-next') as HTMLButtonElement).hidden=beat===story.beats.length-1;};
-      panel.querySelector('#story-next')!.addEventListener('click',()=>{beat=Math.min(story.beats.length-1,beat+1);showBeat();});
-      showBeat();document.body.append(panel); panel.showModal();
-      const close=()=>{panel.close();panel.remove();game.paused=false;};
-      panel.querySelector('#chapter-enter')!.addEventListener('click',()=>{close();document.body.dataset.chapterAccepted='1';startLevel(i);delete document.body.dataset.chapterAccepted;});
-      panel.querySelector('#chapter-back')!.addEventListener('click',()=>{close();toMenu('levels');});
-      panel.addEventListener('cancel',()=>{close();toMenu('levels');});
+      audio.playMusic(STAGES[i].theme);
+      void showChapterIntro(i).then(accepted=>{
+        chapterPending=false;game.paused=false;
+        if(accepted){document.body.dataset.chapterAccepted='1';startLevel(i);delete document.body.dataset.chapterAccepted;}
+        else toMenu('levels');
+      });
       return;
     }
     game.start(i, save.data.settings.difficulty, { autoplay: params.has('autoplay') });
@@ -213,7 +213,7 @@ async function boot(): Promise<void> {
       const gp=Array.from(navigator.getGamepads?.()||[]).find(p=>p?.connected);
       if(gp){const btn=(i:number)=>!!gp.buttons[i]?.pressed;const now=[0,1,9,12,13,14,15].filter(btn);
         const edge=(i:number)=>now.includes(i)&&!menuPadPrev.includes(i);
-        const scope=document.querySelector('dialog[open]')||document.querySelector('.screen.active:not(.hud)')||document.querySelector('.screen:not([hidden])');
+        const scope=document.querySelector('[role="dialog"][aria-modal="true"]')||document.querySelector('dialog[open]')||document.querySelector('.screen.active:not(.hud)')||document.querySelector('.screen:not([hidden])');
         const buttons=Array.from((scope||document).querySelectorAll<HTMLButtonElement>('button:not(:disabled)')).filter(b=>b.getClientRects().length>0);
         if([12,13,14,15].some(edge)&&buttons.length){const n=buttons.indexOf(document.activeElement as HTMLButtonElement);buttons[(Math.max(0,n)+(edge(12)||edge(14)?-1:1)+buttons.length)%buttons.length].focus();}
         if(edge(0)&&buttons.length)(buttons.includes(document.activeElement as HTMLButtonElement)?document.activeElement as HTMLButtonElement:buttons[0]).click();
@@ -241,6 +241,10 @@ async function boot(): Promise<void> {
   toMenu('title');
   requestAnimationFrame(frame);
   document.body.classList.add('ready');
+  if(!params.has('debug')){
+    ui.show('none');
+    void showOpening(()=>{audio.unlock();audio.playMusic('title');}).then(()=>ui.show('title'));
+  }
 
   if (params.has('debug')) {
     game.speed = Math.max(1, Math.min(8, Number(params.get('speed')) || 1));

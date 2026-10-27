@@ -9,7 +9,7 @@ The approved `dev/weapon-discovery` implementation has been reconciled into GitH
 
 **Why:** The user selected that implementation as better. A later merge mixed the competing systems and broke the build; the user then asked to synchronize from repaired main so there is one consistent game.
 
-**How to apply:** Fetch and inspect current origin/main before synchronization, preserve local work, and verify the approved repair ancestry. Never merge back the superseded weapon implementation merely to retain prior work. Put any necessary Replit integration fixes on a separate integration branch for a PR, not directly on main.
+**How to apply:** Fetch and inspect current origin/main before synchronization AND before each enhancement stage; confirm the preview uses the creator's intended gameplay build. Preserve previous feature work separately rather than silently merging it back. Never merge back the superseded weapon implementation merely to retain prior work. Put integration fixes on a separate branch for a PR, not directly on main.
 
 **Why:** The user rejected the earlier implementation because it looked and acted nothing like the original. Ninja Gaiden NES is a reference for responsive combat, intense pacing, and movement—not a request to replace the game's art.
 
@@ -20,3 +20,12 @@ Alternate weapons and upgrades reset on fresh land attempts, but checkpoint retr
 **Why:** The user wants weapons unique to levels so players revisit a level to enjoy that weapon and its upgrades again.
 
 **How to apply:** Do not introduce permanent cross-land alternate equipment progression without a new user decision.
+
+Develop one complete land as the reviewable testbed before expanding the rest.
+The user wants God of War-style combo/impact depth, Ninja-like responsive dashing
+and jumping, an opening/story/music flow, selective killing-blow slowdown and
+visually impressive weapon upgrades, including a sling.
+
+**Why:** The user explicitly asked to fully develop one level from the merged main, and previously said they will check each stage when prompted.
+
+**How to apply:** Preserve the approved main gameplay identity, finish and verify the first-land systems/presentation flow, then pause for play feedback. Level design belongs to the creator's separate branch; do not expand or redesign lands unless asked. Do not equate automated checks or browser emulation with native iPhone testing or App Store readiness.

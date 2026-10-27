@@ -9,7 +9,7 @@ import type { Theme } from '../core/levels';
 export type Sfx =
   | 'swing' | 'hit' | 'hitHeavy' | 'kill' | 'block' | 'parry' | 'clang' | 'hurt' | 'jump' | 'land'
   | 'warn' | 'warnRed' | 'shoot' | 'boom' | 'pickup' | 'heal' | 'splash' | 'wave' | 'roar'
-  | 'bossDown' | 'clear' | 'click' | 'death' | 'respawn' | 'gate';
+  | 'bossDown' | 'clear' | 'click' | 'death' | 'respawn' | 'gate' | 'sling';
 
 interface Song {
   bpm: number;
@@ -376,6 +376,10 @@ export class AudioEngine {
     this.lastPlay[name] = t;
     const b = this.sfxBus;
     switch (name) {
+      case 'sling':
+        this.note('triangle',480+k*100,t,.14,.18,b,.002,0,160);
+        this.noiseBurst(t,.07,.2,2600,'bandpass',b,1.1);
+        break;
       case 'swing':
         this.noiseBurst(t, 0.16, 0.35, 900 + k * 300, 'bandpass', b, 1.4, 3200 + k * 500);
         break;
