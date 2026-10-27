@@ -14,12 +14,12 @@ for(const difficulty of ['gentle','challenging'] as const){for(const alternate o
   s.step(bot.decide(s));DESERT_ZONES.forEach((z,i)=>{if(s.player.x>=z.x)zones.add(i);});
   if(s.active&&s.active.index===1&&checkpointRetries===0){const before=s.weaponJournal();s.respawn();check(JSON.stringify(s.weaponJournal().equipment)===JSON.stringify(before.equipment),'retry retains equipment');checkpointRetries++;}
  }
- check(s.phase==='clear',`${difficulty}/${alternate?'Sunblade':'hammer'} reaches ending`);check(zones.size===7,'entire route traversed');check(s.pathOpen,'guardian defeated opens beacon');
+ check(s.phase==='clear',`${difficulty}/${alternate?'Sunblade':'hammer'} reaches ending`);check(zones.size===7,'entire route traversed');check(s.pathOpen,'guardian defeated opens beacon');check(s.archiveKeeperDefeated&&s.beaconSeal&&s.archiveGateOpen,'required keeper/seal/gate chain completed');
  const restored=new Stage(def,difficulty);restored.restoreWeapons(s.weaponJournal());check(restored.player.weaponId===s.player.weaponId,'Continue journal retains equipment');
  console.log(`${difficulty} ${alternate?'Sunblade III':'hammer'}: clear in ${s.time.toFixed(1)}s, ${s.deaths} retries`);
 }}
 // Both elevated reward routes are physically reachable using normal jumps.
-for(const [x,target] of [[2700,275],[5580,230]] as const){
+for(const [x,target] of [[2700,690],[5580,230]] as const){
  const s=new Stage(def,'gentle');s.nextEncounter=def.encounters.length;s.player.x=x;s.player.y=s.terrain.groundAt(x)??450;s.player.onGround=true;
  let high=s.player.y;
  for(let frame=0;frame<120;frame++){s.step({...NO_INPUT,right:true,jumpHeld:true,jumpPressed:frame===0||frame===18});high=Math.min(high,s.player.y);}

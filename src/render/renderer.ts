@@ -1,3 +1,4 @@
+import {asset} from '../assets';
 import { drawWeapon } from './weapons';
 import { WEAPONS } from '../core/weapons';
 import { VIEW_H, VIEW_W_MAX, VIEW_W_MIN } from '../core/config';
@@ -62,10 +63,12 @@ const SIGN_TEXT: Record<Sign['key'], Record<InputMode, string>> = {
 export class Renderer {
   readonly ctx: CanvasRenderingContext2D;
   layout: Layout;
+  private desertArt:HTMLImageElement[]=[];
 
   constructor(readonly canvas: HTMLCanvasElement) {
     this.ctx = canvas.getContext('2d', { alpha: false })!;
     this.layout = this.resize();
+    this.desertArt=['desert-sky-v2.webp','desert-aqueduct-v2.webp','desert-archive-v2.webp'].map(name=>{const im=new Image();im.src=asset('assets/'+name);return im;});
   }
 
   resize(): Layout {
@@ -94,7 +97,7 @@ export class Renderer {
     if (!s || !game.world) return;
     const Z = l.zoom;
     const worldW = l.viewW / Z;
-    const camTop = cameraTop(l.viewH,s.player.y,Z,l.touch&&!l.portrait?Math.max(90,106/l.scale):90); // keep the ground line anchored to the bottom
+    const camTop = cameraTop(l.viewH,s.player.y,Z,l.touch&&!l.portrait?Math.max(90,106/l.scale):90)+(s.def.id===0?Math.max(0,s.player.y-450):0); // keep the ground line anchored to the bottom
     game.viewW = worldW;
     const world = game.world;
     const k = l.scale * l.dpr;
@@ -109,8 +112,8 @@ export class Renderer {
     ctx.rect(0, 0, l.viewW, l.viewH);
     ctx.clip();
 
-    world.drawBackground(ctx, game.camX, l.viewW, game.time,l.viewH);
     if(s.def.id===0)this.drawDesertDepth(game);
+    else world.drawBackground(ctx, game.camX, l.viewW, game.time,l.viewH);
 
     // ---------------- world space
     ctx.save();
@@ -147,6 +150,7 @@ export class Renderer {
 
     // ---------------- screen space
     world.drawWeather(ctx, camX, l.viewW, frameDt, game.time,l.viewH);
+    if(s.def.id===0)this.drawDesertForeground(game);
     if (game.hurtFlash > 0) {
       const g = ctx.createRadialGradient(l.viewW / 2, l.viewH / 2, l.viewH * 0.3, l.viewW / 2, l.viewH / 2, l.viewW * 0.7);
       g.addColorStop(0, 'rgba(255, 40, 40, 0)');
@@ -170,22 +174,22 @@ export class Renderer {
   // ------------------------------------------------------------ world
 
   private drawDesertDepth(game:Game):void {
-    const c=this.ctx,l=this.layout,t=game.time;
-    c.save();
-    // Separate camera-driven layers remain visible over the painted environment.
-    for(let layer=0;layer<2;layer++){
-      const speed=layer===0?.14:.36,spacing=layer===0?570:820;
-      c.fillStyle=layer===0?'rgba(81,54,64,.12)':'rgba(92,59,37,.17)';
-      for(let i=-2;i<Math.ceil(l.viewW/spacing)+2;i++){
-        const x=i*spacing-((game.camX*speed)%spacing),base=l.viewH*.79,h=layer===0?100:170;
-        c.fillRect(x,base-h,18,h);c.fillRect(x+120,base-h,18,h);
-        c.beginPath();c.arc(x+69,base-h,69,Math.PI,0);c.arc(x+69,base-h,48,0,Math.PI,true);c.fill();
-      }
-    }
-    c.fillStyle='rgba(255,232,195,.08)';
-    for(let i=0;i<7;i++){const x=((i*270+t*(3+i%2)-game.camX*.035)%(l.viewW+300)+l.viewW+300)%(l.viewW+300)-150;
-      c.beginPath();c.ellipse(x,55+i%3*32,110,14,0,0,Math.PI*2);c.fill();}
+    const c=this.ctx,l=this.layout,t=game.time,depth=Math.max(0,Math.min(1,(game.stage!.player.y-500)/220));
+    const cover=(im:HTMLImageElement,rate:number)=>{if(!im.complete||!im.naturalWidth)return;const h=Math.max(l.viewH,l.viewW/1.5),w=h*im.naturalWidth/im.naturalHeight;c.drawImage(im,-Math.min(Math.max(0,w-l.viewW),game.camX*rate),(l.viewH-h)/2,w,h);};
+    c.save();c.fillStyle='#d79962';c.fillRect(0,0,l.viewW,l.viewH);cover(this.desertArt[0],.035);
+    const ruins=this.desertArt[1];
+    if(ruins.complete&&ruins.naturalWidth){const h=l.viewH*.95,w=h*ruins.naturalWidth/ruins.naturalHeight;const offset=((game.camX*.28)%w+w)%w;c.globalAlpha=.8;for(let x=-offset-w;x<l.viewW;x+=w)c.drawImage(ruins,x,l.viewH-h,w,h);c.globalAlpha=1;}
+    // Independent cloud movement is visible even when Eliam stands still.
+    c.fillStyle='rgba(255,228,185,.045)';for(let i=0;i<8;i++){const x=((i*230+t*(8+i%3)-game.camX*.06)%(l.viewW+300)+l.viewW+300)%(l.viewW+300)-150;c.beginPath();c.ellipse(x,45+i%3*29,95,12,0,0,Math.PI*2);c.fill();}
+    if(depth>0){c.globalAlpha=depth;c.fillStyle='#10232c';c.fillRect(0,0,l.viewW,l.viewH);cover(this.desertArt[2],.12);c.globalAlpha=depth*.18;const g=c.createLinearGradient(0,0,0,l.viewH);g.addColorStop(0,'#eab65c');g.addColorStop(1,'#92e7e000');c.fillStyle=g;for(let i=0;i<3;i++){const x=(i*390-game.camX*.15+t*2)%(l.viewW+400);c.beginPath();c.moveTo(x,0);c.lineTo(x+45,0);c.lineTo(x-90,l.viewH);c.lineTo(x-220,l.viewH);c.fill();}}
     c.restore();
+  }
+
+  private drawDesertForeground(game:Game):void {
+    const c=this.ctx,l=this.layout,im=this.desertArt[1];if(!im.complete||!im.naturalWidth||game.stage!.player.y>620)return;
+    c.save();c.beginPath();c.rect(0,0,Math.min(55,l.viewW*.055),l.viewH);c.rect(l.viewW-Math.min(55,l.viewW*.055),0,Math.min(55,l.viewW*.055),l.viewH);c.clip();c.globalAlpha=.26;
+    const h=l.viewH*1.5,w=h*im.naturalWidth/im.naturalHeight,off=(game.camX*1.12)%w;
+    for(let x=-off-w;x<l.viewW;x+=w)c.drawImage(im,x,l.viewH-h,w,h);c.restore();
   }
 
   private drawDesertLandmarks(game:Game):void {
@@ -196,6 +200,18 @@ export class Renderer {
       c.save();c.strokeStyle='#594331';c.lineWidth=4;c.beginPath();c.moveTo(x,y);c.lineTo(x,y-110);c.stroke();
       c.fillStyle='#ae7254';c.beginPath();c.moveTo(x,y-108);for(let i=1;i<=8;i++)c.lineTo(x+i*7,y-108+i*.9+Math.sin(t*3+i*.7)*4);for(let i=8;i>=1;i--)c.lineTo(x+i*7,y-86+i*.6+Math.sin(t*3+i*.7)*4);c.lineTo(x,y-86);c.fill();c.restore();
     }
+    for(const sign of [{x:1900,y:390,text:'ARCHIVE ↓'},{x:3250,y:840,text:'SEAL GATE ↗'}]){
+      c.save();c.fillStyle='#12212be6';c.strokeStyle='#dbbd7d';c.lineWidth=2;c.beginPath();c.roundRect(sign.x-74,sign.y-25,148,35,6);c.fill();c.stroke();c.fillStyle='#ffe0a0';c.font='700 14px '+SANS;c.textAlign='center';c.fillText(sign.text,sign.x,sign.y-3);c.restore();
+    }
+    if(!s.archiveGateOpen){
+      const x=3700;c.save();c.fillStyle='#514735';c.fillRect(x,145,60,305);c.strokeStyle='#d2ae63';c.lineWidth=4;c.strokeRect(x+4,149,52,301);
+      c.fillStyle=s.beaconSeal?'#ffd579':'#74665a';c.beginPath();c.arc(x+30,300,18,0,Math.PI*2);c.fill();c.fillStyle='#222536';c.fillRect(x+26,287,8,26);c.restore();
+    }
+    if(s.archiveKeeperDefeated&&!s.beaconSeal){
+      c.save();c.translate(3070,865+Math.sin(t*3)*4);c.shadowColor='#ffda6e';c.shadowBlur=15;c.fillStyle='#ffe29a';c.beginPath();c.moveTo(0,-18);c.lineTo(16,0);c.lineTo(0,18);c.lineTo(-16,0);c.closePath();c.fill();c.shadowBlur=0;c.strokeStyle='#8f642b';c.lineWidth=3;c.strokeRect(-6,-6,12,12);c.restore();
+    }
+    const keeper=s.active?.def.sealGuardian?s.enemies.find(e=>e.alive):null;
+    if(keeper){c.save();c.textAlign='center';c.font='700 15px '+SANS;c.lineWidth=4;c.strokeStyle='#10121e';c.fillStyle='#ffe2a0';c.strokeText('ARCHIVE KEEPER',keeper.x,keeper.y-123);c.fillText('ARCHIVE KEEPER',keeper.x,keeper.y-123);c.fillStyle='#191c2b';c.fillRect(keeper.x-45,keeper.y-112,90,6);c.fillStyle='#e6b86a';c.fillRect(keeper.x-45,keeper.y-112,90*Math.max(0,keeper.hp/keeper.maxHp),6);c.restore();}
     const x=7410,y=450,lit=s.pathOpen;
     c.save();c.fillStyle='#8b6745';c.fillRect(x-18,y-120,36,120);c.fillStyle='#e5c38b';c.fillRect(x-28,y-126,56,12);
     if(lit){
@@ -392,9 +408,9 @@ export class Renderer {
       g.addColorStop(0.5, `rgba(255, 226, 150, ${0.5 * flick})`);
       g.addColorStop(1, 'rgba(255, 226, 150, 0)');
       ctx.fillStyle = g;
-      ctx.fillRect(x - 22, 0, 44, 470);
+      ctx.fillRect(x - 22, (s.terrain.groundAt(x+ (x===s.bounds.minX?20:-20))??450)-450, 44, 470);
       ctx.fillStyle = `rgba(255, 250, 230, ${0.7 * flick})`;
-      ctx.fillRect(x - 1.5, 0, 3, 470);
+      ctx.fillRect(x - 1.5, (s.terrain.groundAt(x+ (x===s.bounds.minX?20:-20))??450)-450, 3, 470);
     }
     ctx.restore();
   }

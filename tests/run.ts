@@ -180,6 +180,7 @@ const steps = (s: Stage, n: number, inp: Partial<InputFrame> = {}) => {
   // gentle keeps boss damage across retries; challenging resets it
   for (const id of ['gentle', 'challenging'] as DifficultyId[]) {
     const s = new Stage(STAGES[0], id);
+    s.restoreLevelState({keeper:true,seal:true,gate:true}); // Isolate boss retry behavior after the required archive gate.
     const bossEnc = s.def.encounters.length - 1;
     s.nextEncounter = bossEnc;
     s.player.x = s.def.encounters[bossEnc].trigger + 5;

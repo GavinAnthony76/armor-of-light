@@ -78,6 +78,38 @@ export class Stage implements World {
   waves: Wave[] = [];
   pickups: Pickup[] = [];
   weaponDrops: WeaponDrop[] = [];
+  archiveKeeperDefeated=false;
+  beaconSeal=false;
+  archiveGateOpen=false;
+  private levelInteractHeld=false;
+  private levelNearbyLast:string|null=null;
+  levelState(){return {keeper:this.archiveKeeperDefeated,seal:this.beaconSeal,gate:this.archiveGateOpen,checkpoint:{...this.checkpoint}};}
+  restoreLevelState(raw:unknown):void {
+    const r=raw as {keeper?:boolean;seal?:boolean;gate?:boolean;checkpoint?:{x:number;y:number}}|null;
+    if(this.def.id!==0)return;
+    this.archiveKeeperDefeated=(r?.keeper===true||r?.seal===true||this.nextEncounter>1);
+    this.beaconSeal=r?.seal===true;
+    this.archiveGateOpen=(r?.gate===true&&r?.seal===true);
+    if(this.archiveGateOpen)this.removeArchiveGate();
+    const cp=r?.checkpoint;
+    if(cp&&Number.isFinite(cp.x)&&Number.isFinite(cp.y)&&cp.x>=24&&cp.x<this.def.length-24&&(this.archiveGateOpen||cp.x<3700)&&this.terrain.groundAt(cp.x)===cp.y){this.checkpoint={...cp};this.player.x=cp.x;this.player.y=cp.y;this.player.lastSafe={...cp};}
+  }
+  levelInteraction():string|null {
+    if(this.def.id!==0||this.phase!=='play'||!this.player.onGround||this.player.state!=='move'||this.player.dashTime>0)return null;
+    const p=this.player;
+    if(this.archiveKeeperDefeated&&!this.beaconSeal&&Math.abs(p.x-3070)<85&&Math.abs(p.y-900)<65)return 'Take Beacon Seal';
+    if(!this.archiveGateOpen&&Math.abs(p.x-3700)<125&&p.y<510)return this.beaconSeal?'Open seal gate':'Requires Beacon Seal';
+    return null;
+  }
+  private removeArchiveGate(){this.terrain.ground=this.terrain.ground.filter(g=>!(g.x0===3700&&g.x1===3760&&g.y===-1200));this.terrain.addGround(3700,3760,450);}
+  private updateLevelProgress(inp:InputFrame):void {
+    const action=this.levelInteraction(),held=!!(inp.interactHeld||inp.interactPressed);
+    if(action&&action===this.levelNearbyLast&&inp.interactPressed&&!this.levelInteractHeld){
+      if(action==='Take Beacon Seal'){this.beaconSeal=true;this.equipmentRevision++;this.emit({type:'equipment',text:'Beacon Seal recovered · climb back to the gate'});}
+      if(action==='Open seal gate'){this.archiveGateOpen=true;this.removeArchiveGate();this.checkpoint={x:3820,y:450};this.scoreAtCheckpoint=this.score;this.equipmentRevision++;this.emit({type:'equipment',text:'The seal gate opens'});}
+    }
+    this.levelInteractHeld=held;this.levelNearbyLast=action;
+  }
   issuedRewards = new Set<string>();
   equipmentRevision = 0;
   private exchangeSerial = 0;
@@ -104,7 +136,7 @@ export class Stage implements World {
     let best:{x:number;y:number}|null=null,dist=Infinity;
     for(const g of this.terrain.ground){
       const a=Math.max(lo,g.x0+26),b=Math.min(hi,g.x1-26);
-      if(a>b||g.y<90||g.y>500)continue;
+      if(a>b||g.y<90||g.y>(this.def.id===0?1000:500))continue;
       const gx=Math.max(a,Math.min(b,x)),distance=Math.abs(gx-x);
       if(distance<dist){dist=distance;best={x:gx,y:g.y};}
     }
@@ -209,6 +241,8 @@ export class Stage implements World {
       this.pickups.push({ x, y, vx: 0, vy: 0, kind: 'mote', placed: true, t: this.rng() * 6, taken: false });
     }
   }
+
+  get voidY():number|undefined{return this.def.voidY;}
 
   get totalMotes(): number {
     return this.def.motes.length;
@@ -325,7 +359,8 @@ export class Stage implements World {
     if(!wasDashing&&p.dashTime>0)this.emit({type:'dash',x:p.x,y:p.y,facing:p.facing});
     if (acts.jumped) this.emit({ type: 'jump', x: p.x, y: p.y });
     if (acts.swung) this.emit({ type: 'swing', x: p.x, y: p.y - 40, step: p.airSwing ? 3 : p.combo, facing: p.facing, air: p.airSwing });
-    const mv = this.terrain.move(p, dt, this.bounds.minX, this.bounds.maxX);
+    const movementMax=this.def.id===0&&!this.archiveGateOpen?Math.min(this.bounds.maxX,3700):this.bounds.maxX;
+    const mv = this.terrain.move(p, dt, this.bounds.minX, movementMax);
     if(p.onGround&&p.dashTime<=0)p.stride+=Math.abs(p.x-this.prevPlayerX)*.045;
     const direction=(inp.right?1:0)-(inp.left?1:0);
     if(!p.onGround && mv.hitWall && direction && p.x>this.bounds.minX+22 && p.x<this.bounds.maxX-22){
@@ -338,7 +373,7 @@ export class Stage implements World {
       const b = this.terrain.groundAt(p.x + 60);
       if (a !== null && a === b && a === p.y) p.lastSafe = { x: p.x, y: p.y };
     }
-    if (p.y > VIEW_H + 90) this.fellInPit();
+    if (p.y > (this.def.voidY??VIEW_H + 90)) this.fellInPit();
 
     // ---- player attacks
     const box = p.swingBox();
@@ -367,7 +402,9 @@ export class Stage implements World {
     this.updateOrbs(dt);
     this.updateWaves(dt);
     this.updatePickups(dt);
-    this.updateWeapons(inp,dt);
+    const levelAction=this.levelInteraction();
+    this.updateLevelProgress(inp);
+    this.updateWeapons(levelAction?{...inp,interactPressed:false,interactHeld:true}:inp,dt);
     this.updateEncounters(dt);
 
     // ---- end of stage
@@ -448,7 +485,7 @@ export class Stage implements World {
       o.x += o.vx * dt;
       o.y += o.vy * dt;
       o.life -= dt;
-      if (o.life <= 0 || o.x < this.bounds.minX - 40 || o.x > this.bounds.maxX + 40 || o.y > 560) o.dead = true;
+      if (o.life <= 0 || o.x < this.bounds.minX - 40 || o.x > this.bounds.maxX + 40 || o.y > (this.def.voidY??560)) o.dead = true;
       const g = this.terrain.groundAt(o.x);
       if (g !== null && o.y > g) o.dead = true;
       if (o.dead) continue;
@@ -609,6 +646,7 @@ export class Stage implements World {
     for (const [spawnIndex,s] of wave.entries()) {
       const e = this.spawnEnemy(s.kind, s.x, s.y);
       e.wave = a.wave;
+      if(a.def.sealGuardian)e.maxHp=e.hp=Math.round(12*this.diff.enemyHp);
       if(spawnIndex===0) e.rewardId=`e${a.index}w${a.wave}s${spawnIndex}`;
       e.cooldown = 0.8 + (s.delay ?? 0) + this.rng() * 0.6;
       if (e.boss) {
@@ -627,6 +665,7 @@ export class Stage implements World {
     const p = this.player;
     this.active = null;
     this.nextEncounter = a.index + 1;
+    if(a.def.sealGuardian){this.archiveKeeperDefeated=true;this.equipmentRevision++;this.emit({type:'equipment',text:'Archive Keeper defeated · take the Beacon Seal'});}
     this.bounds = { minX: 0, maxX: this.def.length };
     const before = p.hp;
     p.hp = Math.min(p.maxHp, p.hp + this.diff.healOnClear);

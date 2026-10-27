@@ -254,7 +254,7 @@ export class UI {
   updateEquipment(s:Stage,mode:InputMode,audioReady:boolean,musicOn:boolean):void {
     const p=s.player,w=WEAPONS[p.weaponId],eq=p.equipment;
     const objective=this.ref('landObjective');objective.hidden=s.def.id!==0;
-    if(s.def.id===0){const z=DESERT_ZONES.filter(z=>z.x<=p.x).slice(-1)[0]??DESERT_ZONES[0];objective.textContent=s.pathOpen?'The beacon awaits · follow the light east':z.name+' · '+z.goal;}
+    if(s.def.id===0){const z=DESERT_ZONES.filter(z=>z.x<=p.x).slice(-1)[0]??DESERT_ZONES[0];objective.textContent=s.pathOpen?'The beacon awaits · follow the light east':p.y>550?(s.beaconSeal?'Seal recovered · climb the eastern shaft to the gate':s.archiveKeeperDefeated?'Take the glowing Beacon Seal before climbing out':'Sunken Archive · defeat the Archive Keeper to recover the seal'):s.beaconSeal&&!s.archiveGateOpen?'Return to the seal gate · use INTERACT to open it':z.name+' · '+z.goal;}
     const swap=mode==='keyboard'?'Q swap':mode==='gamepad'?'LT swap':'SWAP';
     const pickup=mode==='keyboard'?'E':mode==='gamepad'?'Y':'PICK UP';
     const stamp=`${p.weaponId}${p.weaponRank}${eq.alternate?.id}${eq.alternate?.rank}${mode}`;
@@ -276,6 +276,9 @@ export class UI {
       this.ref('dropBenefit').textContent=WEAPONS[d.weapon].benefit;
       this.ref('dropAction').textContent=max?'Maximum rank III · leave this copy':`${pickup} · ${upgrade?'Forge upgrade':'Equip'}  /  walk on to leave`;
     }
+    const action=s.levelInteraction();
+    this.ref<HTMLButtonElement>('tInteract').textContent=action&&action!=='Requires Beacon Seal'?'Interact':'Pick up';
+    if(action){prompt.hidden=false;this.ref('dropName').textContent=action;this.ref('dropBenefit').textContent=action==='Requires Beacon Seal'?'Descend into the archive and defeat its keeper.':'The seal opens the eastern gate.';this.ref('dropAction').textContent=action==='Requires Beacon Seal'?'Gate locked':`${mode==='keyboard'?'E':mode==='gamepad'?'Y':'INTERACT'} · ${action}`;this.ref<HTMLButtonElement>('tInteract').disabled=action==='Requires Beacon Seal';this.ref('tInteract').setAttribute('aria-label',action);}
     this.ref('audioHint').textContent=!musicOn?'Music off · change in Pause':!audioReady?'Tap or press a key for audio':'';
   }
 
