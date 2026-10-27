@@ -1,0 +1,60 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> armor-of-light@1.3.0-dev test
+> node --import tsx tests/run.ts && node --import tsx tests/campaign.ts && node --import tsx tests/action.ts && node --import tsx tests/weapons.ts && node --import tsx tests/audio.ts && node --import tsx tests/hosts.ts && node --import tsx tests/input.ts && node --import tsx tests/traversal.ts && node --import tsx tests/layout.ts
+
+
+Bot playthroughs (each must reach the exit):
+level                  difficulty    seed  result   time   deaths  hits  score
+The Desert Ruins       gentle        1     clear    50s    0       2     6632
+The Desert Ruins       gentle        2     clear    50s    0       3     6553
+The Desert Ruins       gentle        3     clear    48s    0       3     6592
+The Desert Ruins       challenging   1     clear    54s    0       4     6725
+The Desert Ruins       challenging   2     clear    57s    0       5     6749
+The Desert Ruins       challenging   3     clear    55s    0       4     6734
+The Flooded Paths      gentle        1     clear    106s   0       2     7182
+The Flooded Paths      gentle        2     clear    104s   0       4     7199
+The Flooded Paths      gentle        3     clear    91s    0       1     7265
+The Flooded Paths      challenging   1     clear    128s   1       10    6363
+The Flooded Paths      challenging   2     clear    99s    0       6     7344
+The Flooded Paths      challenging   3     clear    128s   1       11    6425
+The Garden Gates       gentle        1     clear    106s   0       7     8193
+The Garden Gates       gentle        2     clear    106s   0       8     8205
+The Garden Gates       gentle        3     clear    106s   0       6     8282
+The Garden Gates       challenging   1     clear    114s   1       12    7724
+The Garden Gates       challenging   2     clear    132s   2       13    7638
+The Garden Gates       challenging   3     clear    142s   2       14    7641
+The Mountain of Promisegentle        1     clear    76s    0       3     7673
+The Mountain of Promisegentle        2     clear    76s    0       4     7675
+The Mountain of Promisegentle        3     clear    76s    0       2     7671
+The Mountain of Promisechallenging   1     clear    183s   9       39    6632
+The Mountain of Promisechallenging   2     clear    207s   10      42    6532
+The Mountain of Promisechallenging   3     clear    224s   12      47    6405
+The Valley of Courage  gentle        1     clear    93s    0       5     8301
+The Valley of Courage  gentle        2     clear    92s    0       5     8309
+The Valley of Courage  gentle        3     clear    90s    0       4     8292
+The Valley of Courage  challenging   1     clear    104s   1       10    7720
+The Valley of Courage  challenging   2     clear    106s   1       12    7658
+The Valley of Courage  challenging   3     clear    103s   1       10    7732
+The City of the Watch  gentle        1     clear    82s    0       4     8513
+The City of the Watch  gentle        2     clear    81s    0       4     8548
+The City of the Watch  gentle        3     clear    80s    0       3     8542
+The City of the Watch  challenging   1     clear    82s    0       4     8970
+The City of the Watch  challenging   2     clear    83s    0       5     8945
+The City of the Watch  challenging   3     clear    77s    0       4     8993
+The River of Life      gentle        1     clear    71s    0       1     8476
+The River of Life      gentle        2     clear    72s    0       3     8483
+The River of Life      gentle        3     clear    74s    0       3     8482
+The River of Life      challenging   1     clear    86s    0       5     8678
+The River of Life      challenging   2     clear    84s    0       5     8951
+The River of Life      challenging   3     clear    85s    0       3     8650
+
+311 passed, 0 failed
+Campaign progression, legacy saves, resume validation, seven unique guardians and original shield timing passed.
+9 action checks passed: dash, cooldown, evade window, combo buffer, jump cancel, wall slide/jump and open-road progression.
+262 weapon checks passed; 28 alternate-loadout campaign runs completed.
+13 audio lifecycle checks passed (mock Web Audio; browser meter tested separately).
+6 YouTube adapter checks passed with local SDK mock; actual YouTube hosting not tested.
+11 keyboard, touch and standard-gamepad mapping checks passed (gamepad simulated).
+20 traversal checks passed.
+87 responsive scene/camera checks passed.

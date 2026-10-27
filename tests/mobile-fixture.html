@@ -1,0 +1,16 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Mobile sheet fixture</title></head><body><div id="ui"></div><script type="module">
+import '../src/style.css';import '../src/mobile.css';
+import {Stage} from '../src/core/stage';import {STAGES} from '../src/core/levels';
+import {UI} from '../src/ui/ui';import {computeLayout} from '../src/render/renderer';
+const root=document.querySelector('#ui'),status=document.createElement('output');
+status.style.cssText='position:fixed;bottom:2px;left:4px;font:10px system-ui;color:#e9cc8e;z-index:100;pointer-events:none';document.body.append(status);
+const handlers=new Proxy({setMusicVolume(){}},{get:(obj,key)=>()=>status.textContent=`Tapped: ${key}`});
+const ui=new UI(root,handlers);ui.showTouch(true);
+const layout=()=>ui.setLayout(computeLayout(innerWidth,innerHeight,true));addEventListener('resize',layout);layout();
+ui.setSettings({music:true,sfx:true,musicVolume:.8,difficulty:'gentle'});
+const mode=new URLSearchParams(location.search).get('screen');
+if(mode==='controls'){const s=new Stage(STAGES[0],'gentle');s.player.equipment.alternate={id:'sunblade',rank:1};s.weaponDrops.push({id:'e0w0s0',weapon:'sunblade',rank:1,copy:true,x:s.player.x,y:s.player.y,vx:0,vy:0,age:1,bounce:1,settled:true});ui.updateEquipment(s,'touch',true,true);ui.show('hud');}
+else if(mode==='pause'){ui.ref('pauseSub').textContent='The Desert Ruins · Gentle';ui.show('pause');}
+else if(mode==='help')ui.show('help');
+else ui.showResults({stageId:0,difficulty:'gentle',score:5476,time:54,deaths:0,hitsTaken:0,motes:37,lamps:2},true,true,37);
+</script></body></html>

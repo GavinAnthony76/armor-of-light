@@ -572,123 +572,6 @@ kbd {
   box-shadow: 0 0 10px var(--red);
 }
 
-/* ---------------------------------------------------------- touch controls */
-
-.touch {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  display: none;
-}
-#ui.touch-on.playing .touch {
-  display: block;
-}
-.pad {
-  position: absolute;
-  pointer-events: auto;
-  left: max(18px, env(safe-area-inset-left));
-  bottom: max(18px, env(safe-area-inset-bottom));
-  width: 190px;
-  height: 110px;
-  border-radius: 60px;
-  background: rgba(20, 12, 34, 0.35);
-  border: 2px solid rgba(255, 230, 180, 0.35);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  touch-action: none;
-}
-.pad .arrow {
-  font-size: 26px;
-  color: rgba(255, 240, 210, 0.75);
-}
-.pad .knob {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 60px;
-  height: 60px;
-  margin: -30px 0 0 -30px;
-  border-radius: 50%;
-  background: rgba(255, 230, 180, 0.3);
-  border: 2px solid rgba(255, 240, 210, 0.6);
-  transition: transform 0.05s;
-}
-.pad.down .knob {
-  background: rgba(255, 230, 180, 0.5);
-}
-.buttons {
-  position: absolute;
-  pointer-events: none;
-  right: max(18px, env(safe-area-inset-right));
-  bottom: max(18px, env(safe-area-inset-bottom));
-  width: 250px;
-  height: 200px;
-}
-.tbtn {
-  position: absolute;
-  pointer-events: auto;
-  font: inherit;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: #fff6e4;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 230, 180, 0.55);
-  background: rgba(30, 18, 48, 0.45);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  touch-action: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
-.tbtn svg {
-  width: 30px;
-  height: 30px;
-}
-.tbtn.down {
-  background: rgba(255, 210, 94, 0.45);
-  transform: scale(0.94);
-}
-.tbtn.attack {
-  right: 0;
-  bottom: 0;
-  width: 104px;
-  height: 104px;
-  border-color: rgba(255, 220, 140, 0.85);
-}
-.tbtn.attack svg {
-  width: 38px;
-  height: 38px;
-}
-.tbtn.jump {
-  right: 116px;
-  bottom: 4px;
-  width: 82px;
-  height: 82px;
-}
-.tbtn.block {
-  right: 22px;
-  bottom: 116px;
-  width: 82px;
-  height: 82px;
-}
-
-/* portrait: controls live in the space under the game view */
-#ui.portrait .pad {
-  bottom: auto;
-  top: calc(var(--gy) + var(--gh) + max(24px, (100vh - var(--gy) - var(--gh) - 230px) / 2));
-}
-#ui.portrait .buttons {
-  bottom: auto;
-  top: calc(var(--gy) + var(--gh) + max(10px, (100vh - var(--gy) - var(--gh) - 230px) / 2));
-}
-
 @media (max-height: 640px) {
   .btn.big {
     min-height: 54px;
@@ -766,7 +649,7 @@ kbd {
 .guardian-preview{display:flex;align-items:center;gap:16px;color:#c6b58e;font-size:12px}.guardian-preview img{width:76px;height:76px;object-fit:cover;border-radius:12px;border:1px solid #d4b36c66}.guardian-preview strong{display:block;color:#ffedbf;font:20px Georgia;margin-top:6px}.startup-error{position:fixed;inset:30%;background:#151324;color:#fff;padding:30px;z-index:1000}
 [data-act="motion"][aria-pressed="true"]{background:#a3e7d32b;border-color:#a3e7d3}.title .row{flex-wrap:wrap}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 
-.tbtn.dash{right:110px;bottom:122px;width:64px;height:64px;border-color:#edaa79}.tbtn.dash svg{width:25px;height:25px}
+
 
 .story-beat{border-left:3px solid #e0b56b;padding:12px 20px;background:linear-gradient(90deg,#bc934212,transparent);min-height:135px}.story-beat>span{font:700 12px system-ui;letter-spacing:1.3px;text-transform:uppercase;color:#f6cb85}.story-beat>p{font:19px/1.65 Georgia;color:#f5e7d7;margin:12px 0}.story-beat>small{font-size:11px;color:#a5a2b1}.chapter-land{color:#c0b3c6;font-size:13px}.chapter-art{height:clamp(120px,26vh,240px)}.chapter-copy blockquote{font-size:16px;margin:15px 0}.chapter-dialog .guardian-preview img{width:58px;height:58px}.ending{line-height:1.65;max-width:580px}.title .tag{letter-spacing:1px}
 
@@ -780,24 +663,5 @@ kbd {
 .audio-hint{position:absolute;left:50%;transform:translateX(-50%);top:calc(var(--gy) + 4px);font-size:11px;background:#131827ce;color:#e4c58b;border-radius:5px;padding:2px 7px}.audio-hint:empty{display:none}
 .music-volume{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:#dcc7a2}.music-volume input{width:90px;accent-color:#edbf67;touch-action:pan-x}
 .equipment-rules{line-height:1.6;font-size:13px;color:#dac6a2}.equipment-buttons{position:absolute;right:max(282px,calc(env(safe-area-inset-right) + 282px));bottom:max(12px,env(safe-area-inset-bottom));display:flex;gap:8px;pointer-events:none}.equipment-buttons .tbtn{position:relative;width:64px;height:52px;font-size:10px;letter-spacing:0;border-radius:14px;background:#192030e8}.tbtn:disabled{opacity:.35;pointer-events:none}
-/* Dedicated control strip leaves the whole world visible, including the full jump arc. */
-#ui.touch-on .pad{left:max(10px,env(safe-area-inset-left));bottom:max(10px,env(safe-area-inset-bottom));top:auto;width:116px;height:64px}.pad .knob{width:44px;height:44px;margin:-22px 0 0 -22px}
-#ui.touch-on .buttons{right:max(10px,env(safe-area-inset-right));bottom:max(10px,env(safe-area-inset-bottom));top:auto;width:244px;height:62px}
-#ui.touch-on .buttons .tbtn{bottom:0;top:auto;width:54px;height:56px;font-size:9px;letter-spacing:0;border-radius:17px;background:#192030e8}
-#ui.touch-on .buttons .tbtn svg{width:24px;height:24px}#ui.touch-on .tbtn.attack{right:0}#ui.touch-on .tbtn.jump{right:62px}#ui.touch-on .tbtn.block{right:124px}#ui.touch-on .tbtn.dash{right:186px}
-#ui.portrait.touch-on .pad{width:100px;height:76px;bottom:max(30px,env(safe-area-inset-bottom));top:auto}
-#ui.portrait.touch-on .buttons{width:120px;height:120px;bottom:max(16px,env(safe-area-inset-bottom));top:auto}
-#ui.portrait.touch-on .tbtn.attack{right:0;bottom:0}#ui.portrait.touch-on .tbtn.jump{right:62px;bottom:0}#ui.portrait.touch-on .tbtn.block{right:0;bottom:64px}#ui.portrait.touch-on .tbtn.dash{right:62px;bottom:64px}
-#ui.portrait .equipment-buttons{right:144px;bottom:max(28px,env(safe-area-inset-bottom));flex-direction:column;gap:8px}
-#ui.portrait .equipment-buttons .tbtn{height:44px;width:68px}
-#ui.touch-on:not(.portrait) .equipment-hud{top:calc(var(--gy) + 43px)}
-#ui.touch-on:not(.portrait) .equipment-hud canvas{height:30px;width:30px}
-#ui.touch-on:not(.portrait) .equipment-hud strong{font-size:10px}#ui.touch-on:not(.portrait) .equipment-hud small{font-size:9px}
-#ui.portrait .weapon-prompt{top:calc(var(--gy) + var(--gh) + 12px)}
-@media(max-width:360px){#ui.portrait .equipment-buttons{right:138px}#ui.portrait .equipment-buttons .tbtn{width:60px}#ui.portrait.touch-on .pad{width:82px;padding:0 8px}.equipment-hud{padding-right:5px}}
-@media(max-height:450px){.screen.title{gap:5px;padding:10px}.brand h1{font-size:37px}.brand .eyebrow{font-size:9px}.tag{font-size:12px!important}.btn.big{min-height:40px;font-size:16px}.screen.title .menu{gap:5px}.screen.title .btn:not(.big){min-height:32px;padding:5px 12px}.diff-blurb{margin:0;font-size:11px}.screen.title .row{gap:6px}.screen.title .brand p{margin:3px}.chapter-art{height:95px}.chapter-copy{padding:15px}.weapon-prompt{top:calc(var(--gy) + 80px);padding:7px 12px}}
 .qa-panel{position:fixed;z-index:200;left:6px;bottom:6px;max-width:310px;padding:5px;border:1px solid #8c849b;background:#161625eb;color:#fff;font:10px system-ui;pointer-events:auto;border-radius:8px}.qa-panel summary{cursor:pointer}.qa-panel button,.qa-panel select{font:10px system-ui;margin:3px;padding:4px}.qa-panel output{display:block;padding:3px}
 .screen.modal,.screen.help{justify-content:flex-start}.screen.modal>.card,.screen.help>.card{margin:auto}
-#ui.portrait .equipment-hud{padding-right:8px}#ui.portrait .equipment-hud canvas{width:32px;height:32px}#ui.portrait .equipment-hud strong{font-size:11px}#ui.portrait .equipment-hud small{font-size:9px}
-#ui.touch-on .hud-btn{width:36px;height:36px;min-height:36px;padding:7px;left:calc(var(--gx) + 8px);top:calc(var(--gy) + 5px)}
-#ui:not(.touch-on) .equipment-hud{top:calc(var(--gy) + max(58px, var(--u) * 66))}
