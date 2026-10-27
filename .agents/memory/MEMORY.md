@@ -1,1 +1,3 @@
 - [Approved game and run-local weapons](game-direction.md) — enhance the original game rather than replace it; level-specific equipment resets on fresh attempts.
+- [Level-design ownership](work-ownership.md) — ChatGPT owns level design on a separate branch; do not change layouts or encounters unless the user asks.
+- [Timed combat browser tests](browser-combat-testing.md) — sample within animation windows; use trusted low-level touch rather than locator tap auto-waits.

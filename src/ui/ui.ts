@@ -89,15 +89,17 @@ export class UI {
             <div><h3>Keyboard</h3>
               <p><kbd>←</kbd><kbd>→</kbd> or <kbd>A</kbd><kbd>D</kbd> walk</p>
               <p><kbd>Space</kbd> or <kbd>W</kbd> jump · press again for a double jump</p>
-              <p><kbd>J</kbd> or <kbd>X</kbd> strike</p>
-              <p>Hold <kbd>K</kbd> or <kbd>C</kbd> to block</p>
-              <p><kbd>L</kbd> or <kbd>V</kbd> dash. Jump against a wall to kick away.</p><p><kbd>E</kbd> pick up · <kbd>Q</kbd> swap weapon</p><p><kbd>Esc</kbd> pause</p></div>
+              <p><kbd>J</kbd> or <kbd>X</kbd> light strike · <kbd>I</kbd> heavy strike</p>
+              <p>Chain light–light–light, or light–light–heavy. Heavy blows finish a sequence.</p>
+              <p>Hold <kbd>K</kbd> or <kbd>C</kbd> to block; after damage frames, defend or dash to cancel recovery.</p>
+              <p><kbd>L</kbd> or <kbd>V</kbd> dash. Double-jump, wall-jump, and use the slingshot to cross gaps.</p><p><kbd>E</kbd> pick up · <kbd>Q</kbd> swap weapon</p><p><kbd>Esc</kbd> pause</p></div>
             <div><h3>Touch</h3>
               <p>Slide on the left pad to walk</p>
-              <p><b>Strike</b>, <b>Jump</b> and <b>Shield</b> buttons on the right</p>
+              <p><b>Strike</b>, <b>Heavy</b>, <b>Jump</b>, <b>Shield</b> and <b>Dash</b> on the right</p>
               <h3>Controller</h3>
-              <p>Stick walks · A jump · X strike · B block · Y pick up · LT swap · LB dash</p></div>
+              <p>Stick walks · A jump · X light · RT heavy · B shield · Y pick up · LT swap · LB dash</p></div>
           </div>
+          <p class="equipment-rules">Fight with a rhythm: light–light–light or light–light–heavy. A streak counts only when a blow lands. Heavy attacks have a deliberate wind-up; block or dash can cancel recovery after the impact window.</p>
           <p class="equipment-rules">Your Ember Hammer is always yours. Weapons stay where enemies drop them: press E / Y or tap PICK UP near one. Copies forge ranks I–III. Retry and Continue keep equipment; Restart or entering another land clears the alternate slot.</p>
           <div class="warn-key">
             <p><span class="w gold"></span><b>Gold warning:</b> block it. Block right as it flashes to <b>parry</b>, which stuns the foe.</p>
@@ -109,6 +111,7 @@ export class UI {
 
       <section class="screen hud" data-screen="hud">
         <div class="equipment-hud" data-ref="equipment"><canvas data-ref="weaponIcon" width="68" height="68" aria-hidden="true"></canvas><div><strong data-ref="weaponName"></strong><small data-ref="weaponSlots"></small></div></div>
+        <div class="combo-readout" data-ref="combo" role="status" aria-live="polite" hidden></div>
         <div class="weapon-prompt" data-ref="weaponPrompt" role="status" hidden><strong data-ref="dropName"></strong><span data-ref="dropBenefit"></span><b data-ref="dropAction"></b></div>
         <span class="audio-hint" data-ref="audioHint"></span><div class="land-objective" data-ref="landObjective" hidden></div>
         <button class="btn icon hud-btn" data-act="pause" aria-label="Pause">${ICON.pause}</button>
@@ -162,9 +165,10 @@ export class UI {
         <div class="pad" data-ref="pad"><span class="arrow l">◀</span><span class="knob" data-ref="knob"></span><span class="arrow r">▶</span></div>
         <div class="equipment-buttons"><button class="tbtn interact" data-ref="tInteract" tabindex="-1">Pick up</button><button class="tbtn swap" data-ref="tSwap" tabindex="-1">Swap</button></div>
         <div class="buttons">
-          <button class="tbtn dash" data-ref="tDash" tabindex="-1">${ICON.dash}<span>Dash</span></button><button class="tbtn block" data-ref="tBlock" tabindex="-1">${ICON.shield}<span>Shield</span></button>
+          <button class="tbtn dash" data-ref="tDash" aria-label="Dash" tabindex="-1">${ICON.dash}<span>Dash</span></button><button class="tbtn block" data-ref="tBlock" aria-label="Shield" tabindex="-1">${ICON.shield}<span>Shield</span></button>
           <button class="tbtn jump" data-ref="tJump" tabindex="-1">${ICON.jump}<span>Jump</span></button>
           <button class="tbtn attack" data-ref="tAttack" tabindex="-1">${ICON.hammer}<span>Strike</span></button>
+          <button class="tbtn heavy" data-ref="tHeavy" aria-label="Heavy strike" tabindex="-1"><span class="heavy-mark">II</span><span>Heavy</span></button>
         </div>
       </div>
     `;
@@ -251,6 +255,7 @@ export class UI {
   }
 
   private weaponStamp='';
+  private comboStamp='';
   updateEquipment(s:Stage,mode:InputMode,audioReady:boolean,musicOn:boolean):void {
     const p=s.player,w=WEAPONS[p.weaponId],eq=p.equipment;
     const objective=this.ref('landObjective');objective.hidden=s.def.id!==0;
@@ -264,22 +269,44 @@ export class UI {
       this.ref('weaponSlots').textContent=eq.alternate?`${swap} · ${p.weaponId==='hammer'?WEAPONS[eq.alternate.id].name+' '+ROMAN[eq.alternate.rank]:'Ember Hammer'} ready`:'Hammer kept · alternate empty';
       const c=this.ref<HTMLCanvasElement>('weaponIcon'),ctx=c.getContext('2d')!;ctx.clearRect(0,0,68,68);ctx.save();ctx.translate(18,54);ctx.scale(.76,.76);drawWeapon(ctx,p.weaponId,p.weaponRank,{x:0,y:0},2.65,0);ctx.restore();
     }
-    const d=s.nearbyWeapon(),prompt=this.ref('weaponPrompt');prompt.hidden=!d;
-    this.ref<HTMLButtonElement>('tInteract').disabled=!d;
-    this.ref<HTMLButtonElement>('tInteract').setAttribute('aria-label',d?`Pick up ${WEAPONS[d.weapon].name}`:'Pick up weapon');
+    const action=s.levelInteraction(),canAct=!!action&&action!=='Requires Beacon Seal';
+    // Match Stage's objective-first interaction priority, including on touch.
+    const d=action?null:s.nearbyWeapon(),prompt=this.ref('weaponPrompt');prompt.hidden=!d&&!action;
+    this.ref<HTMLButtonElement>('tInteract').disabled=!d&&!canAct;
+    this.ref<HTMLButtonElement>('tInteract').setAttribute('aria-label',action??(d?`Pick up ${WEAPONS[d.weapon].name}`:'Pick up weapon'));
     this.ref<HTMLButtonElement>('tSwap').disabled=!eq.alternate;
     this.ref<HTMLButtonElement>('tSwap').setAttribute('aria-label','Swap weapon');
-    if(d){
+    if(action){
+      this.ref('dropName').textContent=action;
+      this.ref('dropBenefit').textContent=action==='Take Beacon Seal'?'Recover the seal before leaving the Archive':canAct?'Use the Beacon Seal to open the onward path':'Recover the Beacon Seal from the Archive Keeper';
+      const control=mode==='keyboard'?'E':mode==='gamepad'?'Y':'INTERACT';
+      this.ref('dropAction').textContent=canAct?`${control} · Interact`:'Return to the Sunken Archive';
+    }else if(d){
       const max=eq.alternate?.id===d.weapon&&eq.alternate.rank===3;
       const upgrade=eq.alternate?.id===d.weapon;
       this.ref('dropName').textContent=`${WEAPONS[d.weapon].name} · ${ROMAN[upgrade?Math.min(3,(eq.alternate?.rank??1)+1):d.rank]}`;
       this.ref('dropBenefit').textContent=WEAPONS[d.weapon].benefit;
       this.ref('dropAction').textContent=max?'Maximum rank III · leave this copy':`${pickup} · ${upgrade?'Forge upgrade':'Equip'}  /  walk on to leave`;
     }
-    const action=s.levelInteraction();
-    this.ref<HTMLButtonElement>('tInteract').textContent=action&&action!=='Requires Beacon Seal'?'Interact':'Pick up';
+    this.ref<HTMLButtonElement>('tInteract').textContent=action?'Interact':'Pick up';
     if(action){prompt.hidden=false;this.ref('dropName').textContent=action;this.ref('dropBenefit').textContent=action==='Requires Beacon Seal'?'Descend into the archive and defeat its keeper.':'The seal opens the eastern gate.';this.ref('dropAction').textContent=action==='Requires Beacon Seal'?'Gate locked':`${mode==='keyboard'?'E':mode==='gamepad'?'Y':'INTERACT'} · ${action}`;this.ref<HTMLButtonElement>('tInteract').disabled=action==='Requires Beacon Seal';this.ref('tInteract').setAttribute('aria-label',action);}
     this.ref('audioHint').textContent=!musicOn?'Music off · change in Pause':!audioReady?'Tap or press a key for audio':'';
+    const combo=this.root.querySelector<HTMLElement>('[data-ref="combo"]');
+    if(combo){
+      const state=s as Stage & {comboHits?:number;comboTimer?:number;comboBest?:number;finisherFlash?:number};
+      const hits=state.comboHits??0;
+      const finisher=!!state.finisherFlash&&state.finisherFlash>0;
+      combo.hidden=hits<2&&!finisher;
+      combo.classList.toggle('finisher',finisher);
+      const contentStamp=`${hits}/${state.comboBest??0}/${finisher}`;
+      if(contentStamp!==this.comboStamp){
+        this.comboStamp=contentStamp;
+        combo.innerHTML=hits>=2
+          ? `<b>${hits}</b><span>HIT SEQUENCE</span>${state.comboBest&&state.comboBest>hits?`<small>BEST ${state.comboBest}</small>`:''}`
+          : '<b>FINISH</b><span>EMBER STRIKE</span>';
+      }
+      combo.style.setProperty('--combo-life',String(Math.max(0,Math.min(1,(state.comboTimer??0)/1.25))));
+    }
   }
 
   setLayout(l: Layout): void {

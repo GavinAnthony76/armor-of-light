@@ -1,11 +1,13 @@
-import { LAND_WEAPONS, ROMAN, WEAPONS, cleanJournal, type WeaponDrop, type WeaponJournal } from './weapons';
+import { ROMAN, WEAPONS, cleanJournal, type WeaponDrop, type WeaponJournal } from './weapons';
 import { DIFFICULTIES, Difficulty, DifficultyId, DT, SCORE, VIEW_H } from './config';
 import { Enemy, EnemyKind, KINDS, World } from './enemy';
 import type { Encounter, StageDef } from './levels';
 import { Player } from './player';
 import { createRng } from './rng';
+import { RangedCombat } from './ranged';
+import { bonusRewardForSource, rewardForSource, rewardForSpawn } from './rewards';
 import { Terrain } from './terrain';
-import { InputFrame, overlaps, Rect, StageEvent } from './types';
+import { InputFrame, NO_INPUT, overlaps, Rect, StageEvent } from './types';
 
 export interface Orb {
   x: number;
@@ -81,12 +83,13 @@ export class Stage implements World {
   archiveKeeperDefeated=false;
   beaconSeal=false;
   archiveGateOpen=false;
+  get hasArchive():boolean{return this.def.encounters.some(e=>e.sealGuardian);}
   private levelInteractHeld=false;
   private levelNearbyLast:string|null=null;
   levelState(){return {keeper:this.archiveKeeperDefeated,seal:this.beaconSeal,gate:this.archiveGateOpen,checkpoint:{...this.checkpoint}};}
   restoreLevelState(raw:unknown):void {
     const r=raw as {keeper?:boolean;seal?:boolean;gate?:boolean;checkpoint?:{x:number;y:number}}|null;
-    if(this.def.id!==0)return;
+    if(!this.hasArchive)return;
     this.archiveKeeperDefeated=(r?.keeper===true||r?.seal===true||this.nextEncounter>1);
     this.beaconSeal=r?.seal===true;
     this.archiveGateOpen=(r?.gate===true&&r?.seal===true);
@@ -95,7 +98,7 @@ export class Stage implements World {
     if(cp&&Number.isFinite(cp.x)&&Number.isFinite(cp.y)&&cp.x>=24&&cp.x<this.def.length-24&&(this.archiveGateOpen||cp.x<3700)&&this.terrain.groundAt(cp.x)===cp.y){this.checkpoint={...cp};this.player.x=cp.x;this.player.y=cp.y;this.player.lastSafe={...cp};}
   }
   levelInteraction():string|null {
-    if(this.def.id!==0||this.phase!=='play'||!this.player.onGround||this.player.state!=='move'||this.player.dashTime>0)return null;
+    if(!this.hasArchive||this.phase!=='play'||!this.player.onGround||this.player.state!=='move'||this.player.dashTime>0)return null;
     const p=this.player;
     if(this.archiveKeeperDefeated&&!this.beaconSeal&&Math.abs(p.x-3070)<85&&Math.abs(p.y-900)<65)return 'Take Beacon Seal';
     if(!this.archiveGateOpen&&Math.abs(p.x-3700)<125&&p.y<510)return this.beaconSeal?'Open seal gate':'Requires Beacon Seal';
@@ -194,11 +197,15 @@ export class Stage implements World {
   private rewardWeapon(e:Enemy):void {
     if(!e.rewardId||this.issuedRewards.has(e.rewardId))return;
     this.issuedRewards.add(e.rewardId);this.equipmentRevision++;
-    const weapon=LAND_WEAPONS[this.def.id];
-    if(!weapon||this.player.equipment.alternate?.id===weapon&&this.player.equipment.alternate.rank===3)return;
-    if(this.weaponDrops.filter(d=>d.copy).length>=3)return; // readable reward density; later encounters remain opportunities
+    const primary=rewardForSource(this.def.id,e.rewardId);
+    const bonus=this.hasArchive?bonusRewardForSource(this.def.id,e.rewardId):undefined;
     const c=e.center();
-    this.weaponDrops.push({id:e.rewardId,weapon,rank:1,copy:true,x:c.x,y:c.y,vx:e.facing*-28,vy:-190,age:0,bounce:0,settled:false});
+    for(const [weapon,id,offset] of [[primary,e.rewardId,0],[bonus,`${e.rewardId}:${bonus}`,32]] as const){
+      if(!weapon||this.player.equipment.alternate?.id===weapon&&this.player.equipment.alternate.rank===3)continue;
+      // Declining one weapon must not consume another weapon's rank-III chances.
+      if(this.weaponDrops.filter(d=>d.copy&&d.weapon===weapon).length>=3)continue;
+      this.weaponDrops.push({id,weapon,rank:1,copy:true,x:c.x+offset,y:c.y,vx:e.facing*-28,vy:-190,age:0,bounce:0,settled:false});
+    }
   }
 
   events: StageEvent[] = [];
@@ -210,6 +217,13 @@ export class Stage implements World {
   motes = 0;
   deaths = 0;
   hitstop = 0;
+  readonly ranged = new RangedCombat();
+  comboHits=0;
+  comboBest=0;
+  comboTimer=0;
+  finisherFlash=0;
+  private finisherCooldown=0;
+  private frozenInput:InputFrame={...NO_INPUT};
   prevPlayerX=0;
   prevPlayerY=0;
   shakeAmount = 0;
@@ -314,6 +328,7 @@ export class Stage implements World {
     if (p.invuln > 0) return 'miss';
     const damage = heavy ? this.diff.heavyDamage : dmg;
     p.hp = Math.max(0, p.hp - damage);
+    this.comboHits=0;this.comboTimer=0;
     p.hitsTaken++;
     p.invuln = this.diff.invuln;
     const dir = p.x >= src.x ? 1 : -1;
@@ -337,10 +352,27 @@ export class Stage implements World {
     for(const e of this.enemies){e.prevX=e.x;e.prevY=e.y;}
 
     this.shakeAmount = Math.max(0, this.shakeAmount - dt * 30);
+    this.finisherCooldown=Math.max(0,this.finisherCooldown-dt);
+    this.finisherFlash=Math.max(0,this.finisherFlash-dt);
+    this.comboTimer=Math.max(0,this.comboTimer-dt);
+    if(this.comboTimer===0)this.comboHits=0;
     if (this.hitstop > 0) {
+      this.frozenInput={...NO_INPUT,
+        attackPressed:inp.attackPressed||this.frozenInput.attackPressed,
+        heavyPressed:inp.heavyPressed||this.frozenInput.heavyPressed,
+        jumpPressed:inp.jumpPressed||this.frozenInput.jumpPressed,
+        blockPressed:inp.blockPressed||this.frozenInput.blockPressed,
+        dashPressed:inp.dashPressed||this.frozenInput.dashPressed};
       this.hitstop = Math.max(0, this.hitstop - dt);
       return;
     }
+    inp={...inp,attackPressed:inp.attackPressed||this.frozenInput.attackPressed,
+      heavyPressed:inp.heavyPressed||this.frozenInput.heavyPressed,
+      jumpPressed:inp.jumpPressed||this.frozenInput.jumpPressed,
+      blockPressed:inp.blockPressed||this.frozenInput.blockPressed,
+      blockHeld:inp.blockHeld||this.frozenInput.blockPressed,
+      dashPressed:inp.dashPressed||this.frozenInput.dashPressed};
+    this.frozenInput={...NO_INPUT};
     if (this.phase === 'play') this.time += dt;
     this.phaseT += dt;
     const p = this.player;
@@ -359,7 +391,7 @@ export class Stage implements World {
     if(!wasDashing&&p.dashTime>0)this.emit({type:'dash',x:p.x,y:p.y,facing:p.facing});
     if (acts.jumped) this.emit({ type: 'jump', x: p.x, y: p.y });
     if (acts.swung) this.emit({ type: 'swing', x: p.x, y: p.y - 40, step: p.airSwing ? 3 : p.combo, facing: p.facing, air: p.airSwing });
-    const movementMax=this.def.id===0&&!this.archiveGateOpen?Math.min(this.bounds.maxX,3700):this.bounds.maxX;
+    const movementMax=this.hasArchive&&!this.archiveGateOpen?Math.min(this.bounds.maxX,3700):this.bounds.maxX;
     const mv = this.terrain.move(p, dt, this.bounds.minX, movementMax);
     if(p.onGround&&p.dashTime<=0)p.stride+=Math.abs(p.x-this.prevPlayerX)*.045;
     const direction=(inp.right?1:0)-(inp.left?1:0);
@@ -377,7 +409,12 @@ export class Stage implements World {
 
     // ---- player attacks
     const box = p.swingBox();
-    if (box) this.resolveSwing(box);
+    if (box) {
+      if(p.weaponId==='sling'){
+        if(!p.struck.has(-1)){p.struck.add(-1);this.ranged.fire(this);}
+      }else this.resolveSwing(box);
+    }
+    this.ranged.update(this,dt);
 
     // ---- enemies
     for (const e of this.enemies){
@@ -426,19 +463,22 @@ export class Stage implements World {
       if (!e.alive || p.struck.has(e.id)) continue;
       if (!overlaps(box, e.hurtBox())) continue;
       p.struck.add(e.id);
-      const r = e.takeHit(this, s.damage, p.facing, s.knock);
+      // Light openers keep a normal foe inside the following strike's reach.
+      // Air hits and committed finishers retain their full launch strength.
+      const knock=!p.heavySwing&&!p.airSwing&&p.combo<2?Math.min(s.knock,80):s.knock;
+      const r = e.takeHit(this, s.damage, p.facing, knock);
       const c = e.center();
       const hx = (Math.max(box.x, c.x - e.w / 2) + Math.min(box.x + box.w, c.x + e.w / 2)) / 2;
       if (r === 'guarded') {
+        if(p.heavySwing)e.stagger(this,.65);
         this.emit({ type: 'clang', x: hx, y: c.y });
         p.vx = -p.facing * 200;
         this.hitstop = Math.max(this.hitstop, 0.06);
       } else if (r === 'hit' || r === 'killed') {
-        const heavy = s.damage > 1 || r === 'killed';
-        this.emit({ type: 'hit', x: hx, y: c.y, heavy, boss: e.boss });
-        this.hitstop = Math.max(this.hitstop, heavy ? 0.07 : 0.04);
-        if (heavy) this.shake(5);
-        this.score += 10;
+        const heavy = p.heavySwing || p.combo===2;
+        this.recordCombatHit(r,hx,c.y,s.damage,e.boss,p.heavySwing||p.combo===2);
+        this.hitstop = Math.max(this.hitstop, heavy ? 0.065 : 0.025);
+        this.shake(heavy?6:2);
       }
     }
     // swords cut shadow orbs out of the air
@@ -448,6 +488,16 @@ export class Stage implements World {
         o.dead = true;
         this.emit({ type: 'clang', x: o.x, y: o.y });
       }
+    }
+  }
+
+  recordCombatHit(result:'hit'|'killed',x:number,y:number,damage:number,boss:boolean,finishing:boolean):void {
+    this.comboHits++;this.comboTimer=2.4;this.comboBest=Math.max(this.comboBest,this.comboHits);
+    this.score+=10;
+    this.emit({type:'hit',x,y,heavy:finishing||damage>=2||result==='killed',boss});
+    if(result==='killed'&&finishing&&!boss&&this.finisherCooldown<=0){
+      this.finisherCooldown=3;this.finisherFlash=.4;
+      this.emit({type:'finisher',x,y});
     }
   }
 
@@ -647,7 +697,7 @@ export class Stage implements World {
       const e = this.spawnEnemy(s.kind, s.x, s.y);
       e.wave = a.wave;
       if(a.def.sealGuardian)e.maxHp=e.hp=Math.round(12*this.diff.enemyHp);
-      if(spawnIndex===0) e.rewardId=`e${a.index}w${a.wave}s${spawnIndex}`;
+      if(rewardForSpawn(this.def.id,a.index,a.wave,spawnIndex)) e.rewardId=`e${a.index}w${a.wave}s${spawnIndex}`;
       e.cooldown = 0.8 + (s.delay ?? 0) + this.rng() * 0.6;
       if (e.boss) {
         this.boss = e;
@@ -682,6 +732,8 @@ export class Stage implements World {
 
   private fellInPit(): void {
     const p = this.player;
+    p.clearActionBuffers();p.dashTime=0;
+    this.comboHits=0;this.comboTimer=0;
     this.emit({ type: 'splash', x: p.x, y: 450 });
     p.hp = Math.max(0, p.hp - 1);
     p.hitsTaken++;
@@ -701,6 +753,7 @@ export class Stage implements World {
 
   private killPlayer(): void {
     const p = this.player;
+    p.clearActionBuffers();this.frozenInput={...NO_INPUT};
     p.setState('dead');
     this.phase = 'dead';
     this.phaseT = 0;
@@ -711,6 +764,8 @@ export class Stage implements World {
   /** Instant retry from the last checkpoint with full hearts. */
   respawn(): void {
     const p = this.player;
+    p.clearActionBuffers();p.heavySwing=false;this.frozenInput={...NO_INPUT};
+    this.ranged.clear();this.comboHits=0;this.comboTimer=0;this.finisherFlash=0;
     p.airJumpReady=true;p.airJumpFlash=0;p.dashTime=0;p.dashCooldown=0;p.wallDir=0;p.wallGrace=0;p.wallLock=0;p.queuedEarly=false;p.airAttackReady=true;
     const a = this.active;
     if (a) {

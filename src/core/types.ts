@@ -13,6 +13,7 @@ export interface InputFrame {
   blockHeld: boolean;
   jumpPressed: boolean;
   attackPressed: boolean;
+  heavyPressed?: boolean;
   blockPressed: boolean;
   dashPressed?: boolean;
   interactPressed?: boolean;
@@ -37,6 +38,8 @@ export function overlaps(a: Rect, b: Rect): boolean {
 
 /** Things the presentation layer reacts to (sound, particles, shake). */
 export type StageEvent =
+  | { type: 'slingShot'; x:number; y:number; rank:number; facing:number }
+  | { type: 'finisher'; x:number; y:number }
   | { type: 'equipment'; text:string }
   | { type: 'dash'; x:number; y:number; facing:number }
   | { type: 'swing'; x: number; y: number; step: number; facing: number; air: boolean }

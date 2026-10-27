@@ -77,6 +77,7 @@ export class Game {
     this.texts = [];
     this.acc = 0;
     this.timeScale = 1;
+    this.slowTimer = 0;
     this.finishTimer = -1;
     this.gateOpen = 0;
     this.paused = false;
@@ -100,7 +101,8 @@ export class Game {
     this.time += frameDt;
     if (this.paused) return;
 
-    this.slowTimer = Math.max(0, this.slowTimer - frameDt);
+    this.slowTimer = this.reduceMotion ? 0 : Math.max(0, this.slowTimer - frameDt);
+    if(this.reduceMotion)this.timeScale=1;
     this.timeScale += ((this.slowTimer > 0 ? 0.3 : 1) - this.timeScale) * Math.min(1, frameDt * 12);
     this.acc += frameDt * this.timeScale * this.speed;
     if (!this.bot) this.input.pollGamepad();
@@ -198,6 +200,16 @@ export class Game {
     const sound = this.say(e);
     const s = this.stage!;
     switch (e.type) {
+      case 'slingShot':
+        fx.ring(e.x,e.y,24+e.rank*5,'#92f5ff',.2);
+        if(sound)a.play('sling',e.rank);
+        break;
+      case 'finisher':
+        if(!this.reduceMotion){this.slowTimer=Math.max(this.slowTimer,.3);this.whiteFlash=.16;}
+        fx.ring(e.x,e.y,85,'#ffe5a2',.35);
+        this.texts.push({x:e.x,y:e.y-30,text:'EMBER FINISH',color:'#ffe0a3',t:0});
+        if(sound)a.play('hitHeavy');
+        break;
       case 'equipment':
         if(sound)a.play('pickup',2);
         this.banners.push({text:e.text,t:0,dur:2.6,big:false});break;
@@ -205,11 +217,13 @@ export class Game {
         for(let i=0;i<9;i++)fx.add('ember',e.x-e.facing*i*5,e.y-22,{vx:-e.facing*100,vy:-30,life:.2+i*.015,size:2,color:'#ffb05f'});
         if(sound)a.play('swing',0);break;
       case 'swing':
-        if (sound) a.play('swing', e.step);
+        if (sound && s.player.weaponId!=='sling') a.play('swing', s.player.heavySwing?-1:e.step);
         break;
       case 'hit':
-        fx.sparks(e.x, e.y, e.heavy ? 18 : 10, '#ffe08a', e.heavy ? 520 : 380);
-        fx.ring(e.x, e.y, e.heavy ? 50 : 30, '#fff3c4', 0.25);
+        fx.add('impact',e.x,e.y,{size:e.heavy?38:22,life:e.heavy?.16:.11,color:e.heavy?'#ffe196':'#fff8df',rot:s.player.facing*.18});
+        fx.sparks(e.x, e.y, e.heavy ? 18 : 8, '#ffe08a', e.heavy ? 560 : 380);
+        fx.ring(e.x, e.y, e.heavy ? 46 : 25, '#fff3c4', e.heavy?.18:.12);
+        if(e.heavy)fx.dust(e.x,e.y+24,6,'#caa784',24,90);
         if (sound) a.play(e.heavy ? 'hitHeavy' : 'hit');
         break;
       case 'clang':

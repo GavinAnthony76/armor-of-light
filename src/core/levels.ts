@@ -38,6 +38,8 @@ export interface Sign {
 
 export interface StageDef {
   id: number;
+  /** Change when authored checkpoint, collectible or reward identities change. */
+  layoutRevision?: string;
   name: string;
   subtitle: string;
   verse: { text: string; ref: string };

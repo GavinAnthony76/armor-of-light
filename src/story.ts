@@ -1,9 +1,11 @@
 export interface StoryBeat {speaker:string;text:string;}
 export const CHAPTERS:{title:string;beats:StoryBeat[];aftermath:string}[]=[
  {title:'The night the beacon fell',beats:[
- {speaker:'The watch at Emberfall',text:'Eliam returns from repairing the outer wall to find the village beacon dark. His sister Mara and the families she was sheltering have vanished along the eastern road.'},
- {speaker:'Joram · a letter left at the forge',text:'Take my hammer. Its ember will endure while you carry it for another. Find Mara. Follow the seven watchfires. Build a way home.'},
- {speaker:'Eliam',text:'Then I will leave a light at every gate until she can find her way back.'}],aftermath:'The Dune Warden falls. Beneath the sand gate, Eliam finds Mara’s blue ribbon tied to a lantern: she crossed the flooded road with the children.'},
+  {speaker:'The watch at Emberfall',text:'Eliam returns from repairing the outer wall at dusk. The beacon that should crown the ridge is dark; below it, every window in Emberfall has gone black.'},
+  {speaker:'A neighbor at the forge',text:'Mara took the families from the south quarter when the road began to flood. She said the old eastern causeway would hold. No one has seen them since.'},
+  {speaker:'Joram · a letter left at the forge',text:'Take my hammer. Its ember will endure while you carry it for another. Find Mara. Follow the seven watchfires. Build a way home.'},
+  {speaker:'Eliam',text:'Then I will leave a light at every gate until she can find her way back.'},
+  {speaker:'The first watchfire',text:'Beyond the village, the dunes have swallowed the road. Somewhere under that moving wall of sand, a warden guards the next flame.'}],aftermath:'The Dune Warden falls. Beneath the sand gate, Eliam finds Mara’s blue ribbon tied to a lantern: she crossed the flooded road with the children.'},
  {title:'Lanterns on the water',beats:[
  {speaker:'The ferryman',text:'A woman brought six children across in the storm. She would not leave the last one behind. The serpent broke our bridge after they reached the garden road.'},
  {speaker:'Eliam',text:'Mara always did count the people everyone else missed. Show me where the bridge stood.'}],aftermath:'The crossing rises from the water. The ferryman carries a new lantern west, and Eliam learns that the garden gate has been sealed by order of the Hollow King.'},

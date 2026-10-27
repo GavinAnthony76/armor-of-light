@@ -1,5 +1,6 @@
 import {asset} from '../assets';
 import { drawWeapon } from './weapons';
+import { drawLightstones } from './ranged';
 import { WEAPONS } from '../core/weapons';
 import { VIEW_H, VIEW_W_MAX, VIEW_W_MIN } from '../core/config';
 import type { Sign } from '../core/levels';
@@ -51,13 +52,13 @@ const SIGN_TEXT: Record<Sign['key'], Record<InputMode, string>> = {
   wall:{keyboard:'Hold toward the wall, then jump to kick away',touch:'Hold toward the wall and tap JUMP to kick away',gamepad:'Hold toward the wall and press A to kick away'},
   move: { keyboard: '← →  or  A D  to walk', touch: 'Slide on the pad to walk', gamepad: 'Stick or D-pad to walk' },
   jump: { keyboard: 'Space  or  W  to jump', touch: 'Tap  JUMP  to leap', gamepad: 'Press  A  to jump' },
-  attack: { keyboard: 'J  or  X  to strike', touch: 'Tap  STRIKE  to swing', gamepad: 'Press  X  to strike' },
+  attack: { keyboard: 'J light · I heavy', touch: 'STRIKE is light · HEAVY breaks guards', gamepad: 'X light · RT heavy' },
   block: { keyboard: 'Hold  K  or  C  to raise your shield', touch: 'Hold  SHIELD  to block', gamepad: 'Hold  B  to block' },
   parry: { keyboard: 'Block as a gold warning flashes to PARRY', touch: 'Block as a gold warning flashes to PARRY', gamepad: 'Block as a gold warning flashes to PARRY' },
   red: { keyboard: 'Red warnings can’t be blocked: jump or move', touch: 'Red warnings can’t be blocked: jump or move', gamepad: 'Red warnings can’t be blocked: jump or move' },
-  combo: { keyboard: 'Strike three times for a combo', touch: 'Tap STRIKE three times for a combo', gamepad: 'Press X three times for a combo' },
+  combo: { keyboard: 'J · J · I for an Ember finisher', touch: 'STRIKE · STRIKE · HEAVY to finish', gamepad: 'X · X · RT for an Ember finisher' },
   water: { keyboard: 'Jump the gaps. The water is deep.', touch: 'Jump the gaps. The water is deep.', gamepad: 'Jump the gaps. The water is deep.' },
-  shield: { keyboard: 'Shielded foes: parry them, or strike from behind', touch: 'Shielded foes: parry them, or strike from behind', gamepad: 'Shielded foes: parry them, or strike from behind' },
+  shield: { keyboard: 'Heavy opens a guard · or parry / flank', touch: 'HEAVY opens a guard · or parry / flank', gamepad: 'RT opens a guard · or parry / flank' },
 };
 
 export class Renderer {
@@ -142,6 +143,7 @@ export class Renderer {
     const rendered=Object.assign(Object.create(Object.getPrototypeOf(p)),p,{x:s.prevPlayerX+(p.x-s.prevPlayerX)*t,y:s.prevPlayerY+(p.y-s.prevPlayerY)*t});
     game.hero.draw(ctx, rendered, alpha);
     this.drawOrbs(game);
+    drawLightstones(ctx,s.ranged.stones);
     this.drawArenaWalls(game);
     game.fx.drawBase(ctx);
     game.fx.drawGlow(ctx);

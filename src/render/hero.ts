@@ -73,6 +73,28 @@ function poseFor(p: Player, time: number): Pose {
   if (p.state === 'attack') {
     const s = p.swing;
     const k = Math.min(1, p.t / s.dur);
+    if(p.heavySwing&&p.weaponId!=='sling'){
+      const wind=Math.max(.05,s.hitFrom/s.dur),hitEnd=Math.max(wind+.04,s.hitTo/s.dur),impact=(wind+hitEnd)*.5;
+      return keyed({ ...BASE, ...LUNGE_LEGS }, [
+        [0, { armS: -2.55, elS: -.25, blade: .45, lean: -.2, bob: -2, hipF: .25, kneeF: .45, hipB: -.25, kneeB: .4 }],
+        [wind, { armS: -2.9, elS: -.2, blade: .3, lean: -.28, bob: -3, hipF: .25, kneeF: .45, hipB: -.25, kneeB: .4 }],
+        [impact, { armS: 1.35, elS: .12, blade: .25, lean: .52, bob: 7, hipF: .9, kneeF: 1.15, hipB: -.7, kneeB: .5 }],
+        [hitEnd, { armS: 1.35, elS: .12, blade: .25, lean: .52, bob: 7, hipF: .9, kneeF: 1.15, hipB: -.7, kneeB: .5 }],
+        [1, { armS: .72, elS: .38, blade: .55, lean: .24, bob: 3, hipF: .5, kneeF: .7, hipB: -.4, kneeB: .5 }],
+      ], k);
+    }
+    if(p.weaponId==='sling'){
+      const wind=Math.max(.04,s.hitFrom/s.dur),hitEnd=Math.max(wind+.04,s.hitTo/s.dur),release=(wind+hitEnd)*.5;
+      const pose=keyed({ ...BASE }, [
+        [0,{armS:-.4,elS:.35,lean:-.08,blade:1.1}],
+        [wind,{armS:.15,elS:.2,lean:-.16,blade:1.1}],
+        [release,{armS:1.05,elS:.1,lean:.23,blade:.42}],
+        [hitEnd,{armS:1.05,elS:.1,lean:.23,blade:.42}],
+        [1,{armS:.3,elS:.42,lean:.06,blade:1.1}],
+      ],k);
+      pose.blade=Math.PI/2-pose.armS-pose.elS;
+      return pose;
+    }
     if (p.airSwing) {
       return keyed({ ...BASE, hipF: 0.6, kneeF: 1.1, hipB: -0.2, kneeB: 1.0 }, [
         [0, { armS: -2.9, elS: -0.2, blade: 0.2, lean: -0.1 }],
@@ -180,7 +202,7 @@ export class HeroView {
     const hand={x:shoulder.x+Math.sin(pose.armS)*12+Math.sin(fa)*11,y:shoulder.y+Math.cos(pose.armS)*12+Math.cos(fa)*11};
     const angle=fa+pose.blade;
     const W=(v:V):V=>({x:p.x+v.x*f,y:p.y+v.y});
-    if(p.attacking){const tip=W({x:hand.x+Math.sin(angle)*WEAPONS[p.weaponId].length,y:hand.y+Math.cos(angle)*WEAPONS[p.weaponId].length});const hilt=W({x:hand.x+Math.sin(angle)*22,y:hand.y+Math.cos(angle)*22});if(this.lastTip)this.trail.push({tip,hilt,age:0});this.lastTip=tip;}else this.lastTip=null;
+    if(p.attacking&&p.weaponId!=='sling'){const tip=W({x:hand.x+Math.sin(angle)*WEAPONS[p.weaponId].length,y:hand.y+Math.cos(angle)*WEAPONS[p.weaponId].length});const hilt=W({x:hand.x+Math.sin(angle)*22,y:hand.y+Math.cos(angle)*22});if(this.lastTip)this.trail.push({tip,hilt,age:0});this.lastTip=tip;}else this.lastTip=null;
     if(this.trail.length>24)this.trail.splice(0,this.trail.length-24);
     this.capeAccumulator=Math.min(.05,this.capeAccumulator+dt);
     while(this.capeAccumulator>=1/120){this.stepCape(W({x:neck.x-4,y:neck.y+2}),p,1/120);this.capeAccumulator-=1/120;}
@@ -323,7 +345,8 @@ export class HeroView {
 
     // Hammer follows the original hand and swing poses; combat timing is unchanged.
     this.limb(ctx, shoulder, as.elbow, as.hand, 6, C.steel);
-    drawWeapon(ctx,p.weaponId,p.weaponRank,as.hand,bladeA,this.time,p.attacking,false);
+    const slingRelease=p.weaponId==='sling'&&p.attacking&&p.t>=p.swing.hitFrom&&p.t<=p.swing.hitTo;
+    drawWeapon(ctx,p.weaponId,p.weaponRank,as.hand,bladeA,this.time,p.weaponId==='sling'?slingRelease:p.attacking,false);
     if(p.weaponId==='watch')drawWeapon(ctx,'watch',p.weaponRank,ah.hand,bladeA-.8,this.time,p.attacking,false);
 
     ctx.restore();

@@ -9,6 +9,7 @@ and that a bot can clear all seven levels in the real browser build.
 """
 import json
 import os
+import shutil
 import sys
 from playwright.sync_api import sync_playwright
 
@@ -42,7 +43,7 @@ def player(page):
 
 
 with sync_playwright() as pw:
-    browser = pw.chromium.launch()
+    browser = pw.chromium.launch(executable_path=os.environ.get('CHROMIUM_PATH') or shutil.which('chromium'))
 
     # ------------------------------------------------------------ desktop
     print('desktop')
@@ -124,7 +125,8 @@ with sync_playwright() as pw:
         page.evaluate("(() => { const s = window.__aol.game.stage; s.nextEncounter = s.def.encounters.length - 1; s.player.x = s.def.encounters[s.nextEncounter].trigger + 5; })()")
         page.wait_for_timeout(3200)
         boss = page.evaluate("(() => { const b = window.__aol.game.stage.boss; return b ? b.kind : null })()")
-        check(f'level {lv + 1} guardian appears', boss in ('warden', 'serpent', 'king'), str(boss))
+        expected = page.evaluate(f"window.__aol.game.stage.def.encounters.find(e => e.boss).waves[0][0].kind")
+        check(f'level {lv + 1} guardian appears', boss == expected, str(boss))
         shot(page, f'desktop-boss{lv + 1}')
 
     check('no errors on desktop', not errors, json.dumps(errors[:5]))

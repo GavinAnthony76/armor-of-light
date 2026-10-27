@@ -13,7 +13,7 @@ export interface LevelRecord {
 
 export interface SaveData {
   version: 2;
-  run?: {level:number;encounter:number;score:number;motes:number;kills:number;time:number;deaths:number;collected:number[];difficulty:DifficultyId;levelState?:{keeper?:boolean;seal?:boolean;gate?:boolean;checkpoint?:{x:number;y:number}};weapons?:WeaponJournal};
+  run?: {level:number;layoutRevision?:string;encounter:number;score:number;motes:number;kills:number;time:number;deaths:number;collected:number[];difficulty:DifficultyId;levelState?:{keeper?:boolean;seal?:boolean;gate?:boolean;checkpoint?:{x:number;y:number}};weapons?:WeaponJournal};
   unlocked: number;
   best: Record<number, LevelRecord>;
   settings: { sfx: boolean; music: boolean; musicVolume?:number; reduceMotion?:boolean; difficulty: DifficultyId };
@@ -54,6 +54,19 @@ export class SaveStore {
       }
       const run=p.run;
       if(run&&Number.isInteger(run.level)&&run.level>=0&&run.level<=d.unlocked&&run.level<STAGES.length&&Number.isInteger(run.encounter)&&run.encounter>=0&&run.encounter<=STAGES[run.level].encounters.length&&[run.score,run.motes,run.kills,run.time,run.deaths].every(n=>Number.isFinite(n)&&n>=0)&&Array.isArray(run.collected)&&(run.difficulty==='gentle'||run.difficulty==='challenging')) d.run={...run,collected:run.collected.filter(n=>Number.isInteger(n)&&n>=0)};
+      // An old checkpoint/collectible/reward index cannot be mapped to new geometry.
+      // Reset only that attempt; campaign records and settings remain untouched.
+      // The Archive build on main predates layoutRevision but already persisted
+      // its distinctive objective/checkpoint contract. Preserve those same-map
+      // saves; older surface-only builds did not contain this contract.
+      const legacy=run?.levelState,cp=legacy?.checkpoint;
+      if(d.run?.level===0&&d.run.layoutRevision===undefined&&
+        typeof legacy?.keeper==='boolean'&&typeof legacy?.seal==='boolean'&&typeof legacy?.gate==='boolean'&&
+        cp&&Number.isFinite(cp.x)&&Number.isFinite(cp.y)&&
+        STAGES[0].ground.some(([a,b,y])=>cp.x>=a&&cp.x<b&&cp.y===y)){
+        d.run.layoutRevision=STAGES[0].layoutRevision;
+      }
+      if(d.run&&d.run.layoutRevision!==STAGES[d.run.level].layoutRevision)delete d.run;
       if(d.run)d.run.weapons=cleanJournal(run?.weapons,d.run.level,STAGES[d.run.level].length);
       if (p.settings) {
         if(typeof p.settings.musicVolume==='number'&&Number.isFinite(p.settings.musicVolume))d.settings.musicVolume=Math.max(0,Math.min(1,p.settings.musicVolume));

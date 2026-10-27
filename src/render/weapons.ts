@@ -11,6 +11,18 @@ export function drawWeapon(ctx:CanvasRenderingContext2D,id:WeaponId,rank:Rank,ha
   ctx.fillStyle=metal;
   const polygon=(points:number[][])=>{ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();ctx.fill();ctx.stroke();};
   const shaft=(end:number)=>{ctx.strokeStyle='#101b2c';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(0,-8);ctx.lineTo(0,end);ctx.stroke();ctx.strokeStyle='#9e794d';ctx.lineWidth=3;ctx.stroke();ctx.strokeStyle='#101b2c';ctx.lineWidth=1.4;};
+  // Rank light is concentrated around the forged core, never a neon outline.
+  if(rank>=2){
+    const pulse=.85+Math.sin(time*3.2)*.12,radius=rank===3?31:25;
+    const glow=ctx.createRadialGradient(0,23,1,0,23,radius);
+    glow.addColorStop(0,`${w.color}${rank===3?'38':'25'}`);glow.addColorStop(1,`${w.color}00`);
+    ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=pulse;ctx.fillStyle=glow;ctx.fillRect(-radius,23-radius,radius*2,radius*2);ctx.restore();
+  }
+  if(id==='sling'){
+    drawSling(ctx,w.color,rank,swinging,time);
+    ctx.restore();
+    return;
+  }
   if(id==='iron'){
     shaft(26);polygon([[-12,20],[-17,25],[-17,37],[-12,42],[12,42],[17,37],[17,25],[12,20]]);
     ctx.strokeStyle=w.color;ctx.lineWidth=2;ctx.strokeRect(-10,24,20,14);
@@ -32,6 +44,42 @@ export function drawWeapon(ctx:CanvasRenderingContext2D,id:WeaponId,rank:Rank,ha
     ctx.fillStyle=w.color;for(let i=0;i<3;i++){ctx.save();ctx.translate(0,21+i*5);ctx.rotate(Math.PI/4);ctx.fillRect(-1.3,-1.3,2.6,2.6);ctx.restore();}}
   ctx.restore();
   if(id==='watch'&&paired)drawWeapon(ctx,id,rank,{x:hand.x-13,y:hand.y+9},a-.45,time,swinging,false);
+}
+function drawSling(ctx:CanvasRenderingContext2D,color:string,rank:Rank,releasing:boolean,time:number):void{
+  const stroke=(width:number,style:string,draw:()=>void)=>{ctx.strokeStyle=style;ctx.lineWidth=width;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();draw();ctx.stroke();};
+  // Carved grip and forked dawnwood frame.
+  stroke(7,C.outline,()=>{ctx.moveTo(0,18);ctx.quadraticCurveTo(-2,8,0,0);ctx.lineTo(-8,-15);});
+  stroke(7,C.outline,()=>{ctx.moveTo(0,0);ctx.lineTo(8,-15);});
+  stroke(4,'#8a6549',()=>{ctx.moveTo(0,17);ctx.lineTo(-1,5);});
+  stroke(4,color,()=>{ctx.moveTo(-8,-15);ctx.quadraticCurveTo(-10,-19,-7,-22);});
+  stroke(4,color,()=>{ctx.moveTo(8,-15);ctx.quadraticCurveTo(10,-19,7,-22);});
+  if(rank>=2){
+    // A second fork brace and two visible forged ferrules mark the first upgrade.
+    stroke(2.4,'#f4d38b',()=>{ctx.moveTo(-8,-15);ctx.quadraticCurveTo(0,-10,8,-15);});
+    ctx.fillStyle='#f1ce82';ctx.strokeStyle='#553d2b';ctx.lineWidth=1;
+    ctx.beginPath();ctx.roundRect(-11,-19,5,4,1);ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.roundRect(6,-19,5,4,1);ctx.fill();ctx.stroke();
+  }
+  if(rank===3){
+    // Rank III adds a twin crown and an inset, legible rune at the grip.
+    ctx.fillStyle='#fff0bf';ctx.strokeStyle='#72522e';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(-8,-22);ctx.lineTo(-5,-29);ctx.lineTo(-1,-23);ctx.lineTo(0,-31);ctx.lineTo(2,-23);ctx.lineTo(7,-29);ctx.lineTo(8,-22);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.fillStyle=color;ctx.beginPath();ctx.arc(0,7,2.2,0,Math.PI*2);ctx.fill();
+  }
+  // A brief relaxed string marks the engine's release window; the real bolt is simulation-owned.
+  stroke(rank>=2?2.6:2,color,()=>{
+    ctx.moveTo(-7,-22);
+    if(releasing){ctx.quadraticCurveTo(-4,-10,-1,0);ctx.quadraticCurveTo(1,-8,7,-22);}
+    else{ctx.quadraticCurveTo(-7,-8,-2,1);ctx.quadraticCurveTo(0,3,2,1);ctx.quadraticCurveTo(7,-8,7,-22);}
+  });
+  if(!releasing){
+    ctx.fillStyle=rank===3?'#e8fcff':color;ctx.strokeStyle='#173343';ctx.lineWidth=1;
+    ctx.beginPath();ctx.arc(0,5,rank===3?3.3:2.8,0,Math.PI*2);ctx.fill();ctx.stroke();
+  }
+  if(rank>=3){
+    ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.35+Math.sin(time*4)*.08;
+    ctx.fillStyle=color;ctx.beginPath();ctx.arc(0,7,1.1,0,Math.PI*2);ctx.fill();ctx.restore();
+  }
 }
 function drawHammer(ctx: CanvasRenderingContext2D, hand: V, a: number, swinging: boolean, time:number): void {
     const d={x:Math.sin(a),y:Math.cos(a)};
