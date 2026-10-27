@@ -1,0 +1,5 @@
+gentle hammer: clear in 60.6s, 0 retries
+gentle Sunblade III: clear in 60.9s, 0 retries
+challenging hammer: clear in 146.2s, 4 retries
+challenging Sunblade III: clear in 61.7s, 0 retries
+24 level-one route/retry/loadout checks passed.

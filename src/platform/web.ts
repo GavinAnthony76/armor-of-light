@@ -5,6 +5,7 @@ const KEY = 'armor-of-light-save-v1';
 /** Standalone browser platform: localStorage saves, focus/visibility pause. */
 export class WebPlatform implements PlatformAdapter {
   readonly name = 'web';
+  constructor(private readonly storageKey=KEY){}
   private memory: string | null = null;
   private pauseCbs: (() => void)[] = [];
   private resumeCbs: (() => void)[] = [];
@@ -23,7 +24,7 @@ export class WebPlatform implements PlatformAdapter {
 
   async load(): Promise<string | null> {
     try {
-      return window.localStorage.getItem(KEY) ?? this.memory;
+      return window.localStorage.getItem(this.storageKey) ?? this.memory;
     } catch {
       return this.memory; // storage blocked (private mode, sandboxed iframe…)
     }
@@ -32,7 +33,7 @@ export class WebPlatform implements PlatformAdapter {
   async save(data: string): Promise<void> {
     this.memory = data;
     try {
-      window.localStorage.setItem(KEY, data);
+      window.localStorage.setItem(this.storageKey, data);
     } catch {
       /* keep the in-memory copy */
     }
