@@ -98,3 +98,27 @@ the physical drops to test upgrades. Normal play does not show these controls.
 Automated playthroughs do not establish fun or native-device performance. Hardware
 audio, sustained play on actual phones, native implementation, asset-rights audit,
 security scan and App Store submission remain separate release gates.
+
+## Combat-feel refinement
+
+Following play feedback about chaining, movement and impact:
+
+- Two ordered follow-up inputs preserve rapid light–light–heavy instead of
+  replacing the second light. Queues are bounded; holding does not auto-combo.
+- A 160 ms post-recovery grace lets a slightly later press continue the sequence.
+  Getting hurt, blocking, dashing or jumping breaks that grace.
+- Ground light openers use restrained knockback so living foes stay in the next
+  strike's reach; air hits and finishers retain their full launch.
+- Light hitstop is 25 ms; committed heavy hitstop is 65 ms. Contacts have a brief
+  ink-edged burst, with heavier dust/sparks and stronger local shake on finishers.
+  Reduced Motion still suppresses camera shake.
+- Dash retains its original speed/duration/evade window, with a 380 ms cooldown,
+  no repeated vertical damping and a controlled stop when movement is released.
+  Jump can immediately cancel a dash. A double-jump press buffered during an air
+  attack executes when recovery opens, without granting extra aerial jumps.
+- Jump height, running speed and authored level data are unchanged.
+
+26 additional automated combat-feel checks pass at 30/60/120 Hz. Trusted touch
+browser input also verified three ordered beats/three contacts on one live
+fixture, visible impact particles, dash-to-jump cancellation and one aerial jump.
+The existing full campaign and build/bundle suites still pass.

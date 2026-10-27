@@ -421,7 +421,10 @@ export class Stage implements World {
       if (!e.alive || p.struck.has(e.id)) continue;
       if (!overlaps(box, e.hurtBox())) continue;
       p.struck.add(e.id);
-      const r = e.takeHit(this, s.damage, p.facing, s.knock);
+      // Light openers keep a normal foe inside the following strike's reach.
+      // Air hits and committed finishers retain their full launch strength.
+      const knock=!p.heavySwing&&!p.airSwing&&p.combo<2?Math.min(s.knock,80):s.knock;
+      const r = e.takeHit(this, s.damage, p.facing, knock);
       const c = e.center();
       const hx = (Math.max(box.x, c.x - e.w / 2) + Math.min(box.x + box.w, c.x + e.w / 2)) / 2;
       if (r === 'guarded') {
@@ -430,10 +433,10 @@ export class Stage implements World {
         p.vx = -p.facing * 200;
         this.hitstop = Math.max(this.hitstop, 0.06);
       } else if (r === 'hit' || r === 'killed') {
-        const heavy = s.damage > 1 || r === 'killed';
+        const heavy = p.heavySwing || p.combo===2;
         this.recordCombatHit(r,hx,c.y,s.damage,e.boss,p.heavySwing||p.combo===2);
-        this.hitstop = Math.max(this.hitstop, heavy ? 0.07 : 0.04);
-        if (heavy) this.shake(5);
+        this.hitstop = Math.max(this.hitstop, heavy ? 0.065 : 0.025);
+        this.shake(heavy?6:2);
       }
     }
     // swords cut shadow orbs out of the air
@@ -449,7 +452,7 @@ export class Stage implements World {
   recordCombatHit(result:'hit'|'killed',x:number,y:number,damage:number,boss:boolean,finishing:boolean):void {
     this.comboHits++;this.comboTimer=2.4;this.comboBest=Math.max(this.comboBest,this.comboHits);
     this.score+=10;
-    this.emit({type:'hit',x,y,heavy:damage>1||result==='killed',boss});
+    this.emit({type:'hit',x,y,heavy:finishing||damage>=2||result==='killed',boss});
     if(result==='killed'&&finishing&&!boss&&this.finisherCooldown<=0){
       this.finisherCooldown=3;this.finisherFlash=.4;
       this.emit({type:'finisher',x,y});

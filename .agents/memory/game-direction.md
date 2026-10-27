@@ -29,3 +29,10 @@ visually impressive weapon upgrades, including a sling.
 **Why:** The user explicitly asked to fully develop one level from the merged main, and previously said they will check each stage when prompted.
 
 **How to apply:** Preserve the approved main gameplay identity, finish and verify the first-land systems/presentation flow, then pause for play feedback. Level design belongs to the creator's separate branch; do not expand or redesign lands unless asked. Do not equate automated checks or browser emulation with native iPhone testing or App Store readiness.
+
+Combat review must assess combo continuity against live targets, jump/dash
+control and convincing hit impact—not merely whether action buttons fire.
+
+**Why:** The user identified these three feel problems after a functionally passing gameplay slice.
+
+**How to apply:** Check actual chained contacts and movement transitions with trusted input, then leave room for the creator's play feedback. Passing state-machine or campaign tests is not evidence that combat feels right.

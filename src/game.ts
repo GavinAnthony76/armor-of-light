@@ -220,8 +220,10 @@ export class Game {
         if (sound && s.player.weaponId!=='sling') a.play('swing', s.player.heavySwing?-1:e.step);
         break;
       case 'hit':
-        fx.sparks(e.x, e.y, e.heavy ? 18 : 10, '#ffe08a', e.heavy ? 520 : 380);
-        fx.ring(e.x, e.y, e.heavy ? 50 : 30, '#fff3c4', 0.25);
+        fx.add('impact',e.x,e.y,{size:e.heavy?38:22,life:e.heavy?.16:.11,color:e.heavy?'#ffe196':'#fff8df',rot:s.player.facing*.18});
+        fx.sparks(e.x, e.y, e.heavy ? 18 : 8, '#ffe08a', e.heavy ? 560 : 380);
+        fx.ring(e.x, e.y, e.heavy ? 46 : 25, '#fff3c4', e.heavy?.18:.12);
+        if(e.heavy)fx.dust(e.x,e.y+24,6,'#caa784',24,90);
         if (sound) a.play(e.heavy ? 'hitHeavy' : 'hit');
         break;
       case 'clang':

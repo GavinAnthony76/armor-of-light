@@ -1,6 +1,6 @@
 /** Presentation-only particles. World coordinates. */
 
-export type ParticleKind = 'spark' | 'dust' | 'wisp' | 'smoke' | 'ring' | 'drop' | 'ember' | 'flash' | 'shard';
+export type ParticleKind = 'spark' | 'dust' | 'wisp' | 'smoke' | 'ring' | 'drop' | 'ember' | 'flash' | 'shard' | 'impact';
 
 interface Particle {
   kind: ParticleKind;
@@ -139,6 +139,24 @@ export class Fx {
     for (const p of this.list) {
       const k = Math.max(0, p.life / p.max);
       switch (p.kind) {
+        case 'impact': {
+          // Brief ink-edged contact burst, not another full-screen flash.
+          ctx.save();
+          ctx.globalCompositeOperation='source-over';
+          ctx.translate(p.x,p.y);ctx.rotate(p.rot);
+          ctx.globalAlpha=Math.min(1,k*2);
+          ctx.fillStyle=p.color;ctx.strokeStyle='#382235';ctx.lineWidth=2;
+          const radius=p.size*(1.1-k*.25);
+          ctx.beginPath();
+          for(let i=0;i<16;i++){
+            const a=i*Math.PI/8,r=radius*(i%2?.32:1);
+            const x=Math.cos(a)*r,y=Math.sin(a)*r*.7;
+            if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+          }
+          ctx.closePath();ctx.fill();ctx.stroke();
+          ctx.restore();
+          break;
+        }
         case 'spark': {
           ctx.globalAlpha = k;
           ctx.strokeStyle = p.color;

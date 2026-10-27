@@ -55,6 +55,8 @@ export class Player implements Body {
   attackBuffer = 0;
   heavyBuffer = 0;
   dashBuffer = 0;
+  comboGrace = 0;
+  private followups: boolean[] = [];
   /** Enemies already struck by the current swing. */
   struck = new Set<number>();
   invuln = 0;
@@ -120,13 +122,25 @@ export class Player implements Body {
   }
 
   setState(s: PlayerState): void {
+    if(s==='hurt'||s==='dead'){this.clearActionBuffers();this.dashTime=0;}
     this.state = s;
     this.t = 0;
   }
 
   clearActionBuffers(): void {
     this.attackBuffer=0;this.heavyBuffer=0;this.dashBuffer=0;this.jumpBuffer=0;
+    this.resetChain();
+  }
+
+  private resetChain():void {
+    this.followups=[];this.comboGrace=0;
     this.queued=false;this.queuedEarly=false;this.queuedHeavy=false;
+  }
+
+  private syncChain():void {
+    this.queued=this.followups.length>0&&this.t>=this.swing.chainFrom;
+    this.queuedEarly=this.followups.length>0&&!this.queued;
+    this.queuedHeavy=this.followups[0]??false;
   }
 
   /** Movement and actions for one step. Returns notable actions for events. */
@@ -134,13 +148,14 @@ export class Player implements Body {
     let jumped = false;
     let swung = false;
     this.t += dt;
+    this.comboGrace=Math.max(0,this.comboGrace-dt);
     this.airJumpFlash=Math.max(0,this.airJumpFlash-dt);
     if(this.onGround)this.airJumpReady=true;
     this.invuln = Math.max(0, this.invuln - dt);
     this.coyote = this.onGround ? PLAYER.coyote : Math.max(0, this.coyote - dt);
     this.jumpBuffer = inp.jumpPressed ? PLAYER.jumpBuffer : Math.max(0, this.jumpBuffer - dt);
-    this.attackBuffer=inp.attackPressed ? .14 : Math.max(0,this.attackBuffer-dt);
-    this.heavyBuffer=inp.heavyPressed ? .14 : Math.max(0,this.heavyBuffer-dt);
+    this.attackBuffer=inp.attackPressed ? .18 : Math.max(0,this.attackBuffer-dt);
+    this.heavyBuffer=inp.heavyPressed ? .18 : Math.max(0,this.heavyBuffer-dt);
     this.dashBuffer=inp.dashPressed ? .12 : Math.max(0,this.dashBuffer-dt);
     this.dashCooldown=Math.max(0,this.dashCooldown-dt);
     this.wallLock=Math.max(0,this.wallLock-dt);
@@ -163,20 +178,32 @@ export class Player implements Body {
     }
 
     if(this.dashBuffer>0 && this.dashCooldown<=0 && (!this.attacking||this.t>this.swing.hitTo)){
-      this.setState('move');this.dashTime=.14;this.dashCooldown=.65;this.invuln=Math.max(this.invuln,.12);
-      this.facing=dir||this.facing;this.queued=false;this.queuedEarly=false;this.queuedHeavy=false;this.dashBuffer=0;
+      this.setState('move');this.resetChain();this.dashTime=.14;this.dashCooldown=.38;this.invuln=Math.max(this.invuln,.12);
+      this.facing=dir||this.facing;this.dashBuffer=0;
     }
-    if(this.dashTime>0){this.dashTime=Math.max(0,this.dashTime-dt);this.vx=this.facing*620;this.vy*=.75;return {jumped,swung};}
+    if(this.dashTime>0){
+      if(this.jumpBuffer>0&&(this.onGround||this.airJumpReady||this.wallGrace>0)){
+        this.dashTime=0;this.vx=dir*PLAYER.speed;
+      }else{
+        this.dashTime=Math.max(0,this.dashTime-dt);
+        this.vx=this.dashTime>0?this.facing*620:dir*PLAYER.speed;
+        return {jumped,swung};
+      }
+    }
     // Jump and block can cancel recovery, after the attack has dealt its damage.
-    if(this.attacking && this.jumpBuffer>0 && (this.onGround||this.airJumpReady) && this.t>this.swing.hitTo)this.setState('move');
+    if(this.attacking && this.jumpBuffer>0 && (this.onGround||this.airJumpReady||this.wallGrace>0) && this.t>this.swing.hitTo){
+      this.resetChain();this.setState('move');
+    }
     // blocking cancels the tail end of a swing, so defense always feels responsive
     if (this.state === 'attack' && inp.blockHeld && this.onGround && this.t > this.swing.hitTo) {
       this.setState('move');
+      this.resetChain();
     }
 
     // ---- block (hold)
     if (this.state !== 'attack' && inp.blockHeld && this.onGround) {
       if (this.state !== 'block') {
+        this.resetChain();
         this.setState('block');
         this.blockTime = 0;
       }
@@ -198,12 +225,18 @@ export class Player implements Body {
     if (this.attackBuffer>0 || this.heavyBuffer>0) {
       if (this.state === 'attack') {
         if (!this.airSwing && !this.heavySwing && this.combo < SWINGS.length - 1) {
-          this.queuedHeavy=this.heavyBuffer>0;
-          if(this.t>=this.swing.chainFrom)this.queued=true;else this.queuedEarly=true;
+          // Preserve order: a fast light-light-heavy must not replace the
+          // second light with the heavy. At most two deliberate follow-ups.
+          if(this.followups.length<2-this.combo&&!this.followups.includes(true)){
+            this.followups.push(this.heavyBuffer>0);
+          }
+          this.syncChain();
           this.attackBuffer=0;this.heavyBuffer=0;
         }
       } else {
-        this.startSwing(dir, !this.onGround, 0, this.heavyBuffer>0);
+        const heavy=this.heavyBuffer>0;
+        const next=this.onGround&&this.comboGrace>0?(heavy?2:this.combo+1):0;
+        this.startSwing(dir, !this.onGround, next, heavy);
         if(!this.onGround)this.airAttackReady=false;
         swung = true;
       }
@@ -211,7 +244,7 @@ export class Player implements Body {
 
     if (this.state === 'attack') {
       const s = this.swing;
-      if(this.queuedEarly&&this.t>=s.chainFrom){this.queued=true;this.queuedEarly=false;}
+      this.syncChain();
       if (!this.airSwing) {
         // ground swings lunge forward a little then settle
         const lunge = this.t < s.hitTo ? s.lunge : 0;
@@ -222,10 +255,14 @@ export class Player implements Body {
       const chainReady=this.queued&&!this.airSwing&&this.t>=s.hitTo+.04;
       if (this.t >= s.dur || chainReady || (this.airSwing && this.onGround && this.t > s.hitTo)) {
         if (this.queued && !this.airSwing) {
-          this.startSwing(dir, false, this.queuedHeavy?2:this.combo + 1,this.queuedHeavy);
+          const heavy=this.followups.shift()??false;
+          this.startSwing(dir, false, heavy?2:this.combo + 1,heavy,true);
           swung = true;
         } else {
+          const grace=!this.airSwing&&!this.heavySwing&&this.combo<2;
           this.setState('move');
+          this.resetChain();
+          if(grace)this.comboGrace=.16;
           if(this.attackBuffer>0||this.heavyBuffer>0){
             this.startSwing(dir,!this.onGround,0,this.heavyBuffer>0);swung=true;
           }
@@ -245,7 +282,7 @@ export class Player implements Body {
     this.runTime = this.onGround && dir !== 0 ? this.runTime + dt : 0;
 
     if(this.jumpBuffer>0 && !this.onGround && this.wallGrace>0 && this.wallDir!==0){
-      this.vx=-this.wallDir*340;this.vy=-PLAYER.jumpV*.9;this.facing=-this.wallDir;this.wallLock=.15;this.wallGrace=0;this.wallDir=0;this.jumpBuffer=0;this.jumpCut=false;this.airAttackReady=true;jumped=true;
+      this.vx=-this.wallDir*340;this.vy=-PLAYER.jumpV*.9;this.facing=-this.wallDir;this.wallLock=.15;this.wallGrace=0;this.wallDir=0;this.jumpBuffer=0;this.jumpCut=false;this.airAttackReady=true;this.comboGrace=0;jumped=true;
     }
     if (this.jumpBuffer > 0 && this.coyote > 0) {
       this.vy = -PLAYER.jumpV;
@@ -253,12 +290,13 @@ export class Player implements Body {
       this.coyote = 0;
       this.jumpBuffer = 0;
       this.jumpCut = false;
+      this.comboGrace=0;
       jumped = true;
     }
     // A deliberate second press spends one aerial jump. Holding jump cannot retrigger it.
-    if(!jumped && inp.jumpPressed && !this.onGround && this.coyote<=0 && this.airJumpReady){
+    if(!jumped && this.jumpBuffer>0 && !this.onGround && this.coyote<=0 && this.airJumpReady){
       this.vy=-PLAYER.jumpV*.92;this.airJumpReady=false;this.airJumpFlash=.24;
-      this.jumpBuffer=0;this.jumpCut=false;jumped=true;
+      this.jumpBuffer=0;this.jumpCut=false;this.comboGrace=0;jumped=true;
     }
     // releasing jump early gives a shorter hop
     if (!inp.jumpHeld && this.vy < -260 && !this.jumpCut) {
@@ -268,7 +306,8 @@ export class Player implements Body {
     return { jumped, swung };
   }
 
-  private startSwing(dir: number, air: boolean, combo: number, heavy=false): void {
+  private startSwing(dir: number, air: boolean, combo: number, heavy=false,keepChain=false): void {
+    if(!keepChain)this.resetChain();
     if (dir !== 0) this.facing = dir;
     this.setState('attack');
     this.combo = air ? 0 : combo;
@@ -277,5 +316,6 @@ export class Player implements Body {
     this.queued = false;
     this.queuedEarly=false;
     this.struck.clear();
+    this.syncChain();
   }
 }

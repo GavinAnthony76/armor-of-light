@@ -9,7 +9,7 @@
     "build:single": "node tests/single-file.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx tests/run.ts && node --import tsx tests/campaign.ts && node --import tsx tests/action.ts && node --import tsx tests/weapons.ts && node --import tsx tests/audio.ts && node --import tsx tests/hosts.ts && node --import tsx tests/input.ts && node --import tsx tests/traversal.ts && node --import tsx tests/layout.ts && node --import tsx tests/desert-slice.ts",
+    "test": "node --import tsx tests/run.ts && node --import tsx tests/campaign.ts && node --import tsx tests/action.ts && node --import tsx tests/weapons.ts && node --import tsx tests/audio.ts && node --import tsx tests/hosts.ts && node --import tsx tests/input.ts && node --import tsx tests/traversal.ts && node --import tsx tests/layout.ts && node --import tsx tests/desert-slice.ts && node --import tsx tests/combat-feel.ts",
     "test:e2e": "python3 tests/e2e.py",
     "test:bundles": "node tests/verify-bundles.mjs"
   },
