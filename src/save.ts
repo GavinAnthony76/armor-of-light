@@ -13,7 +13,7 @@ export interface LevelRecord {
 
 export interface SaveData {
   version: 2;
-  run?: {level:number;encounter:number;score:number;motes:number;kills:number;time:number;deaths:number;collected:number[];difficulty:DifficultyId;weapons?:WeaponJournal};
+  run?: {level:number;encounter:number;score:number;motes:number;kills:number;time:number;deaths:number;collected:number[];difficulty:DifficultyId;levelState?:{keeper?:boolean;seal?:boolean;gate?:boolean;checkpoint?:{x:number;y:number}};weapons?:WeaponJournal};
   unlocked: number;
   best: Record<number, LevelRecord>;
   settings: { sfx: boolean; music: boolean; musicVolume?:number; reduceMotion?:boolean; difficulty: DifficultyId };

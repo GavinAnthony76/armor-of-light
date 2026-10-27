@@ -7,6 +7,7 @@ export type EnemyKind = 'wisp' | 'husk' | 'caster' | 'lurker' | 'sentinel' | 'wa
 
 /** What enemies may ask of the stage. */
 export interface World {
+  voidY?:number;
   player: Player;
   terrain: Terrain;
   diff: Difficulty;
@@ -700,7 +701,7 @@ export class Enemy {
     }
     const r = w.terrain.move(this, dt, minX, maxX);
     // fell into a pit: vanish
-    if (this.y > 700) {
+    if (this.y > (w.voidY??700)) {
       this.hp = 0;
       w.releaseToken(this);
       this.state = 'dying';

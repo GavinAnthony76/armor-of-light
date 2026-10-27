@@ -21,6 +21,7 @@ export interface Encounter {
   waves: Spawn[][];
   boss?: boolean;
   openRoad?:boolean;
+  sealGuardian?:boolean;
 }
 
 export type Theme = 'desert' | 'flood' | 'garden' | 'mountain' | 'valley' | 'city' | 'river';
@@ -45,6 +46,7 @@ export interface StageDef {
   inspiration?: string;
   background?: string;
   bossArt?: string;
+  voidY?:number;
   length: number;
   start: number;
   exit: number;

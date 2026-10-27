@@ -103,6 +103,8 @@ export class WorldView {
   private layers: HTMLCanvasElement[] = [];
   private skyCanvas: HTMLCanvasElement | null = null;
   private groundPattern: CanvasPattern | null = null;
+  private masonry:HTMLImageElement|null=null;
+  private masonryPattern:CanvasPattern|null=null;
   private res = 0;
   private ambient: Ambient[] = [];
   private illustration: HTMLImageElement | null = null;
@@ -111,6 +113,7 @@ export class WorldView {
 
   constructor(readonly def: StageDef) {
     this.pal = PALETTES[def.theme];
+    if(def.id===0){this.masonry=new Image();this.masonry.src=asset('assets/desert-stone-v2.webp');}
     if(def.background){this.illustration=new Image();this.illustration.src=asset(def.background);}
     const rng = createRng(def.id * 31 + 5);
     const n = def.theme === 'flood' ? 140 : 60;
@@ -360,6 +363,7 @@ export class WorldView {
 
   /** Props standing in the scene behind the action. World space. */
   drawProps(ctx: CanvasRenderingContext2D, terrain: Terrain, camX: number, viewW: number, time: number, gateOpen: number): void {
+    if(this.def.id===0)return; // Painted layers and authored landmarks replace the old flat desert props.
     for (const p of this.def.props) {
       if (p.x < camX - 300 || p.x > camX + viewW + 300) continue;
       const gy = terrain.groundAt(p.x) ?? 462;
@@ -369,7 +373,8 @@ export class WorldView {
 
   /** Ground blocks, platforms and water. World space. */
   drawTerrain(ctx: CanvasRenderingContext2D, terrain: Terrain, camX: number, viewW: number, time: number, bottom=VIEW_H): void {
-    const pal = this.pal;
+    if(this.masonry?.complete&&this.masonry.naturalWidth&&!this.masonryPattern){const tile=document.createElement('canvas');tile.width=tile.height=256;tile.getContext('2d')!.drawImage(this.masonry,0,0,256,256);this.masonryPattern=ctx.createPattern(tile,'repeat');}
+    const pal = this.def.id===0&&bottom>800?{...this.pal,groundTop:'#b4ad91',groundA:'#5c5651',groundB:'#26313d',groundEdge:'#172b35',platTop:'#a8a58f',platBody:'#4a5560'}:this.pal;
     const x0 = camX - 40;
     const x1 = camX + viewW + 40;
 
@@ -399,10 +404,11 @@ export class WorldView {
     } else {
       // dark pit below the world
       ctx.fillStyle = '#1b1020';
-      ctx.fillRect(x0, 470, x1 - x0, bottom);
+      ctx.fillRect(x0, this.def.id===0?1050:470, x1 - x0, bottom);
     }
 
     for (const s of terrain.ground) {
+      if(s.y<-1000)continue;
       if (s.x1 < x0 || s.x0 > x1) continue;
       const w = s.x1 - s.x0;
       const g = ctx.createLinearGradient(0, s.y, 0, bottom);
@@ -414,8 +420,8 @@ export class WorldView {
       ctx.fill();
       if (this.groundPattern) {
         ctx.save();
-        ctx.fillStyle = this.groundPattern;
-        ctx.globalAlpha = 0.9;
+        ctx.fillStyle = this.masonryPattern??this.groundPattern;
+        ctx.globalAlpha = this.masonryPattern?(bottom>800?.32:.8):.9;
         ctx.fillRect(s.x0, s.y + 8, w, bottom - s.y);
         ctx.restore();
       }
@@ -451,9 +457,11 @@ export class WorldView {
       ctx.fill();
       ctx.fillStyle = pal.platBody;
       ctx.beginPath();
-      if (small) ctx.roundRect(s.x0, s.y - 2, w, 22, 10);
+      if(this.def.id===0)ctx.roundRect(s.x0,s.y-2,w,26,5);
+      else if (small) ctx.roundRect(s.x0, s.y - 2, w, 22, 10);
       else ctx.roundRect(s.x0, s.y - 2, w, 16, 5);
       ctx.fill();
+      if(this.masonryPattern){ctx.save();ctx.clip();ctx.fillStyle=this.masonryPattern;ctx.globalAlpha=bottom>800?.3:.75;ctx.fillRect(s.x0,s.y,w,26);ctx.restore();}
       ctx.fillStyle = pal.platTop;
       ctx.beginPath();
       ctx.roundRect(s.x0, s.y - 3, w, 7, 4);

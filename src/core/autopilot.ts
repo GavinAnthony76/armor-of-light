@@ -9,6 +9,7 @@ import { InputFrame, NO_INPUT } from './types';
  */
 export class Autopilot {
   private jumpHold = 0;
+  private interactPulse=false;
   private attackGap = 0;
   private blockFor = 0;
   private blockTarget: { x: number } | null = null;
@@ -26,6 +27,7 @@ export class Autopilot {
     this.blockFor = Math.max(0, this.blockFor - 1 / 60);
     if (s.phase !== 'play' || p.state === 'dead') return inp;
     inp.jumpHeld = this.jumpHold > 0;
+    const action=s.levelInteraction();if(action==='Take Beacon Seal'||action==='Open seal gate'){this.interactPulse=!this.interactPulse;inp.interactPressed=this.interactPulse;return inp;}this.interactPulse=false;
 
     const jump = () => {
       if (p.onGround && this.jumpHold <= 0) {

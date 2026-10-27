@@ -20,7 +20,7 @@ type AppState = 'menu' | 'playing' | 'paused' | 'results';
 async function boot(): Promise<void> {
   const demoLand=!new URLSearchParams(location.search).has('campaign');
   // Swap this for another adapter (e.g. YouTubePlatform) to target a host.
-  const platform: PlatformAdapter = new URLSearchParams(location.search).has('youtube') ? new YouTubePlatform() : new WebPlatform(demoLand?'armor-of-light-desert-demo-v1':undefined);
+  const platform: PlatformAdapter = new URLSearchParams(location.search).has('youtube') ? new YouTubePlatform() : new WebPlatform(demoLand?'armor-of-light-desert-demo-v2':undefined);
   await platform.init();
   const save = new SaveStore(platform);
   await save.load();
@@ -117,7 +117,7 @@ async function boot(): Promise<void> {
       const x=next?(next.checkpoint??next.arena[0]+70):s.def.encounters[s.def.encounters.length-1].arena[1]+30;
       s.player.x=x;s.player.y=s.terrain.groundAt(x)??450;s.player.lastSafe={x,y:s.player.y};s.checkpoint={x,y:s.player.y};
       if(!next){s.pathOpen=true;for(const g of s.def.afterBoss??[])s.terrain.ground.push({x0:g[0],x1:g[1],y:g[2]});}
-      s.restoreWeapons(run.weapons);
+      s.restoreWeapons(run.weapons);s.restoreLevelState(run.levelState);
       game.camX=Math.max(0,x-game.viewW*.35);
     }
     s.prevPlayerX=s.player.x;s.prevPlayerY=s.player.y;
@@ -227,7 +227,7 @@ async function boot(): Promise<void> {
       const s=game.stage;
       if((s.nextEncounter!==lastSavedEncounter||s.equipmentRevision!==lastEquipmentRevision)&&s.phase==='play'){
         lastSavedEncounter=s.nextEncounter;lastEquipmentRevision=s.equipmentRevision;
-        save.data.run={level:game.level,encounter:s.nextEncounter,score:s.score,motes:s.motes,kills:s.kills,time:s.time,deaths:s.deaths,collected:s.pickups.map((p,n)=>p.placed&&p.taken?n:-1).filter(n=>n>=0),difficulty:s.diff.id,weapons:s.weaponJournal()};save.persist();
+        save.data.run={level:game.level,encounter:s.nextEncounter,score:s.score,motes:s.motes,kills:s.kills,time:s.time,deaths:s.deaths,collected:s.pickups.map((p,n)=>p.placed&&p.taken?n:-1).filter(n=>n>=0),difficulty:s.diff.id,levelState:s.levelState(),weapons:s.weaponJournal()};save.persist();
       }
     }
     if(state==='playing'&&game.stage)ui.updateEquipment(game.stage,input.mode,audio.ready,save.data.settings.music);
