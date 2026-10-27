@@ -1,3 +1,4 @@
+import {DESERT_ZONES} from '../core/desert-demo';
 import { ROMAN, WEAPONS } from '../core/weapons';
 import type { Stage } from '../core/stage';
 import type { InputMode } from '../input';
@@ -111,7 +112,7 @@ export class UI {
         <div class="equipment-hud" data-ref="equipment"><canvas data-ref="weaponIcon" width="68" height="68" aria-hidden="true"></canvas><div><strong data-ref="weaponName"></strong><small data-ref="weaponSlots"></small></div></div>
         <div class="combo-readout" data-ref="combo" role="status" aria-live="polite" hidden></div>
         <div class="weapon-prompt" data-ref="weaponPrompt" role="status" hidden><strong data-ref="dropName"></strong><span data-ref="dropBenefit"></span><b data-ref="dropAction"></b></div>
-        <span class="audio-hint" data-ref="audioHint"></span>
+        <span class="audio-hint" data-ref="audioHint"></span><div class="land-objective" data-ref="landObjective" hidden></div>
         <button class="btn icon hud-btn" data-act="pause" aria-label="Pause">${ICON.pause}</button>
       </section>
 
@@ -256,6 +257,8 @@ export class UI {
   private comboStamp='';
   updateEquipment(s:Stage,mode:InputMode,audioReady:boolean,musicOn:boolean):void {
     const p=s.player,w=WEAPONS[p.weaponId],eq=p.equipment;
+    const objective=this.ref('landObjective');objective.hidden=s.def.id!==0;
+    if(s.def.id===0){const z=DESERT_ZONES.filter(z=>z.x<=p.x).slice(-1)[0]??DESERT_ZONES[0];objective.textContent=s.pathOpen?'The beacon awaits · follow the light east':z.name+' · '+z.goal;}
     const swap=mode==='keyboard'?'Q swap':mode==='gamepad'?'LT swap':'SWAP';
     const pickup=mode==='keyboard'?'E':mode==='gamepad'?'Y':'PICK UP';
     const stamp=`${p.weaponId}${p.weaponRank}${eq.alternate?.id}${eq.alternate?.rank}${mode}`;

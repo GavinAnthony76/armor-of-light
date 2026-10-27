@@ -62,7 +62,7 @@ for(const rank of [1,2,3] as const){
 }
 {
   const s=stage();s.player.equipment={alternate:{id:'sling',rank:1},equipped:'alternate'};
-  const e=s.spawnEnemy('husk',620);e.state='move';e.cooldown=999;e.hp=40;e.maxHp=40;
+  const e=s.spawnEnemy('husk',820);e.state='move';e.cooldown=999;e.hp=40;e.maxHp=40;
   s.step({...NO_INPUT,attackPressed:true});ticks(s,76);
   check(e.hp===40&&s.ranged.stones.length===0,'solid first-land traversal wall blocks lightstones');
 }

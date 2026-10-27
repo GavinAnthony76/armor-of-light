@@ -225,7 +225,7 @@ async function boot(): Promise<void> {
       const s=game.stage;
       if((s.nextEncounter!==lastSavedEncounter||s.equipmentRevision!==lastEquipmentRevision)&&s.phase==='play'){
         lastSavedEncounter=s.nextEncounter;lastEquipmentRevision=s.equipmentRevision;
-        save.data.run={level:game.level,encounter:s.nextEncounter,score:s.score,motes:s.motes,kills:s.kills,time:s.time,deaths:s.deaths,collected:s.pickups.map((p,n)=>p.placed&&p.taken?n:-1).filter(n=>n>=0),difficulty:s.diff.id,weapons:s.weaponJournal()};save.persist();
+        save.data.run={level:game.level,layoutRevision:s.def.layoutRevision,encounter:s.nextEncounter,score:s.score,motes:s.motes,kills:s.kills,time:s.time,deaths:s.deaths,collected:s.pickups.map((p,n)=>p.placed&&p.taken?n:-1).filter(n=>n>=0),difficulty:s.diff.id,weapons:s.weaponJournal()};save.persist();
       }
     }
     if(state==='playing'&&game.stage)ui.updateEquipment(game.stage,input.mode,audio.ready,save.data.settings.music);

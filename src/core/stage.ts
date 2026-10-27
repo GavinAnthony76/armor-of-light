@@ -166,7 +166,8 @@ export class Stage implements World {
     this.issuedRewards.add(e.rewardId);this.equipmentRevision++;
     const weapon=rewardForSource(this.def.id,e.rewardId);
     if(!weapon||this.player.equipment.alternate?.id===weapon&&this.player.equipment.alternate.rank===3)return;
-    if(this.weaponDrops.filter(d=>d.copy).length>=3)return; // readable reward density; later encounters remain opportunities
+    // Declining one weapon must not consume another weapon's rank-III chances.
+    if(this.weaponDrops.filter(d=>d.copy&&d.weapon===weapon).length>=3)return;
     const c=e.center();
     this.weaponDrops.push({id:e.rewardId,weapon,rank:1,copy:true,x:c.x,y:c.y,vx:e.facing*-28,vy:-190,age:0,bounce:0,settled:false});
   }

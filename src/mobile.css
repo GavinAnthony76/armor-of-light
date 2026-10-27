@@ -110,3 +110,6 @@ body.mobile-layout .chapter-art{height:110px}body.mobile-layout .chapter-copy{pa
 @media(max-height:400px) and (orientation:landscape){
   body.mobile-layout .chapter-art{display:block;height:auto}
 }
+.land-objective{position:absolute;left:calc(var(--gx) + 12px);top:calc(var(--gy) + 108px);max-width:min(410px,calc(var(--gw) - 24px));padding:6px 10px;border-left:2px solid #d6b778;background:#13202ac9;border-radius:0 8px 8px 0;color:#efe1c3;font:11px/1.4 system-ui;pointer-events:none}
+#ui.mobile-layout .land-objective{top:calc(var(--gy) + 90px);max-width:240px;font-size:9px;padding:4px 7px}
+@media(orientation:landscape) and (max-height:400px){#ui.mobile-layout .land-objective{max-width:260px;font-size:9px}}

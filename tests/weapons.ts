@@ -34,8 +34,8 @@ tick(s,20,{...NO_INPUT,interactPressed:true,interactHeld:true});check(s.player.w
 tick(s);pickup(s);check(s.player.weaponId==='sunblade'&&s.weaponDrops.length===0,'explicit pickup equips visible identity');
 check(s.player.weaponRank===1,'first rank I');
 kill(s,'e0w1s0');settle(s);near(s);pickup(s);check(s.player.weaponRank===2,'copy upgrades rank II');
-kill(s,'e0w2s0');settle(s);near(s);pickup(s);check(s.player.weaponRank===3,'copy upgrades rank III');
-kill(s,'e0w3s0');check(s.weaponDrops.length===0,'suppress further max-rank rewards');
+kill(s,'e2w0s0');settle(s);near(s);pickup(s);check(s.player.weaponRank===3,'copy upgrades rank III');
+kill(s,'e3w0s0');check(s.weaponDrops.length===0,'suppress further max-rank rewards');
 s.weaponDrops.push({id:'e0w4s0',weapon:'sunblade',rank:1,copy:true,x:s.player.x,y:s.player.y,vx:0,vy:0,age:1,bounce:1,settled:true});s.issuedRewards.add('e0w4s0');near(s);pickup(s);
 check(s.weaponDrops.length===1&&s.player.weaponRank===3,'existing max-rank copy is not silently consumed');
 check(s.takeEvents().length===0,'test event draining independent of simulation');
@@ -66,7 +66,7 @@ for(let i=0;i<6;i++){settle(ex);near(ex);pickup(ex);check(ex.weaponDrops.length=
 const p=fixture().player;for(let c=0;c<3;c++){p.combo=c;check(p.swing===SWINGS[c],'hammer retains exact swing definition');}p.airSwing=true;check(p.swing===AIR_SWING,'hammer air swing unchanged');
 for(const id of LAND_WEAPONS){p.airSwing=false;p.equipment={alternate:{id,rank:3},equipped:'alternate'};p.combo=0;check(p.swing.hitTo<=SWINGS[0].hitTo,'alternate defensive cancel no later than baseline');}
 // Migration and malicious/corrupt journal handling.
-let raw=JSON.stringify({version:1,unlocked:0,settings:{sfx:false,music:false},run:{level:0,encounter:1,score:30,motes:0,kills:1,time:20,deaths:0,collected:[],difficulty:'gentle'}});
+let raw=JSON.stringify({version:1,unlocked:0,settings:{sfx:false,music:false},run:{level:0,layoutRevision:STAGES[0].layoutRevision,encounter:1,score:30,motes:0,kills:1,time:20,deaths:0,collected:[],difficulty:'gentle'}});
 const store=new SaveStore({load:async()=>raw,save:async(x:string)=>{raw=x;}} as never);await store.load();
 check(store.data.version===2&&!!store.data.run,'old run migrated');check(store.data.run?.weapons?.equipment.alternate===null,'old save starts hammer safely');check(!store.data.settings.music&&!store.data.settings.sfx,'migration respects mute');
 store.data.run!.weapons=journal;store.persist();await store.flush();await store.load();check(store.data.run?.weapons?.equipment.alternate?.rank===3,'save roundtrip retains rank');
