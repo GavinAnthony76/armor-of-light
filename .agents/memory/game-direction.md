@@ -36,3 +36,12 @@ control and convincing hit impact—not merely whether action buttons fire.
 **Why:** The user identified these three feel problems after a functionally passing gameplay slice.
 
 **How to apply:** Check actual chained contacts and movement transitions with trusted input, then leave room for the creator's play feedback. Passing state-machine or campaign tests is not evidence that combat feels right.
+
+The revised combo continuity, jump/dash control and hit-impact feel is the
+approved combat baseline.
+
+**Why:** The user explicitly rated the revised combat “Much better.”
+
+**How to apply:** Preserve this feel through graphics changes and incoming
+level-design integration. Do not silently replace it with another branch's
+combat behavior; seek play feedback for material retuning.
