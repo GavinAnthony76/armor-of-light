@@ -1,3 +1,4 @@
+import {desertDemo} from "./desert-demo";
 import type { EnemyKind } from './enemy';
 
 /**
@@ -416,3 +417,6 @@ STAGES.forEach((s,land)=>{
     s.motes.push(...arc(a+100,b-30,gy-210,20,4));
   }
 });
+
+// Level-design branch: authored first-land demo, keeping the shared combat contracts.
+STAGES[0]=desertDemo(STAGES[0]);

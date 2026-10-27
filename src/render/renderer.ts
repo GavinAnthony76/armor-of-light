@@ -110,6 +110,7 @@ export class Renderer {
     ctx.clip();
 
     world.drawBackground(ctx, game.camX, l.viewW, game.time,l.viewH);
+    if(s.def.id===0)this.drawDesertDepth(game);
 
     // ---------------- world space
     ctx.save();
@@ -119,6 +120,7 @@ export class Renderer {
     world.drawProps(ctx, s.terrain, camX, worldW, game.time, game.gateOpen);
     this.drawExit(game);
     world.drawTerrain(ctx, s.terrain, camX, worldW, game.time,Math.max(VIEW_H,camTop+l.viewH/Z));
+    if(s.def.id===0)this.drawDesertLandmarks(game);
     if (!game.demo) for (const sign of s.def.signs.filter(q=>Math.abs(q.x-s.player.x)<170).sort((a,b)=>Math.abs(a.x-s.player.x)-Math.abs(b.x-s.player.x)).slice(0,1)) this.drawSign(sign, s.terrain.groundAt(sign.x) ?? 450, inputMode);
     this.drawPickups(game);
     this.drawWeaponDrops(game);
@@ -166,6 +168,42 @@ export class Renderer {
   }
 
   // ------------------------------------------------------------ world
+
+  private drawDesertDepth(game:Game):void {
+    const c=this.ctx,l=this.layout,t=game.time;
+    c.save();
+    // Separate camera-driven layers remain visible over the painted environment.
+    for(let layer=0;layer<2;layer++){
+      const speed=layer===0?.14:.36,spacing=layer===0?570:820;
+      c.fillStyle=layer===0?'rgba(81,54,64,.12)':'rgba(92,59,37,.17)';
+      for(let i=-2;i<Math.ceil(l.viewW/spacing)+2;i++){
+        const x=i*spacing-((game.camX*speed)%spacing),base=l.viewH*.79,h=layer===0?100:170;
+        c.fillRect(x,base-h,18,h);c.fillRect(x+120,base-h,18,h);
+        c.beginPath();c.arc(x+69,base-h,69,Math.PI,0);c.arc(x+69,base-h,48,0,Math.PI,true);c.fill();
+      }
+    }
+    c.fillStyle='rgba(255,232,195,.08)';
+    for(let i=0;i<7;i++){const x=((i*270+t*(3+i%2)-game.camX*.035)%(l.viewW+300)+l.viewW+300)%(l.viewW+300)-150;
+      c.beginPath();c.ellipse(x,55+i%3*32,110,14,0,0,Math.PI*2);c.fill();}
+    c.restore();
+  }
+
+  private drawDesertLandmarks(game:Game):void {
+    const c=this.ctx,s=game.stage!,t=game.time;
+    for(const x of [1320,2180,4450,4740,5090,6180]){
+      if(x<game.camX-100||x>game.camX+game.viewW+100)continue;
+      const y=s.terrain.groundAt(x)??450;
+      c.save();c.strokeStyle='#594331';c.lineWidth=4;c.beginPath();c.moveTo(x,y);c.lineTo(x,y-110);c.stroke();
+      c.fillStyle='#ae7254';c.beginPath();c.moveTo(x,y-108);for(let i=1;i<=8;i++)c.lineTo(x+i*7,y-108+i*.9+Math.sin(t*3+i*.7)*4);for(let i=8;i>=1;i--)c.lineTo(x+i*7,y-86+i*.6+Math.sin(t*3+i*.7)*4);c.lineTo(x,y-86);c.fill();c.restore();
+    }
+    const x=7410,y=450,lit=s.pathOpen;
+    c.save();c.fillStyle='#8b6745';c.fillRect(x-18,y-120,36,120);c.fillStyle='#e5c38b';c.fillRect(x-28,y-126,56,12);
+    if(lit){
+      const g=c.createRadialGradient(x,y-144,2,x,y-144,95);g.addColorStop(0,'#ffd46a88');g.addColorStop(1,'#ffd46a00');c.fillStyle=g;c.fillRect(x-95,y-239,190,190);
+      c.fillStyle='#ffb545';c.beginPath();c.moveTo(x-16,y-128);c.quadraticCurveTo(x-24,y-153,x+Math.sin(t*5)*8,y-181);c.quadraticCurveTo(x+28,y-146,x+16,y-128);c.fill();c.fillStyle='#fff3ae';c.beginPath();c.ellipse(x,y-139,7,17,0,0,Math.PI*2);c.fill();
+    }else{c.fillStyle='#302b35';c.beginPath();c.ellipse(x,y-134,16,7,0,0,Math.PI*2);c.fill();}
+    c.restore();
+  }
 
   private drawWeaponDrops(game:Game):void {
     const ctx=this.ctx,s=game.stage!;

@@ -1,3 +1,4 @@
+import {DESERT_ZONES} from '../core/desert-demo';
 import { ROMAN, WEAPONS } from '../core/weapons';
 import type { Stage } from '../core/stage';
 import type { InputMode } from '../input';
@@ -46,6 +47,7 @@ export class UI {
   constructor(
     private root: HTMLElement,
     private h: UIHandlers,
+    private demoLand?:number,
   ) {
     root.innerHTML = `
       <section class="screen title" data-screen="title">
@@ -108,7 +110,7 @@ export class UI {
       <section class="screen hud" data-screen="hud">
         <div class="equipment-hud" data-ref="equipment"><canvas data-ref="weaponIcon" width="68" height="68" aria-hidden="true"></canvas><div><strong data-ref="weaponName"></strong><small data-ref="weaponSlots"></small></div></div>
         <div class="weapon-prompt" data-ref="weaponPrompt" role="status" hidden><strong data-ref="dropName"></strong><span data-ref="dropBenefit"></span><b data-ref="dropAction"></b></div>
-        <span class="audio-hint" data-ref="audioHint"></span>
+        <span class="audio-hint" data-ref="audioHint"></span><div class="land-objective" data-ref="landObjective" hidden></div>
         <button class="btn icon hud-btn" data-act="pause" aria-label="Pause">${ICON.pause}</button>
       </section>
 
@@ -251,6 +253,8 @@ export class UI {
   private weaponStamp='';
   updateEquipment(s:Stage,mode:InputMode,audioReady:boolean,musicOn:boolean):void {
     const p=s.player,w=WEAPONS[p.weaponId],eq=p.equipment;
+    const objective=this.ref('landObjective');objective.hidden=s.def.id!==0;
+    if(s.def.id===0){const z=DESERT_ZONES.filter(z=>z.x<=p.x).slice(-1)[0]??DESERT_ZONES[0];objective.textContent=s.pathOpen?'The beacon awaits · follow the light east':z.name+' · '+z.goal;}
     const swap=mode==='keyboard'?'Q swap':mode==='gamepad'?'LT swap':'SWAP';
     const pickup=mode==='keyboard'?'E':mode==='gamepad'?'Y':'PICK UP';
     const stamp=`${p.weaponId}${p.weaponRank}${eq.alternate?.id}${eq.alternate?.rank}${mode}`;
@@ -295,11 +299,12 @@ export class UI {
   }
 
   showTitle(save: SaveData): void {
-    const target = Math.min(save.run?.level ?? save.unlocked, STAGES.length - 1);
+    const target = this.demoLand ?? Math.min(save.run?.level ?? save.unlocked, STAGES.length - 1);
     const b = this.root.querySelector<HTMLButtonElement>('[data-act="continue"]')!;
     b.dataset.target = String(target);
     this.ref('playLabel').textContent = (save.run||target > 0) ? `Continue: ${STAGES[target].name}` : 'Begin the journey';
     this.setSettings(save.settings);
+    if(this.demoLand!==undefined){this.root.querySelector('.eyebrow')!.textContent='PLAYABLE LEVEL 1 DEMO';this.root.querySelector('.tag')!.textContent='The Desert Ruins · Follow the ember';}
     this.show('title');
   }
 
@@ -307,6 +312,7 @@ export class UI {
     this.ref('lampTotal').innerHTML = `${ICON.lamp}<span>${lamps} / ${STAGES.length * 3}</span>`;
     this.ref('cards').innerHTML = STAGES.map((def, i) => {
       const locked = i > save.unlocked;
+      if(this.demoLand!==undefined&&i!==this.demoLand)return '';
       const rec = save.best[i];
       return `<button class="level-card ${locked ? 'locked' : ''}" ${locked ? 'disabled' : `data-level="${i}"`} aria-label="${locked ? `Level ${i + 1} locked` : `Play level ${i + 1}: ${def.name}`}">
         <span class="art" style="background:linear-gradient(0deg,#100b1870,#100b1800),url('${asset(def.background)}') center/cover"><span class="num">${locked ? ICON.lock : i + 1}</span></span>
@@ -340,6 +346,7 @@ export class UI {
     ending.textContent = CHAPTERS[r.stageId].aftermath;
     this.ref('nextBtn').hidden = !hasNext;
     this.ref('replayBtn').classList.toggle('primary', !hasNext);
+    if(this.demoLand!==undefined){this.ref('resTitle').textContent='The beacon burns again';this.ref('resEnding').textContent='You have completed The Desert Ruins demo. Mara’s ribbon points toward the flooded road. Replay to explore the upper routes or forge the Sunblade to rank III.';}
     this.show('results');
   }
 }

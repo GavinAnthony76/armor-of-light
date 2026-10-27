@@ -18,8 +18,9 @@ import { UI } from './ui/ui';
 type AppState = 'menu' | 'playing' | 'paused' | 'results';
 
 async function boot(): Promise<void> {
+  const demoLand=!new URLSearchParams(location.search).has('campaign');
   // Swap this for another adapter (e.g. YouTubePlatform) to target a host.
-  const platform: PlatformAdapter = new URLSearchParams(location.search).has('youtube') ? new YouTubePlatform() : new WebPlatform();
+  const platform: PlatformAdapter = new URLSearchParams(location.search).has('youtube') ? new YouTubePlatform() : new WebPlatform(demoLand?'armor-of-light-desert-demo-v1':undefined);
   await platform.init();
   const save = new SaveStore(platform);
   await save.load();
@@ -66,7 +67,7 @@ async function boot(): Promise<void> {
       applySettings();
     },
     click: () => audio.play('click'),
-  });
+  },demoLand?0:undefined);
   applySettings();
   audio.setHostAllowed(platform.isAudioAllowed());
   platform.onAudioAllowedChange((on) => audio.setHostAllowed(on));
@@ -90,6 +91,7 @@ async function boot(): Promise<void> {
   // ---------------------------------------------------------- flow
 
   function startLevel(i: number): void {
+    if(demoLand&&i!==0)return;
     if(!Number.isInteger(i)||i<0||i>=STAGES.length||(!params.has('debug')&&i>save.data.unlocked)) return;
     if(!params.has('debug') && !document.body.dataset.chapterAccepted){
       input.enabled=false; input.releaseAll(); game.paused=true;
@@ -163,7 +165,7 @@ async function boot(): Promise<void> {
     platform.submitScore(save.totalScore());
     state = 'results';
     input.enabled = false;
-    ui.showResults(r, newBest, r.stageId + 1 < STAGES.length, game.stage?.totalMotes ?? 0);
+    ui.showResults(r, newBest, !demoLand&&r.stageId + 1 < STAGES.length, game.stage?.totalMotes ?? 0);
   };
 
   // ---------------------------------------------------------- browser

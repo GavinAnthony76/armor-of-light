@@ -77,3 +77,6 @@
 body.mobile-layout .chapter-dialog{width:calc(100% - 24px);max-width:680px;border-radius:18px;max-height:calc(100% - 24px)}
 body.mobile-layout .chapter-art{height:110px}body.mobile-layout .chapter-copy{padding:0 18px 18px}body.mobile-layout .chapter-copy h2{font-size:26px}body.mobile-layout .story-beat{padding:8px 12px;min-height:0}body.mobile-layout .story-beat>p{font-size:16px;line-height:1.5}body.mobile-layout .chapter-copy blockquote{font-size:14px}
 @media(max-height:400px) and (orientation:landscape){body.mobile-layout .chapter-art{display:none}body.mobile-layout .chapter-copy h2{margin:12px 0}.chapter-actions .btn{min-height:44px;font-size:13px}}
+.land-objective{position:absolute;left:calc(var(--gx) + 12px);top:calc(var(--gy) + 108px);max-width:min(410px,calc(var(--gw) - 24px));padding:6px 10px;border-left:2px solid #d6b778;background:#13202ac9;border-radius:0 8px 8px 0;color:#efe1c3;font:11px/1.4 system-ui;pointer-events:none}
+#ui.mobile-layout .land-objective{top:calc(var(--gy) + 90px);max-width:240px;font-size:9px;padding:4px 7px}
+@media(orientation:landscape) and (max-height:400px){#ui.mobile-layout .land-objective{max-width:260px;font-size:9px}}
