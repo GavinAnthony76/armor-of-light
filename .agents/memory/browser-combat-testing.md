@@ -27,3 +27,16 @@ state alone is not proof that the runner has working audio output hardware.
 
 **How to apply:** Verify real codec decoding and the rendered graph offline;
 keep device audibility and speaker mix assessment in real-hardware testing.
+
+Do not infer missing local-image retries from browser network events alone.
+Firefox's desktop file loader may report image failure without emitting the
+request/requestfailed events observed in Chromium.
+
+**Why:** Desktop offline testing observed one genuine missing-image failure
+with no network events in Firefox. An assertion about those events produced
+a false test failure despite correct fallback.
+
+**How to apply:** Observe native image source assignments and the resulting
+decode-failure diagnostics as well as the actual procedural fallback; use real
+HTTP status checks for web editions. Browser process startup is also not proof
+of rendered WebKit coverage: page creation can fail later at EGL initialization.

@@ -2,7 +2,7 @@ modules = ["nodejs-24", "python-base-3.13"]
 
 [nix]
 channel = "stable-25_05"
-packages = ["gitFull", "playwright-driver"]
+packages = ["gitFull", "playwright-driver", "gtk4", "gst_all_1.gstreamer", "gst_all_1.gst-plugins-base", "gst_all_1.gst-plugins-bad", "icu74", "libavif", "libmanette", "enchant2", "libsecret", "hyphen", "flite", "libevent", "libjpeg8", "libglvnd", "gst_all_1.gst-libav"]
 
 [workflows]
 runButton = "Project"

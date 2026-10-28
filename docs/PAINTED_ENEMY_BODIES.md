@@ -124,5 +124,10 @@ phase, timer, movement, collision, sound or damage.
 - Core campaign, weapon, action, traversal and save tests remain unchanged.
   Browser fixture enemies are test-only and never enter normal gameplay.
 
-Physical phones and Safari/Firefox are not certified by Chromium screenshots.
+The built web and offline editions were subsequently checked in Firefox and
+Chromium using `tests/painted-enemies-engines.py`. See
+[the desktop engine report](PAINTED_ENEMY_ENGINE_QA.md) for the measured results,
+reproduction commands and the blocked WebKit run. Safari is **not** certified:
+the available Linux WebKit process cannot render a page on this runner.
+Physical phones are not certified by these desktop checks.
 This pack does not modify sling animation, balancing, audio or level scenery.
