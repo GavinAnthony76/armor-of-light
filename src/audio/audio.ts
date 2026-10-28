@@ -379,7 +379,8 @@ export class AudioEngine {
     this.lastPlay[name] = t;
     const b = this.sfxBus;
     this.samples??=new SampleBank(ctx,b);
-    if(this.samples.play(name))return;
+    // Keep the existing soft/hard landing distinction without exceeding pack gain.
+    if(this.samples.play(name,name==='land'?(k>=1?1:0.18/0.38):1))return;
     switch (name) {
       case 'sling':
         this.note('triangle',480+k*100,t,.14,.18,b,.002,0,160);

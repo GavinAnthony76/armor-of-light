@@ -43,9 +43,10 @@ isolated poses to replace full responsive attack animation. Do not replace the
 adaptive synthesized score with the draft loops by default. UI icons need
 separate visual approval.
 
-No files from this archive were installed into the active game. Keep the
-infrastructure commit separate. Ask whether the user wants a clearly marked
-prototype preview or reference-only treatment before integrating this pack.
+The user subsequently approved **suitable starter sound effects**. Nine matching
+one-shots are now integrated; see APPROVED_STARTER_SFX.md for the measured audit,
+mapping, exclusions and provenance. Artwork and music from this archive remain
+uninstalled. Keep the infrastructure and approved sample commits separate.
 Final assets still need the approved reference style, complete pose/timing
 mapping and per-asset visual/device testing.
 

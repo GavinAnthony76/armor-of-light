@@ -39,5 +39,51 @@
     "city":{"layers":[],"props":[],"surfaces":{"ground":"city-stone","platform":"city-stone"}},
     "river":{"layers":[],"props":[],"surfaces":{"ground":"river-stone","platform":"river-stone"}}
   },
-  "audio": {}
+  "audio": {
+    "swing": {
+      "sources": ["assets/production/audio/sfx/swing.ogg", "assets/production/audio/sfx/swing.wav"],
+      "gain": 0.55,
+      "voices": 2
+    },
+    "hit": {
+      "sources": ["assets/production/audio/sfx/hit.ogg", "assets/production/audio/sfx/hit.wav"],
+      "gain": 0.95,
+      "voices": 3
+    },
+    "hitHeavy": {
+      "sources": ["assets/production/audio/sfx/hammer-impact.ogg", "assets/production/audio/sfx/hammer-impact.wav"],
+      "gain": 0.9,
+      "voices": 2
+    },
+    "block": {
+      "sources": ["assets/production/audio/sfx/block.ogg", "assets/production/audio/sfx/block.wav"],
+      "gain": 0.65,
+      "voices": 2
+    },
+    "parry": {
+      "sources": ["assets/production/audio/sfx/parry.ogg", "assets/production/audio/sfx/parry.wav"],
+      "gain": 0.85,
+      "voices": 2
+    },
+    "jump": {
+      "sources": ["assets/production/audio/sfx/jump.ogg", "assets/production/audio/sfx/jump.wav"],
+      "gain": 0.28,
+      "voices": 2
+    },
+    "land": {
+      "sources": ["assets/production/audio/sfx/land.ogg", "assets/production/audio/sfx/land.wav"],
+      "gain": 0.8,
+      "voices": 2
+    },
+    "splash": {
+      "sources": ["assets/production/audio/sfx/splash.ogg", "assets/production/audio/sfx/splash.wav"],
+      "gain": 0.55,
+      "voices": 2
+    },
+    "click": {
+      "sources": ["assets/production/audio/sfx/menu-select.ogg", "assets/production/audio/sfx/menu-select.wav"],
+      "gain": 0.35,
+      "voices": 1
+    }
+  }
 }

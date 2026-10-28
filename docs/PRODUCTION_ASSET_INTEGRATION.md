@@ -1,6 +1,8 @@
 # Phase 2 — production asset handoff
 
-The initial infrastructure commit contained no replacement artwork or recordings.
+The original infrastructure shipped with an empty manifest and complete existing
+presentation as fallback. The manifest now includes nine user-approved starter
+SFX; see APPROVED_STARTER_SFX.md for sources, mix and exclusions.
 The user subsequently authorized recreating necessary assets from the approved
 showcase, and the manifest now includes the first painted visual pass. See
 PAINTED_VISUAL_PASS.md. The existing game remains the complete per-asset fallback.

@@ -29,7 +29,7 @@ export class SampleBank {
       }
     this.failed.add(id);this.assets.report(`No decodable, in-budget SFX source for ${id}: ${errors.join('; ')}`);
   }
-  play(id:string):boolean {
+  play(id:string,level=1):boolean {
     const spec=this.assets.manifest.audio[id];
     if(!spec)return false;
     const buffer=this.buffers.get(id);
@@ -37,7 +37,8 @@ export class SampleBank {
     if((this.voices.get(id)??0)>=spec.voices||this.totalVoices>=24)return true;
     try{
       const source=this.ctx.createBufferSource(),gain=this.ctx.createGain();
-      source.buffer=buffer;gain.gain.value=spec.gain;
+      source.buffer=buffer;
+      gain.gain.value=spec.gain*(Number.isFinite(level)?Math.max(0,Math.min(1,level)):1);
       source.connect(gain).connect(this.bus);
       source.onended=()=>{
         this.voices.set(id,Math.max(0,(this.voices.get(id)??1)-1));this.totalVoices--;

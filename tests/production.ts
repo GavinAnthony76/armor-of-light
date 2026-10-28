@@ -122,13 +122,13 @@ manifest.images['extra-body']={...manifest.images['eliam-body']};
 assets.install(manifest);
 check(await assets.preloadImage('extra-body')===null,'active scene budget retains visible textures and falls back for excess');
 
-let decodes=0,plays=0,connections:unknown[]=[];
+let decodes=0,plays=0,connections:unknown[]=[],sampleGains:number[]=[];
 const sources:{onended:(()=>void)|null}[]=[];
 const bus={} as AudioNode;
 const audioCtx={
   state:'running',currentTime:1,
   async decodeAudioData(data:ArrayBuffer){decodes++;if(new Uint8Array(data)[0]===1)throw Error('unsupported codec');return {length:100,numberOfChannels:1,duration:.1} as AudioBuffer;},
-  createGain(){return {gain:{value:0},connect(n:unknown){connections.push(n);return n;},disconnect(){}};},
+  createGain(){const gain={value:0};return {gain,connect(n:unknown){sampleGains.push(gain.value);connections.push(n);return n;},disconnect(){}};},
   createBufferSource(){const s={buffer:null,onended:null as (()=>void)|null,connect(n:unknown){return n;},disconnect(){},start(){plays++;}};sources.push(s);return s;},
 } as unknown as AudioContext;
 const bank=new SampleBank(audioCtx,bus,assets);
@@ -147,4 +147,31 @@ Object.assign(engine,{hostAllowed:false});engine.play('hit');check(plays===3,'ho
 Object.assign(engine,{hostAllowed:true,sfxOn:false});engine.play('hit');check(plays===3,'SFX preference prevents sampled output');
 Object.assign(engine,{sfxOn:true});Object.assign(audioCtx,{state:'suspended'});
 engine.play('hit');check(plays===3,'suspended context never plays sampled output');
+Object.assign(audioCtx,{state:'running',currentTime:3});
+manifest.audio.land={...manifest.audio.hit,gain:.8,voices:2};
+await bank.preload('land');
+Object.assign(engine,{sfxOn:true});
+engine.play('land',0);
+const soft=sampleGains[sampleGains.length-1];
+Object.assign(audioCtx,{currentTime:4});engine.play('land',1);
+const hard=sampleGains[sampleGains.length-1];
+check(Math.abs(hard/soft-.38/.18)<.0001&&hard===.8,'sampled landing preserves original hard/soft gain ratio');
+for(const source of sources.slice(3))source.onended?.();
+const beforeFailure=plays;
+const failedAssets=new ProductionAssets(p=>p,(async()=>{throw Error('missing file');}) as typeof fetch);
+failedAssets.install(manifest);
+const failedBank=new SampleBank(audioCtx,bus,failedAssets);
+check(!failedBank.play('hit'),'failed sample first event immediately falls back');
+await failedBank.preload('hit');
+check(!failedBank.play('hit')&&plays===beforeFailure,'all codecs failing never replays a delayed event');
+check(failedAssets.issues.length===1,'all-codec failure reported once');
+await bank.preload('hitHeavy');
+manifest.audio.block={...manifest.audio.hit,voices:2};
+await bank.preload('block');
+manifest.audio.hit.voices=8;manifest.audio.hitHeavy.voices=8;manifest.audio.land.voices=8;
+for(let i=0;i<8;i++)for(const id of ['hit','hitHeavy','land'])bank.play(id);
+const capped=plays;
+check(bank.play('block')&&plays===capped,'24-voice global cap suppresses an uncapped event without synthesis');
+sources[sources.length-1].onended!();
+check(bank.play('block')&&plays===capped+1,'global voice slot released on completion');
 console.log(`${count} production manifest, atlas, fallback, parallax, pose, sample codec and audio-gate checks passed.`);

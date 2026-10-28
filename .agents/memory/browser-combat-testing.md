@@ -17,3 +17,13 @@ Keep keyboard/touch press intervals inside the buffer/recovery windows, and
 distinguish an observation gap from a game defect. Anchor opt-in QA foes in an
 existing safe start area rather than changing terrain to accommodate fixtures.
 Do not call emulation or synthetic audio meters physical-device verification.
+
+For automated sampled-audio routing checks, use browser OfflineAudioContext
+rendering when the headless runner's live audio clock does not advance.
+
+**Why:** A headless live context reported `running` while its clock stalled,
+producing a silent analyser despite successfully decoded buffers. A running
+state alone is not proof that the runner has working audio output hardware.
+
+**How to apply:** Verify real codec decoding and the rendered graph offline;
+keep device audibility and speaker mix assessment in real-hardware testing.

@@ -12,6 +12,13 @@ check(!single.includes('src="/src/main.ts"'),'single edition includes code');
 check(single.includes('data:image/webp;base64,'),'single edition includes artwork');
 check(single.includes('"assets/production/asset-manifest.json":"data:application/json;base64,'),'single edition embeds production manifest for offline lookup');
 check(existsSync('dist/assets/production/asset-manifest.json'),'web and YouTube editions ship production manifest');
+const production=JSON.parse(readFileSync('public/assets/production/asset-manifest.json','utf8'));
+for(const [event,spec] of Object.entries(production.audio)){
+ for(const path of spec.sources){
+  check(existsSync('dist/'+path),`${event} codec shipped in web/host build`);
+  check(single.includes('"'+path+'":"data:audio/'),`${event} codec embedded in offline edition`);
+ }
+}
 check(!/<script[^>]+src=/.test(single),'single edition has no external JS dependency');
 check(!/<link[^>]+stylesheet/.test(single),'single edition has no external stylesheet dependency');
 console.log(`${n} build/standalone/reference checks passed.`);
