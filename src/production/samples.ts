@@ -8,7 +8,7 @@ export class SampleBank {
   private voices=new Map<string,number>();
   private totalVoices=0;
   private bytes=0;
-  constructor(private ctx:AudioContext,private bus:AudioNode,private assets:ProductionAssets=productionAssets){}
+  constructor(private ctx:AudioContext,private bus:AudioNode,private assets:ProductionAssets=productionAssets,private decodeTimeoutMs=2000){}
   preload(id:string):Promise<void> {
     const pending=this.pending.get(id);if(pending)return pending;
     const spec=this.assets.manifest.audio[id];
@@ -21,13 +21,23 @@ export class SampleBank {
     for(const path of sources){
         try{
           const raw=await this.assets.read(path,4*1024*1024);
-          const buffer=await this.ctx.decodeAudioData(raw);
+          const buffer=await this.decodeBuffer(raw);
           const bytes=buffer.length*buffer.numberOfChannels*4;
           if(buffer.duration>10||this.bytes+bytes>32*1024*1024)throw new Error('Decoded SFX budget exceeded');
           this.buffers.set(id,buffer);this.bytes+=bytes;return;
         }catch(e){errors.push(`${path}: ${String(e)}`);}
       }
     this.failed.add(id);this.assets.report(`No decodable, in-budget SFX source for ${id}: ${errors.join('; ')}`);
+  }
+  /** Some codec implementations stall rather than reject; never block WAV fallback forever. */
+  private async decodeBuffer(raw:ArrayBuffer):Promise<AudioBuffer> {
+    let timer:ReturnType<typeof setTimeout>|undefined;
+    try{
+      return await Promise.race([
+        this.ctx.decodeAudioData(raw),
+        new Promise<never>((_,reject)=>{timer=setTimeout(()=>reject(new Error('SFX decode timeout')),this.decodeTimeoutMs);}),
+      ]);
+    }finally{clearTimeout(timer);}
   }
   play(id:string,level=1):boolean {
     const spec=this.assets.manifest.audio[id];

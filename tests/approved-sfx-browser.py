@@ -1,73 +1,85 @@
-"""Decode shipped OGG/WAVs in Chromium and exercise actual SampleBank routing.
-
-Run against the Vite development workflow:
-  BASE=https://<development-domain> python3 tests/approved-sfx-browser.py
-This is an automated desktop-browser check, not physical-device listening.
+"""Actual decode + immediate synth/later WAV regression, built web and offline.
+ENGINE=chromium|firefox|webkit python tests/approved-sfx-browser.py
+WebKit is an automated engine, not desktop Safari or hardware listening.
 """
+import functools
+import http.server
 import json
 import os
-import shutil
+from pathlib import Path
+import subprocess
+import threading
 from playwright.sync_api import sync_playwright
+from browser_engine import launch_engine, engine_info
 
-with sync_playwright() as pw:
-    browser = pw.chromium.launch(
-        executable_path=os.environ.get("CHROMIUM_PATH") or shutil.which("chromium"),
-        args=["--no-sandbox"],
-    )
-    page = browser.new_page()
-    page.goto(os.environ["BASE"], wait_until="networkidle")
-    # Context creation is explicitly initiated by a real user gesture.
-    page.evaluate("""() => {
-      const button=document.createElement('button');
-      button.id='audio-test-unlock';button.textContent='Unlock audio test';
-      button.style.cssText='position:fixed;top:0;left:0;z-index:2147483647';
-      button.onclick=()=>{window.testAudioContext=new AudioContext();void window.testAudioContext.resume();};
-      document.body.append(button);
-    }""")
-    page.click("#audio-test-unlock")
-    result = page.evaluate("""async () => {
-      const {SampleBank}=await import('/src/production/samples.ts');
-      const {ProductionAssets}=await import('/src/production/assets.ts');
-      await window.testAudioContext.close();
-      // Headless runners may report a live context as running without an audio
-      // device advancing its clock. Render the real Web Audio graph offline.
-      const ctx=new OfflineAudioContext(1,48000,48000);
-      const assets=new ProductionAssets();await assets.load();
-      const bus=ctx.createGain();bus.connect(ctx.destination);
-      const decoded=[];
-      for(const [id,spec] of Object.entries(assets.manifest.audio)){
-        for(const path of spec.sources){
-          const response=await fetch('/'+path);
-          if(!response.ok)throw Error(path+': HTTP '+response.status);
-          const buffer=await ctx.decodeAudioData(await response.arrayBuffer());
-          if(buffer.duration>.5||buffer.numberOfChannels!==1)throw Error('bad decoded format '+path);
-          let peak=0,first=-1;const pcm=buffer.getChannelData(0);
-          for(let i=0;i<pcm.length;i++){
-            peak=Math.max(peak,Math.abs(pcm[i]));
-            if(first<0&&Math.abs(pcm[i])>.001)first=i;
-          }
-          if(peak>10**(-3/20)||first<0||first/buffer.sampleRate>.01)throw Error('bad decoded waveform '+path);
-          decoded.push({id,path,duration:buffer.duration,peak});
-        }
-      }
-      const bank=new SampleBank(ctx,bus,assets);
-      if(bank.play('hit'))throw Error('cold event must synthesize');
-      await bank.preload('hit');
-      if(!bank.play('hit'))throw Error('decoded hit not used');
-      // Simulate unsupported OGG without mutating the production manifest.
-      const fallbackAssets=new ProductionAssets(p=>p,async (url,opts)=>{
-        if(String(url).endsWith('.ogg'))return new Response('invalid OGG');
-        return fetch('/'+url,opts);
-      });
-      fallbackAssets.install(assets.manifest);
-      const fallbackBank=new SampleBank(ctx,bus,fallbackAssets);
-      await fallbackBank.preload('parry');
-      if(!fallbackBank.play('parry')||fallbackAssets.issues.length)throw Error('WAV fallback failed');
-      const rendered=await ctx.startRendering(),pcm=rendered.getChannelData(0);
-      const rms=Math.sqrt(pcm.reduce((sum,n)=>sum+n*n,0)/pcm.length);
-      if(rms<=.001)throw Error('no rendered sampled output at existing bus');
-      document.querySelector('#audio-test-unlock').remove();
-      return {decoded:decoded.length,rms,wavFallback:true};
-    }""")
-    print("Chromium sample verification:", json.dumps(result))
-    browser.close()
+ROOT = Path(__file__).resolve().parents[1]
+ENGINE = os.environ.get('ENGINE', 'chromium')
+OUT = ROOT / 'generated-artifacts/approved-sfx' / ENGINE
+OUT.mkdir(parents=True, exist_ok=True)
+subprocess.run(['node', '--input-type=module', '-e', """
+import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url),{build}=createRequire(require.resolve('vite/package.json'))('esbuild');
+await build({entryPoints:['tests/approved-sfx-fixture.ts'],bundle:true,format:'iife',
+ outfile:'generated-artifacts/approved-sfx/fixture.js',define:{'import.meta.env.BASE_URL':'"./"'},target:'es2020'});
+"""], cwd=ROOT, check=True)
+fixture = (ROOT / 'generated-artifacts/approved-sfx/fixture.js').read_text()
+class Quiet(http.server.SimpleHTTPRequestHandler):
+    def log_message(self, *_):
+        pass
+server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), functools.partial(Quiet, directory=str(ROOT/'dist')))
+threading.Thread(target=server.serve_forever, daemon=True).start()
+report = dict(engine=ENGINE, editions={})
+browser = None
+try:
+    with sync_playwright() as pw:
+        browser = launch_engine(pw, ENGINE)
+        report.update(engine_info(browser, ENGINE))
+        try:
+            for edition, url in [('web', f'http://127.0.0.1:{server.server_port}/?debug'),
+                                 ('offline', (ROOT/'dist-single/armor-of-light.html').as_uri()+'?debug')]:
+                context = browser.new_context(offline=edition=='offline')
+                network, errors = [], []
+                context.on('request', lambda r: network.append(r.url) if r.url.startswith(('http:', 'https:')) else None)
+                page = context.new_page()
+                page.add_init_script('window.requestAnimationFrame=()=>0')
+                page.on('pageerror', lambda e: errors.append(str(e)))
+                print(f'{ENGINE} {edition}: loading',flush=True)
+                page.goto(url)
+                print(f'{ENGINE} {edition}: loaded',flush=True)
+                # Explicit gesture for a real live context; waveform assertions
+                # use offline graphs because runner audio hardware can be absent.
+                page.evaluate("""() => {
+                  const b=document.createElement('button');b.id='unlock-test';b.textContent='Unlock test';
+                  b.style.cssText='position:fixed;top:0;left:0;z-index:2147483647';
+                  b.onclick=()=>{window.unlockContext=new AudioContext();void unlockContext.resume().catch(e=>{window.unlockResumeError=String(e);});};document.body.append(b);
+                }""")
+                page.click('#unlock-test')
+                print(f'{ENGINE} {edition}: gesture',flush=True)
+                unlock_state=page.evaluate("Promise.race([unlockContext.resume().then(()=>unlockContext.state),new Promise(r=>setTimeout(()=>r(unlockContext.state),3000))])")
+                page.evaluate('unlockContext.close()')
+                page.evaluate('__aol.audio.ctx?.close()')
+                page.add_script_tag(content=fixture)
+                print(f'{ENGINE} {edition}: fixture',flush=True)
+                result = page.evaluate("Promise.race([__soundQA.run(),new Promise((_,reject)=>setTimeout(()=>reject(Error('Sound timeout at '+__soundQA.stage)),30000))])")
+                result['unlockState'] = unlock_state
+                result['liveUnlockVerified'] = unlock_state == 'running'
+                if report['runnerMediaWorkaround']:
+                    result['liveUnlockLimitation'] = 'Null audio backend/in-process media on sandboxed runner; codec graphs verified offline, live output not certified'
+                else:
+                    assert result['liveUnlockVerified'], result
+                assert not errors, errors
+                if edition == 'offline':
+                    assert not network, network
+                result.update(errors=errors, offlineNetworkRequests=network if edition=='offline' else [])
+                report['editions'][edition] = result
+                print(f'PASS {ENGINE} {edition}: {len(result["decoded"])} actual exports, four fallback scenarios', flush=True)
+                context.close()
+            report['status'] = 'passed'
+        finally:
+            browser.close()
+except Exception as error:
+    report.update(status='failed' if browser else 'unavailable', error=str(error))
+    raise
+finally:
+    server.shutdown()
+    (OUT/'results.json').write_text(json.dumps(report, indent=2))

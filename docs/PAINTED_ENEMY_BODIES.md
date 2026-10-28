@@ -218,3 +218,9 @@ reproduction commands and the blocked WebKit run. Safari is **not** certified:
 the available Linux WebKit process cannot render a page on this runner.
 Physical phones are not certified by these desktop checks.
 This pack does not modify sling animation, balancing, audio or level scenery.
+
+The development-only calibration UI is now available at
+`/tests/guardian-calibration.html` when running Vite. See
+`GUARDIAN_CALIBRATION.md` for source overlays, mirrored exact attack-phase
+previews, local replacement inspection and validated settings export. Export is
+an authoring patch, not automatic acceptance or a gameplay change.

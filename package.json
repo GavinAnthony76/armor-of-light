@@ -9,7 +9,7 @@
     "build:single": "node tests/single-file.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx tests/run.ts && node --import tsx tests/campaign.ts && node --import tsx tests/action.ts && node --import tsx tests/weapons.ts && node --import tsx tests/audio.ts && node --import tsx tests/hosts.ts && node --import tsx tests/input.ts && node --import tsx tests/traversal.ts && node --import tsx tests/layout.ts && node --import tsx tests/desert-slice.ts && node --import tsx tests/combat-feel.ts && node --import tsx tests/desert-demo.ts && node --import tsx tests/level-integration.ts && node --import tsx tests/archive.ts && node --import tsx tests/journey.ts && node --import tsx tests/production.ts && node --import tsx tests/painted-art.ts && npm run test:approved-sfx",
+    "test": "node --import tsx tests/run.ts && node --import tsx tests/campaign.ts && node --import tsx tests/action.ts && node --import tsx tests/weapons.ts && node --import tsx tests/audio.ts && node --import tsx tests/hosts.ts && node --import tsx tests/input.ts && node --import tsx tests/traversal.ts && node --import tsx tests/layout.ts && node --import tsx tests/desert-slice.ts && node --import tsx tests/combat-feel.ts && node --import tsx tests/desert-demo.ts && node --import tsx tests/level-integration.ts && node --import tsx tests/archive.ts && node --import tsx tests/journey.ts && node --import tsx tests/production.ts && node --import tsx tests/painted-art.ts && npm run test:approved-sfx && npm run test:calibration && npm run test:offline-assets",
     "test:approved-sfx": "node --import tsx tests/approved-sfx.mjs",
     "posttest": "npm run test:enemies && npm run test:enemy-silhouettes",
     "test:e2e": "python3 tests/e2e.py",
@@ -19,7 +19,12 @@
     "test:title": "node --import tsx tests/title-scene.ts",
     "test:enemies": "node --import tsx tests/painted-enemies.ts",
     "test:enemy-silhouettes": "node tests/painted-enemy-silhouettes.mjs",
-    "test:enemy-engines": "python3 tests/painted-enemies-engines.py"
+    "test:enemy-engines": "python3 tests/painted-enemies-engines.py",
+    "test:calibration": "node --import tsx tests/guardian-calibration-check.mjs",
+    "test:sfx-browser": "python3 tests/approved-sfx-browser.py",
+    "test:scenery-offline": "python3 tests/painted-lands-offline.py",
+    "test:calibration-browser": "python3 tests/guardian-calibration-browser.py",
+    "test:offline-assets": "node --import tsx tests/offline-assets.mjs"
   },
   "devDependencies": {
     "tsx": "^4.20.0",

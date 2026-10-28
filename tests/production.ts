@@ -166,6 +166,57 @@ manifest.images['extra-body']={...manifest.images['eliam-body']};
 assets.install(manifest);
 check(await assets.preloadImage('extra-body')===null,'active scene budget retains visible textures and falls back for excess');
 
+// Reinstall semantics: late decoders cannot resurrect a replaced or removed source.
+const controlled:{im:HTMLImageElement;src:string;load:()=>void;error:()=>void}[]=[];
+const replaceAssets=new ProductionAssets(p=>p,undefined,()=>{
+  const im={naturalWidth:512,naturalHeight:256,onload:null as (()=>void)|null,onerror:null as (()=>void)|null};
+  Object.defineProperty(im,'src',{set:(src:string)=>controlled.push({im:im as unknown as HTMLImageElement,src,
+    load:im.onload!,error:im.onerror!})});
+  return im as unknown as HTMLImageElement;
+});
+const pack=structuredClone(manifest);replaceAssets.install(pack);
+const original=replaceAssets.preloadImage('eliam-body');
+replaceAssets.install(structuredClone(pack));
+check(replaceAssets.preloadImage('eliam-body')===original,'unchanged in-flight work survives reinstall');
+controlled[controlled.length-1]!.load();
+const resident=await original;
+replaceAssets.install(structuredClone(pack));
+check(await replaceAssets.preloadImage('eliam-body')===resident&&replaceAssets.diagnostics().loads===1,
+  'unchanged reinstall preserves decoded identity and accounting');
+const replacement=structuredClone(pack);
+replacement.images['eliam-body'].src='assets/production/characters/eliam/replacement.png';
+replaceAssets.install(replacement);
+check(!replaceAssets.diagnostics().images&&replaceAssets.diagnostics().decodedBytes===0,
+  'same-ID changed source releases old accounting immediately');
+const pendingOld=replaceAssets.preloadImage('eliam-body'),stale=controlled[controlled.length-1]!;
+replacement.images['eliam-body'].width=1024;
+replaceAssets.install(replacement); // The same mutable manifest object is supported.
+check(await pendingOld===null&&replaceAssets.diagnostics().pending===0,
+  'in-flight replacement resolves superseded waiters without a timeout');
+const pendingNew=replaceAssets.preloadImage('eliam-body'),fresh=controlled[controlled.length-1]!;
+stale.load();stale.error();
+check(replaceAssets.diagnostics().pending===1&&!replaceAssets.diagnostics().failed,
+  'late load/error cannot cache stale art, poison new work or delete new pending entries');
+Object.assign(fresh.im,{naturalWidth:1024});fresh.load();
+check(await pendingNew===fresh.im&&replaceAssets.diagnostics().decodedBytes===1024*256*4,
+  'dimension change loads new image with exact byte accounting');
+const failedPack=structuredClone(pack);replaceAssets.install(failedPack);
+const failure=replaceAssets.preloadImage('terrain-tile');controlled[controlled.length-1]!.error();await failure;
+replaceAssets.install(structuredClone(failedPack));
+check(await replaceAssets.preloadImage('terrain-tile')===null&&replaceAssets.diagnostics().failed===1,
+  'unchanged failed source remains single-shot after reinstall');
+failedPack.images['terrain-tile'].src='assets/production/world/desert/tiles/repaired.png';
+replaceAssets.install(failedPack);
+const repaired=replaceAssets.preloadImage('terrain-tile');controlled[controlled.length-1]!.load();
+check(!!await repaired&&!replaceAssets.diagnostics().failed,'repaired source clears relevant prior failure');
+const removed=replaceAssets.preloadImage('eliam-body'),removedWork=controlled[controlled.length-1]!;
+const empty=emptyManifest();replaceAssets.install(empty);removedWork.load();
+check(await removed===null&&replaceAssets.diagnostics().decodedBytes===0&&replaceAssets.diagnostics().pending===0,
+  'removed IDs cancel work and release cached residency');
+const beforeInvalid=replaceAssets.manifest;
+try{replaceAssets.install({version:99});}catch{/* expected */}
+check(replaceAssets.manifest===beforeInvalid,'invalid reinstall leaves existing pack intact');
+
 let decodes=0,plays=0,connections:unknown[]=[],sampleGains:number[]=[];
 const sources:{onended:(()=>void)|null}[]=[];
 const bus={} as AudioNode;
@@ -218,4 +269,19 @@ const capped=plays;
 check(bank.play('block')&&plays===capped,'24-voice global cap suppresses an uncapped event without synthesis');
 sources[sources.length-1].onended!();
 check(bank.play('block')&&plays===capped+1,'global voice slot released on completion');
+// A browser codec may never settle. Synthesis stays immediate; WAV still gets a turn.
+let lateResolve!:(buffer:AudioBuffer)=>void,deadlineDecodes=0;
+const deadlineCtx=Object.create(audioCtx) as AudioContext;
+Object.defineProperty(deadlineCtx,'decodeAudioData',{value:async (raw:ArrayBuffer)=>{
+  deadlineDecodes++;
+  if(new Uint8Array(raw)[0]===1)return new Promise<AudioBuffer>(r=>lateResolve=r);
+  return {length:100,numberOfChannels:1,duration:.1} as AudioBuffer;
+}});
+const deadlineBank=new SampleBank(deadlineCtx,bus,assets,10);
+check(!deadlineBank.play('hit'),'stalled preferred codec still returns immediate synthesis');
+await deadlineBank.preload('hit');
+check(deadlineDecodes===2&&deadlineBank.play('hit'),'decode deadline advances to later supported source');
+lateResolve({length:1,numberOfChannels:1,duration:99} as AudioBuffer);
+await Promise.resolve();
+check(deadlineBank.play('hit'),'late timed-out decoder cannot replace accepted WAV or consume its budget');
 console.log(`${count} production manifest, atlas, fallback, parallax, pose, sample codec and audio-gate checks passed.`);

@@ -108,3 +108,11 @@ keep decoded-byte accounting and per-image material validation correct. Cover
 changed same-ID sources, failure followed by repaired source, in-flight
 replacements and unchanged images in `tests/production.ts`. Normal first-load
 behavior and procedural fallback must remain unchanged.
+
+## Repository follow-up
+
+Implementation, measured browser results, runner limitations and remaining
+recording/physical-device requirements for this snapshot are tracked in
+[PRODUCTION_FOLLOWUPS.md](PRODUCTION_FOLLOWUPS.md). The table there distinguishes
+implemented work from pending evidence; the original external task descriptions
+above are retained for comparison.

@@ -2,13 +2,13 @@
 
 BASE=https://<development-preview-host> python3 tests/scenery-journey-browser.py
 Optional: SWEEPS=3 FRAMES=90 VIEWPORT=desktop|portrait|landscape (defaults shown).
-Outputs are ignored. Chromium emulation is not phone or Safari certification.
+ENGINE=chromium|firefox|webkit. Outputs are ignored. WebKit is not desktop Safari.
+Firefox touch-sized views omit unsupported is_mobile emulation.
 Room positioning isolates scenery from combat/physics; the real RAF renderer,
 animated scenery, level startup and pause-menu restart handlers remain in use.
 """
 import json
 import os
-import shutil
 import struct
 import time
 import zlib
@@ -16,15 +16,17 @@ from collections import Counter
 from pathlib import Path
 
 from playwright.sync_api import sync_playwright
+from browser_engine import launch_engine, engine_info, development_base
 
-BASE = os.environ.get("BASE", "http://127.0.0.1:5174")
+ENGINE = os.environ.get("ENGINE", "chromium")
+BASE = development_base()
 SWEEPS = int(os.environ.get("SWEEPS", "3"))
 FRAMES = int(os.environ.get("FRAMES", "90"))
 assert SWEEPS >= 3 and FRAMES >= 60, "Use at least three sweeps and 60 frames per room"
 VIEWPORT = os.environ.get("VIEWPORT", "desktop")
 WIDTH, HEIGHT = {"desktop": (1280, 720), "portrait": (390, 844),
                  "landscape": (844, 390)}[VIEWPORT]
-OUT = Path("generated-artifacts/scenery-journey") / VIEWPORT
+OUT = Path("generated-artifacts/scenery-journey") / ENGINE / VIEWPORT
 OUT.mkdir(parents=True, exist_ok=True)
 THEMES = ["desert", "flood", "garden", "mountain", "valley", "city", "river"]
 LOWER_X = [2600, 2450, 5500, 5500, 2450, 5500, 2450]
@@ -43,9 +45,13 @@ def pressure_png(index):
 
 
 with sync_playwright() as pw:
-    browser = pw.chromium.launch(executable_path=shutil.which("chromium"))
+    try:
+        browser = launch_engine(pw, ENGINE)
+    except Exception as error:
+        (OUT / "results.json").write_text(json.dumps(dict(engine=ENGINE,status="unavailable",error=str(error)),indent=2))
+        raise
     ctx = browser.new_context(viewport={"width": WIDTH, "height": HEIGHT},
-                              has_touch=VIEWPORT != "desktop", is_mobile=VIEWPORT != "desktop")
+                              has_touch=VIEWPORT != "desktop", **({"is_mobile": VIEWPORT != "desktop"} if ENGINE != "firefox" else {}))
     page = ctx.new_page()
     page.set_default_timeout(30000)
     errors, failed_requests, responses, navigations = [], [], [], []
@@ -57,7 +63,7 @@ with sync_playwright() as pw:
     page.on("framenavigated", lambda frame: navigations.append(frame.url) if frame == page.main_frame else None)
     started = time.monotonic()
     report = {"viewport": VIEWPORT, "sweeps": SWEEPS, "framesPerRoom": FRAMES,
-              "samples": [], "errors": errors, "failedRequests": failed_requests}
+              **engine_info(browser, ENGINE), "status": "running", "samples": [], "errors": errors, "failedRequests": failed_requests}
     try:
         page.goto(BASE + "/?debug" + ("&touch" if VIEWPORT != "desktop" else ""))
         page.wait_for_function("!!window.__aol")
@@ -238,9 +244,13 @@ with sync_playwright() as pw:
         report["navigations"] = navigations
         page.screenshot(path=str(OUT / "final.png"))
         report["passed"] = True
+        report["status"] = "passed"
         print(f"PASS: {len(report['samples'])} room samples, "
               f"{report['totals']['frames']} real rendered frames, "
               "one page, seven lands, repeated menu restarts and eviction recovery.", flush=True)
+    except Exception as error:
+        report.update(status="failed", error=str(error))
+        raise
     finally:
         report["durationSeconds"] = round(time.monotonic() - started, 2)
         (OUT / "results.json").write_text(json.dumps(report, indent=2))

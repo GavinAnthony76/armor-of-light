@@ -97,3 +97,33 @@ certification. No combat, attack windows, level layouts or score were changed.
 The headless runner reported a live AudioContext as running without advancing
 its clock; offline rendering avoids mistaking missing runner audio hardware for
 a game fault.
+
+## Cross-engine fallback regression (#17)
+
+`ENGINE=chromium|firefox|webkit npm run test:sfx-browser` now tests built web and
+`file://` self-contained editions. It bundles only a test fixture; neither the
+fixture nor runner is a game entry point. Both editions decode the actual shipped
+exports, audit their format/waveform, render cold synthesis and later WAV output,
+and force corrupt, unsupported, stalled preferred codecs and all-source failure.
+The offline context blocks network access and requires zero sidecar requests.
+A two-second per-codec decode deadline now advances stalled decoders to the next
+source. It does not delay synthesis or replay an old event. Native decodes cannot
+be cancelled; late results are ignored and never enter the app's PCM accounting.
+
+Use the pinned Playwright requirements and engine installation commands in
+`SCENERY_RESIDENCY.md`. Results are under `generated-artifacts/approved-sfx/<engine>/`.
+The desktop Linux Firefox runner may require `FIREFOX_IN_PROCESS_MEDIA=1` where
+media subprocess sandboxing is unavailable. This opt-in test-only workaround
+uses in-process decoders and a null audio backend; reports mark it explicitly.
+It changes no shipping browser preferences. On this executor the browser also
+required `MOZ_DISABLE_CONTENT_SANDBOX=1 MOZ_DISABLE_RDD_SANDBOX=1
+MOZ_DISABLE_UTILITY_SANDBOX=1` in the test command. Those are executor workarounds,
+not application settings or deployment instructions.
+
+With that workaround, rendered offline graphs establish real codec/synth output,
+while a suspended live context is recorded as **not verified** for live unlock.
+Do not equate a passing codec report with speaker listening, stock-browser
+process sandbox coverage, actual Safari, or physical-phone audio. Normal runs
+without the workaround additionally require the gesture-created live context to
+reach `running`. The existing adaptive score and event mappings are unchanged.
+See `PRODUCTION_FOLLOWUPS.md` for this revision's actual results.
