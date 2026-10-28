@@ -1,6 +1,10 @@
 # Replit integration handoff: levels branch
 
-ChatGPT owns level layouts/encounters. Replit owns the overall game and integration, combat, movement, weapons/upgrades, animation, splash/story and music. Preserve this boundary.
+Ownership has changed: the user reassigned all level design to the primary Replit
+engineer, including the remaining six lands and mini-bosses. The former separate
+ChatGPT ownership boundary is superseded. See CAMPAIGN_EXPEDITION.md for the
+current chest, guardian-weapon and vertical campaign design. The notes below
+describe the historical Archive integration, not a restriction on future design.
 
 Core Level 1 design: src/core/desert-demo.ts. Registration is the final STAGES[0] assignment in src/core/levels.ts. It takes the existing land metadata/art and supplies authored ground, one-way platforms, props, placed collectibles, teaching signs, encounter waves and checkpoint locations. No combat engine replacement.
 

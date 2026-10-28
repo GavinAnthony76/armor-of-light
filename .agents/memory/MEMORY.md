@@ -1,3 +1,3 @@
-- [Approved game and run-local weapons](game-direction.md) — enhance the original game rather than replace it; level-specific equipment resets on fresh attempts.
-- [Level-design ownership](work-ownership.md) — ChatGPT owns level design on a separate branch; do not change layouts or encounters unless the user asks.
+- [Approved combat and campaign rewards](game-direction.md) — preserve the approved combat; boss weapons carry forward, while chests hold discoveries and upgrades.
+- [Level-design ownership](work-ownership.md) — the primary engineer now owns all seven lands, vertical exploration, secrets and mini-boss progression.
 - [Timed combat browser tests](browser-combat-testing.md) — sample within animation windows; use trusted low-level touch rather than locator tap auto-waits.

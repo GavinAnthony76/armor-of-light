@@ -27,7 +27,11 @@ export class Autopilot {
     this.blockFor = Math.max(0, this.blockFor - 1 / 60);
     if (s.phase !== 'play' || p.state === 'dead') return inp;
     inp.jumpHeld = this.jumpHold > 0;
-    const action=s.levelInteraction();if(action==='Take Beacon Seal'||action==='Open seal gate'){this.interactPulse=!this.interactPulse;inp.interactPressed=this.interactPulse;return inp;}this.interactPulse=false;
+    const action=s.levelInteraction();if(action==='Take Beacon Seal'||action==='Open seal gate'||action?.startsWith('Open chest ·')){this.interactPulse=!this.interactPulse;inp.interactPressed=this.interactPulse;return inp;}
+    const reward=s.awaitingBossReward?s.weaponDrops.find(d=>d.id===s.bossRewardSource):null;
+    if(reward&&reward.settled&&Math.abs(reward.x-p.x)<45&&Math.abs(reward.y-p.y)<55){
+      this.interactPulse=!this.interactPulse;inp.interactPressed=this.interactPulse;return inp;
+    }this.interactPulse=false;
 
     const jump = () => {
       if (p.onGround && this.jumpHold <= 0) {
@@ -40,6 +44,14 @@ export class Autopilot {
       if (x > p.x + 2) inp.right = true;
       else if (x < p.x - 2) inp.left = true;
     };
+    if(reward){face(reward.x);this.handleTerrain(s,Math.sign(reward.x-p.x),jump);return inp;}
+    const upcoming=s.def.encounters[s.nextEncounter];
+    if(this.leavePlatform===null&&!s.active&&upcoming?.triggerY!==undefined&&p.x>upcoming.trigger+100&&Math.abs(p.y-upcoming.triggerY)>165){
+      const platform=s.terrain.platforms.find(q=>p.x>=q.x0-12&&p.x<=q.x1+12&&Math.abs(p.y-q.y)<4);
+      if(platform){this.leavePlatform=platform.x1+32;face(this.leavePlatform);}
+      else {face(upcoming.trigger+80);this.handleTerrain(s,Math.sign(upcoming.trigger+80-p.x),jump);}
+      return inp;
+    }
 
     if(this.leavePlatform!==null){
       const stillOnPlatform=s.terrain.platforms.some(q=>p.x+15>=q.x0&&p.x-15<=q.x1&&p.y<=q.y+3);

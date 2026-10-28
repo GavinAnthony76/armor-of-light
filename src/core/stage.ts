@@ -8,6 +8,8 @@ import { RangedCombat } from './ranged';
 import { bonusRewardForSource, rewardForSource, rewardForSpawn } from './rewards';
 import { Terrain } from './terrain';
 import { InputFrame, NO_INPUT, overlaps, Rect, StageEvent } from './types';
+import { Exploration } from './exploration';
+import type { LevelState } from './journey-types';
 
 export interface Orb {
   x: number;
@@ -80,29 +82,38 @@ export class Stage implements World {
   waves: Wave[] = [];
   pickups: Pickup[] = [];
   weaponDrops: WeaponDrop[] = [];
+  readonly exploration:Exploration;
+  get bossRewardSource():string{return `e${this.def.encounters.findIndex(e=>e.boss)}w0s0`;}
+  get awaitingBossReward():boolean{return !!this.def.expedition&&this.pathOpen&&this.weaponDrops.some(d=>d.id===this.bossRewardSource);}
+  bankTreasure(value:number):void{this.score+=value;this.scoreAtCheckpoint+=value;}
   archiveKeeperDefeated=false;
   beaconSeal=false;
   archiveGateOpen=false;
   get hasArchive():boolean{return this.def.encounters.some(e=>e.sealGuardian);}
   private levelInteractHeld=false;
   private levelNearbyLast:string|null=null;
-  levelState(){return {keeper:this.archiveKeeperDefeated,seal:this.beaconSeal,gate:this.archiveGateOpen,checkpoint:{...this.checkpoint}};}
+  levelState():LevelState{return {keeper:this.archiveKeeperDefeated,seal:this.beaconSeal,gate:this.archiveGateOpen,checkpoint:{...this.checkpoint},opened:[...this.exploration.opened],checkpointScore:this.scoreAtCheckpoint};}
   restoreLevelState(raw:unknown):void {
     const r=raw as {keeper?:boolean;seal?:boolean;gate?:boolean;checkpoint?:{x:number;y:number}}|null;
-    if(!this.hasArchive)return;
+    this.exploration.restore((raw as LevelState|null)?.opened);
+    const bank=(raw as LevelState|null)?.checkpointScore;
+    if(typeof bank==='number'&&Number.isFinite(bank)&&bank>=0&&bank<=this.score)this.score=this.scoreAtCheckpoint=bank;
+    if(this.hasArchive){
     this.archiveKeeperDefeated=(r?.keeper===true||r?.seal===true||this.nextEncounter>1);
     this.beaconSeal=r?.seal===true;
     this.archiveGateOpen=(r?.gate===true&&r?.seal===true);
     if(this.archiveGateOpen)this.removeArchiveGate();
+    }
     const cp=r?.checkpoint;
-    if(cp&&Number.isFinite(cp.x)&&Number.isFinite(cp.y)&&cp.x>=24&&cp.x<this.def.length-24&&(this.archiveGateOpen||cp.x<3700)&&this.terrain.groundAt(cp.x)===cp.y){this.checkpoint={...cp};this.player.x=cp.x;this.player.y=cp.y;this.player.lastSafe={...cp};}
+    if(cp&&Number.isFinite(cp.x)&&Number.isFinite(cp.y)&&cp.x>=24&&cp.x<this.exploration.limit-24&&(!this.hasArchive||this.archiveGateOpen||cp.x<3700)&&this.terrain.groundAt(cp.x)===cp.y){this.checkpoint={...cp};this.player.x=cp.x;this.player.y=cp.y;this.player.lastSafe={...cp};}
   }
   levelInteraction():string|null {
-    if(!this.hasArchive||this.phase!=='play'||!this.player.onGround||this.player.state!=='move'||this.player.dashTime>0)return null;
+    if(this.phase!=='play'||!this.player.onGround||this.player.state!=='move'||this.player.dashTime>0)return null;
     const p=this.player;
-    if(this.archiveKeeperDefeated&&!this.beaconSeal&&Math.abs(p.x-3070)<85&&Math.abs(p.y-900)<65)return 'Take Beacon Seal';
-    if(!this.archiveGateOpen&&Math.abs(p.x-3700)<125&&p.y<510)return this.beaconSeal?'Open seal gate':'Requires Beacon Seal';
-    return null;
+    if(this.hasArchive&&this.archiveKeeperDefeated&&!this.beaconSeal&&Math.abs(p.x-3070)<85&&Math.abs(p.y-900)<65)return 'Take Beacon Seal';
+    if(this.hasArchive&&!this.archiveGateOpen&&Math.abs(p.x-3700)<125&&p.y<510)return this.beaconSeal?'Open seal gate':'Requires Beacon Seal';
+    const chest=this.exploration.nearbyChest();
+    return chest?`Open chest · ${chest.name}`:null;
   }
   private removeArchiveGate(){this.terrain.ground=this.terrain.ground.filter(g=>!(g.x0===3700&&g.x1===3760&&g.y===-1200));this.terrain.addGround(3700,3760,450);}
   private updateLevelProgress(inp:InputFrame):void {
@@ -110,6 +121,7 @@ export class Stage implements World {
     if(action&&action===this.levelNearbyLast&&inp.interactPressed&&!this.levelInteractHeld){
       if(action==='Take Beacon Seal'){this.beaconSeal=true;this.equipmentRevision++;this.emit({type:'equipment',text:'Beacon Seal recovered · climb back to the gate'});}
       if(action==='Open seal gate'){this.archiveGateOpen=true;this.removeArchiveGate();this.checkpoint={x:3820,y:450};this.scoreAtCheckpoint=this.score;this.equipmentRevision++;this.emit({type:'equipment',text:'The seal gate opens'});}
+      if(action.startsWith('Open chest ·'))this.exploration.open();
     }
     this.levelInteractHeld=held;this.levelNearbyLast=action;
   }
@@ -124,7 +136,7 @@ export class Stage implements World {
     return JSON.parse(JSON.stringify({equipment:this.player.equipment,issued:[...this.issuedRewards],drops:this.weaponDrops,serial:this.exchangeSerial}));
   }
   restoreWeapons(raw:unknown):void {
-    const j=cleanJournal(raw,this.def.id,this.def.length);
+    const j=cleanJournal(raw,this.def.id,this.def.length,!!this.def.expedition);
     this.player.equipment=j.equipment;this.issuedRewards=new Set(j.issued);this.weaponDrops=j.drops;this.exchangeSerial=j.serial;
     this.recoverWeaponDrops();this.nearbyLast=null;this.equipmentRevision++;
   }
@@ -139,7 +151,7 @@ export class Stage implements World {
     let best:{x:number;y:number}|null=null,dist=Infinity;
     for(const g of this.terrain.ground){
       const a=Math.max(lo,g.x0+26),b=Math.min(hi,g.x1-26);
-      if(a>b||g.y<90||g.y>(this.def.id===0?1000:500))continue;
+      if(a>b||g.y< -400||g.y>(this.def.voidY??740)-140)continue;
       const gx=Math.max(a,Math.min(b,x)),distance=Math.abs(gx-x);
       if(distance<dist){dist=distance;best={x:gx,y:g.y};}
     }
@@ -178,7 +190,13 @@ export class Stage implements World {
   }
   private pickupWeapon(d:WeaponDrop):void {
     const eq=this.player.equipment,alt=eq.alternate;
-    if(alt?.id===d.weapon&&alt.rank===3){this.emit({type:'equipment',text:`${WEAPONS[d.weapon].name} · maximum rank III`});return;}
+    if(alt?.id===d.weapon&&alt.rank===3){
+      if(this.def.expedition&&d.id===this.bossRewardSource){
+        this.weaponDrops=this.weaponDrops.filter(q=>q!==d);this.bankTreasure(1000);this.equipmentRevision++;
+        this.emit({type:'equipment',text:'Guardian masterwork recovered · +1000 score'});
+      }else this.emit({type:'equipment',text:`${WEAPONS[d.weapon].name} · maximum rank III`});
+      return;
+    }
     this.weaponDrops=this.weaponDrops.filter(x=>x!==d);
     let text='';
     if(alt?.id===d.weapon){
@@ -196,6 +214,14 @@ export class Stage implements World {
   }
   private rewardWeapon(e:Enemy):void {
     if(!e.rewardId||this.issuedRewards.has(e.rewardId))return;
+    if(this.def.expedition){
+      if(!e.boss||e.rewardId!==this.bossRewardSource)return;
+      this.issuedRewards.add(e.rewardId);this.equipmentRevision++;
+      const c=e.center();
+      this.weaponDrops.push({id:e.rewardId,weapon:this.def.expedition.bossWeapon,rank:1,copy:true,x:c.x,y:c.y,vx:0,vy:-190,age:0,bounce:0,settled:false});
+      this.emit({type:'equipment',text:`Guardian weapon revealed · claim ${WEAPONS[this.def.expedition.bossWeapon].name} before leaving`});
+      return;
+    }
     this.issuedRewards.add(e.rewardId);this.equipmentRevision++;
     const primary=rewardForSource(this.def.id,e.rewardId);
     const bonus=this.hasArchive?bonusRewardForSource(this.def.id,e.rewardId):undefined;
@@ -251,6 +277,7 @@ export class Stage implements World {
     this.prevPlayerX=this.player.x;this.prevPlayerY=this.player.y;
     this.checkpoint = { x: def.start, y: sy };
     this.bounds = { minX: 0, maxX: def.length };
+    this.exploration=new Exploration(this);
     for (const [x, y] of def.motes) {
       this.pickups.push({ x, y, vx: 0, vy: 0, kind: 'mote', placed: true, t: this.rng() * 6, taken: false });
     }
@@ -391,7 +418,7 @@ export class Stage implements World {
     if(!wasDashing&&p.dashTime>0)this.emit({type:'dash',x:p.x,y:p.y,facing:p.facing});
     if (acts.jumped) this.emit({ type: 'jump', x: p.x, y: p.y });
     if (acts.swung) this.emit({ type: 'swing', x: p.x, y: p.y - 40, step: p.airSwing ? 3 : p.combo, facing: p.facing, air: p.airSwing });
-    const movementMax=this.hasArchive&&!this.archiveGateOpen?Math.min(this.bounds.maxX,3700):this.bounds.maxX;
+    const movementMax=Math.min(this.bounds.maxX,this.exploration.limit,this.hasArchive&&!this.archiveGateOpen?3700:this.def.length);
     const mv = this.terrain.move(p, dt, this.bounds.minX, movementMax);
     if(p.onGround&&p.dashTime<=0)p.stride+=Math.abs(p.x-this.prevPlayerX)*.045;
     const direction=(inp.right?1:0)-(inp.left?1:0);
@@ -445,7 +472,7 @@ export class Stage implements World {
     this.updateEncounters(dt);
 
     // ---- end of stage
-    if (this.phase === 'play' && !this.active && this.nextEncounter >= this.def.encounters.length && p.x >= this.def.exit) {
+    if (this.phase === 'play' && !this.active && this.nextEncounter >= this.def.encounters.length && p.x >= this.def.exit&&!this.awaitingBossReward) {
       this.finish();
     }
     if (this.phase === 'clear' && this.phaseT > 3) this.phase = 'clear';
@@ -650,7 +677,7 @@ export class Stage implements World {
     const p = this.player;
     if (!this.active) {
       const enc = this.def.encounters[this.nextEncounter];
-      if (enc && p.x >= enc.trigger && this.phase === 'play') this.startEncounter(this.nextEncounter);
+      if (enc && p.x >= enc.trigger && (enc.triggerY===undefined||Math.abs(p.y-enc.triggerY)<165)&&this.phase === 'play') this.startEncounter(this.nextEncounter);
       return;
     }
     const a = this.active;
@@ -683,7 +710,8 @@ export class Stage implements World {
     this.checkpoint = { x: cx, y: this.terrain.groundAt(cx) ?? 450 };
     this.scoreAtCheckpoint = this.score;
     this.recoverWeaponDrops();
-    this.emit({ type: 'encounterStart', boss: !!def.boss });
+    this.emit({ type: 'encounterStart', boss: !!(def.boss||def.miniBoss) });
+    if(def.miniBoss)this.emit({type:'bossIntro',name:def.miniBoss.name,title:def.miniBoss.title});
     if (def.boss) {
       const k = KINDS[def.waves[0][0].kind];
       this.emit({ type: 'bossIntro', name: k.name ?? '', title: k.title ?? '' });
@@ -697,7 +725,10 @@ export class Stage implements World {
       const e = this.spawnEnemy(s.kind, s.x, s.y);
       e.wave = a.wave;
       if(a.def.sealGuardian)e.maxHp=e.hp=Math.round(12*this.diff.enemyHp);
-      if(rewardForSpawn(this.def.id,a.index,a.wave,spawnIndex)) e.rewardId=`e${a.index}w${a.wave}s${spawnIndex}`;
+      if(a.def.miniBoss&&spawnIndex===0){
+        e.miniName=a.def.miniBoss.name;e.maxHp=e.hp=Math.round(a.def.miniBoss.hp*this.diff.enemyHp);
+      }
+      if(this.def.expedition?a.def.boss&&spawnIndex===0:rewardForSpawn(this.def.id,a.index,a.wave,spawnIndex)) e.rewardId=`e${a.index}w${a.wave}s${spawnIndex}`;
       e.cooldown = 0.8 + (s.delay ?? 0) + this.rng() * 0.6;
       if (e.boss) {
         this.boss = e;
@@ -715,6 +746,9 @@ export class Stage implements World {
     const p = this.player;
     this.active = null;
     this.nextEncounter = a.index + 1;
+    this.scoreAtCheckpoint=this.score;
+    this.exploration.syncGates();
+    if(a.def.miniBoss){this.boss=null;this.equipmentRevision++;this.emit({type:'equipment',text:`${a.def.miniBoss.name} defeated · the route seal breaks`});}
     if(a.def.sealGuardian){this.archiveKeeperDefeated=true;this.equipmentRevision++;this.emit({type:'equipment',text:'Archive Keeper defeated · take the Beacon Seal'});}
     this.bounds = { minX: 0, maxX: this.def.length };
     const before = p.hp;

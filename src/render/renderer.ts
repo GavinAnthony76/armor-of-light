@@ -7,6 +7,7 @@ import type { Sign } from '../core/levels';
 import type { Game } from '../game';
 import type { InputMode } from '../input';
 import { drawEnemy, WARN_RED } from './shadows';
+import { drawJourney } from './journey';
 
 export interface Layout {
   w: number; // CSS px viewport
@@ -98,7 +99,7 @@ export class Renderer {
     if (!s || !game.world) return;
     const Z = l.zoom;
     const worldW = l.viewW / Z;
-    const camTop = cameraTop(l.viewH,s.player.y,Z,l.touch&&!l.portrait?Math.max(90,106/l.scale):90)+(s.def.id===0?Math.max(0,s.player.y-450):0); // keep the ground line anchored to the bottom
+    const camTop = cameraTop(l.viewH,s.player.y,Z,l.touch&&!l.portrait?Math.max(90,106/l.scale):90)+Math.max(0,s.player.y-450);
     game.viewW = worldW;
     const world = game.world;
     const k = l.scale * l.dpr;
@@ -128,6 +129,7 @@ export class Renderer {
     if (!game.demo) for (const sign of s.def.signs.filter(q=>Math.abs(q.x-s.player.x)<170).sort((a,b)=>Math.abs(a.x-s.player.x)-Math.abs(b.x-s.player.x)).slice(0,1)) this.drawSign(sign, s.terrain.groundAt(sign.x) ?? 450, inputMode);
     this.drawPickups(game);
     this.drawWeaponDrops(game);
+    drawJourney(ctx,s,game.time,camX,worldW);
     this.drawMarkers(game);
     this.drawWaves(game);
     for(const e of s.enemies){

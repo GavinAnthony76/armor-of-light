@@ -15,7 +15,8 @@ function saveRun(s:Stage):void {
     difficulty:'gentle',levelState:s.levelState(),weapons:s.weaponJournal()};
   store.persist();
 }
-const def=STAGES[0];
+// Legacy authored-run migration/loot compatibility; new chest campaign has its own suite.
+const def={...STAGES[0],expedition:undefined};
 for(const weapon of ['sunblade','sling'] as const){
   let s=new Stage(def,'gentle',12);
   s.player.invuln=9999;
@@ -113,7 +114,7 @@ for(const revision of [undefined,'desert-authored-1','older-desert']){
   check(store.data.unlocked===3&&store.data.best[0].score===900,'migration preserves campaign progress and best');
   check(!store.data.settings.music&&!store.data.settings.sfx&&store.data.settings.reduceMotion&&store.data.settings.musicVolume===.3,'migration preserves settings');
 }
-raw=JSON.stringify({version:2,unlocked:1,run:{level:1,encounter:0,score:0,motes:0,kills:0,time:0,deaths:0,collected:[],difficulty:'gentle'}});
-await store.load();check(store.data.run?.level===1,'unchanged lands keep old runs');
+raw=JSON.stringify({version:2,unlocked:1,run:{level:1,layoutRevision:STAGES[1].layoutRevision,encounter:0,score:0,motes:0,kills:0,time:0,deaths:0,collected:[],difficulty:'gentle'}});
+await store.load();check(store.data.run?.level===1,'matching redesigned land revision retains its run');
 check(rewardForSource(0,'e0w2s0')===undefined&&rewardForSource(0,'e99w99s99')===undefined,'nonexistent Desert sources cannot issue rewards');
 console.log(`${count} authored level reward/save/reset integration checks passed.`);

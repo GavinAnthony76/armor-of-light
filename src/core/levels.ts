@@ -1,5 +1,7 @@
 import {desertDemo} from "./desert-demo";
 import type { EnemyKind } from './enemy';
+import type { JourneyDef } from './journey-types';
+import { addDesertTreasures, buildCampaignLand } from './campaign-levels';
 
 /**
  * Levels are plain data. Coordinates are in pixels; the ground line is
@@ -22,6 +24,8 @@ export interface Encounter {
   boss?: boolean;
   openRoad?:boolean;
   sealGuardian?:boolean;
+  triggerY?:number;
+  miniBoss?:{name:string;title:string;hp:number};
 }
 
 export type Theme = 'desert' | 'flood' | 'garden' | 'mountain' | 'valley' | 'city' | 'river';
@@ -37,6 +41,7 @@ export interface Sign {
 }
 
 export interface StageDef {
+  expedition?:JourneyDef;
   id: number;
   /** Change when authored checkpoint, collectible or reward identities change. */
   layoutRevision?: string;
@@ -423,4 +428,5 @@ STAGES.forEach((s,land)=>{
 });
 
 // Level-design branch: authored first-land demo, keeping the shared combat contracts.
-STAGES[0]=desertDemo(STAGES[0]);
+STAGES[0]=addDesertTreasures(desertDemo(STAGES[0]));
+for(let i=1;i<STAGES.length;i++)STAGES[i]=buildCampaignLand(STAGES[i]);

@@ -11,7 +11,7 @@ const dt=1/60;
 function player():Player {const p=new Player(300,450,8);p.onGround=true;return p;}
 function stage(flat=false):Stage {
   const def=flat?{...STAGES[0],ground:[[0,4900,450]] as [number,number,number][],platforms:[],encounters:[]}:STAGES[0];
-  const s=new Stage(def,'gentle',1);
+  const s=new Stage({...def,expedition:undefined},'gentle',1);
   s.player.x=300;s.player.y=450;s.player.onGround=true;s.player.invuln=999;
   return s;
 }

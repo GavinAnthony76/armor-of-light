@@ -9,7 +9,8 @@ import { createRng } from '../src/core/rng';
 let checks=0;
 function check(v:unknown,m:string){if(!v)throw Error(m);checks++;}
 const tick=(s:Stage,n=1,inp:InputFrame=NO_INPUT)=>{for(let i=0;i<n;i++){s.step(inp);s.takeEvents();}};
-const fixture=(land=0)=>{const s=new Stage(STAGES[land],'gentle',1);s.player.invuln=999;s.player.x=300;s.player.y=s.terrain.groundAt(300)??450;return s;};
+// Legacy drop mechanics remain readable for pre-expedition save compatibility.
+const fixture=(land=0)=>{const s=new Stage({...STAGES[land],expedition:undefined},'gentle',1);s.player.invuln=999;s.player.x=300;s.player.y=s.terrain.groundAt(300)??450;return s;};
 function kill(s:Stage,id:string,x=350,y?:number){const e=s.spawnEnemy('husk',x,y);e.cooldown=999;e.rewardId=id;e.state='move';e.takeHit(s,999,1,0);tick(s);return e;}
 function settle(s:Stage){tick(s,150);}
 function near(s:Stage){const d=s.weaponDrops[0];s.player.x=d.x;s.player.y=d.y;s.player.vx=0;s.player.vy=0;s.player.setState('move');s.player.onGround=true;tick(s,2);}

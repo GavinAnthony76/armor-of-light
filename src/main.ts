@@ -18,9 +18,9 @@ import { UI } from './ui/ui';
 type AppState = 'menu' | 'playing' | 'paused' | 'results';
 
 async function boot(): Promise<void> {
-  const demoLand=!new URLSearchParams(location.search).has('campaign');
+  const demoLand=new URLSearchParams(location.search).has('demo');
   // Swap this for another adapter (e.g. YouTubePlatform) to target a host.
-  const platform: PlatformAdapter = new URLSearchParams(location.search).has('youtube') ? new YouTubePlatform() : new WebPlatform(demoLand?'armor-of-light-desert-demo-v2':undefined);
+  const platform: PlatformAdapter = new URLSearchParams(location.search).has('youtube') ? new YouTubePlatform() : new WebPlatform(demoLand?'armor-of-light-desert-demo-v2':undefined,demoLand?undefined:'armor-of-light-desert-demo-v2');
   await platform.init();
   const save = new SaveStore(platform);
   await save.load();
@@ -110,6 +110,7 @@ async function boot(): Promise<void> {
     }
     game.start(i, save.data.settings.difficulty, { autoplay: params.has('autoplay') });
     const run=save.data.run,s=game.stage!;
+    s.player.equipment=save.startingEquipment(i);
     if(run?.level===i&&run.difficulty===save.data.settings.difficulty){
       s.nextEncounter=run.encounter;s.score=run.score;s.motes=run.motes;s.kills=run.kills;s.time=run.time;s.deaths=run.deaths;
       s.pickups.forEach((p,n)=>{if(run.collected.includes(n))p.taken=true;});
@@ -161,6 +162,7 @@ async function boot(): Promise<void> {
   }
 
   game.onFinish = (r: StageResult) => {
+    if(game.stage)save.rememberEquipment(game.stage);
     const newBest = save.record(r);
     platform.submitScore(save.totalScore());
     state = 'results';
@@ -226,7 +228,7 @@ async function boot(): Promise<void> {
     if(state==='playing'&&game.stage&&!game.demo){
       const s=game.stage;
       if((s.nextEncounter!==lastSavedEncounter||s.equipmentRevision!==lastEquipmentRevision)&&s.phase==='play'){
-        lastSavedEncounter=s.nextEncounter;lastEquipmentRevision=s.equipmentRevision;
+        lastSavedEncounter=s.nextEncounter;lastEquipmentRevision=s.equipmentRevision;save.rememberEquipment(s);
         save.data.run={level:game.level,layoutRevision:s.def.layoutRevision,encounter:s.nextEncounter,score:s.score,motes:s.motes,kills:s.kills,time:s.time,deaths:s.deaths,collected:s.pickups.map((p,n)=>p.placed&&p.taken?n:-1).filter(n=>n>=0),difficulty:s.diff.id,levelState:s.levelState(),weapons:s.weaponJournal()};save.persist();
       }
     }

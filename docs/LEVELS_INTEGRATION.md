@@ -1,5 +1,9 @@
 # Consolidation into main
 
+Historical merge report: the enemy-equipment reward table below is superseded
+by the chest/guardian policy in CAMPAIGN_EXPEDITION.md. Those old reward identities
+remain only for legacy save/isolated regression compatibility, not production loot.
+
 The current integration keeps the latest upstream Archive layout/artwork, Keeper,
 mandatory Beacon Seal pickup and gate, together with the approved ordered combos,
 dash/jump controls, impacts, opening/story/music, heavy touch control and sling.

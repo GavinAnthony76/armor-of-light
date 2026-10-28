@@ -1,6 +1,6 @@
 ---
-name: Approved game and run-local weapons
-description: User direction for preserving the original game and keeping weapons tied to land attempts.
+name: Approved combat and campaign rewards
+description: Preserve approved combat while building the full exploration campaign and earned guardian-weapon progression.
 ---
 
 Use the approved upstream original game as the foundation; enhance it rather than rebuilding its gameplay or replacing its visual identity.
@@ -17,20 +17,27 @@ The approved `dev/weapon-discovery` implementation has been reconciled into GitH
 
 **How to apply:** Preserve approved combat and the signature burning hammer while adding focused enhancements.
 
-Alternate weapons and upgrades reset on fresh land attempts, but checkpoint retries and Continue retain them.
+Main bosses leave weapon rewards that are used and upgraded in the following land.
+Chests replace ordinary enemy equipment drops and contain hidden weapons,
+upgrades, valuable score items and other useful rewards.
 
-**Why:** The user wants weapons unique to levels so players revisit a level to enjoy that weapon and its upgrades again.
+**Why:** The user explicitly changed the former run-local equipment direction while requesting a full exploration campaign.
 
-**How to apply:** Do not introduce permanent cross-land alternate equipment progression without a new user decision.
+**How to apply:** Preserve earned guardian weapons across the campaign. Retry and
+Continue must retain opened chests, discoveries, equipment and gate progress without
+duplicating treasure. Fresh land attempts reset local chest exploration, not earned boss unlocks.
 
-Develop one complete land as the reviewable testbed before expanding the rest.
+Develop all seven lands; the user has now requested the remaining six and mini-bosses.
 The user wants God of War-style combo/impact depth, Ninja-like responsive dashing
 and jumping, an opening/story/music flow, selective killing-blow slowdown and
 visually impressive weapon upgrades, including a sling.
 
-**Why:** The user explicitly asked to fully develop one level from the merged main, and previously said they will check each stage when prompted.
+**Why:** The user expanded the former one-land testbed scope to a full game, retaining staged play feedback.
 
-**How to apply:** Preserve the approved main gameplay identity, finish and verify the first-land systems/presentation flow, then pause for play feedback. Level design belongs to the creator's separate branch; do not expand or redesign lands unless asked. Do not equate automated checks or browser emulation with native iPhone testing or App Store readiness.
+**How to apply:** Preserve the approved main gameplay identity while building the
+campaign's side-scrolling vertical routes, optional wrong turns, hidden chests and
+mini-boss progression gates. Request play feedback at meaningful stages. Do not
+equate automated checks or browser emulation with native iPhone testing or App Store readiness.
 
 Combat review must assess combo continuity against live targets, jump/dash
 control and convincing hit impact—not merely whether action buttons fire.

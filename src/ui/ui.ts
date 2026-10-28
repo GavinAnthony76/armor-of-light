@@ -1,3 +1,4 @@
+import { journeyObjective } from '../render/journey';
 import {DESERT_ZONES} from '../core/desert-demo';
 import { ROMAN, WEAPONS } from '../core/weapons';
 import type { Stage } from '../core/stage';
@@ -100,7 +101,7 @@ export class UI {
               <p>Stick walks · A jump · X light · RT heavy · B shield · Y pick up · LT swap · LB dash</p></div>
           </div>
           <p class="equipment-rules">Fight with a rhythm: light–light–light or light–light–heavy. A streak counts only when a blow lands. Heavy attacks have a deliberate wind-up; block or dash can cancel recovery after the impact window.</p>
-          <p class="equipment-rules">Your Ember Hammer is always yours. Weapons stay where enemies drop them: press E / Y or tap PICK UP near one. Copies forge ranks I–III. Retry and Continue keep equipment; Restart or entering another land clears the alternate slot.</p>
+          <p class="equipment-rules">Your Ember Hammer is always yours. Explore upper trails and lower rooms for hidden chests. Press E / Y or tap INTERACT to open one; pick up revealed weapons deliberately. Forge chests improve your equipped weapon to rank III. Relics add heart capacity. Defeat mini-bosses to break route seals. Claim the main guardian’s weapon before leaving: it carries into the next land.</p>
           <div class="warn-key">
             <p><span class="w gold"></span><b>Gold warning:</b> block it. Block right as it flashes to <b>parry</b>, which stuns the foe.</p>
             <p><span class="w red"></span><b>Red warning:</b> it can’t be blocked. Jump or move away.</p>
@@ -122,7 +123,7 @@ export class UI {
           <div class="sheet-scroll">
             <h2>Paused</h2>
             <p class="card-sub" data-ref="pauseSub"></p>
-            <p class="equipment-rules">Continue keeps your weapons. Restart or the next land resets your alternate. The hammer stays.</p>
+            <p class="equipment-rules">Retry and Continue keep opened chests, weapons, relics and route seals. Restart resets this land’s chests and local discoveries, not your earned guardian weapons. The hammer stays.</p>
             <div class="row audio-settings">
               <button class="btn icon" data-act="sfx" aria-label="Sound effects"></button>
               <button class="btn icon" data-act="music" aria-label="Music">${ICON.music}</button><label class="music-volume">Music <input aria-label="Music volume" data-volume type="range" min="0" max="100" step="5" value="80"></label>
@@ -258,8 +259,9 @@ export class UI {
   private comboStamp='';
   updateEquipment(s:Stage,mode:InputMode,audioReady:boolean,musicOn:boolean):void {
     const p=s.player,w=WEAPONS[p.weaponId],eq=p.equipment;
-    const objective=this.ref('landObjective');objective.hidden=s.def.id!==0;
-    if(s.def.id===0){const z=DESERT_ZONES.filter(z=>z.x<=p.x).slice(-1)[0]??DESERT_ZONES[0];objective.textContent=s.pathOpen?'The beacon awaits · follow the light east':p.y>550?(s.beaconSeal?'Seal recovered · climb the eastern shaft to the gate':s.archiveKeeperDefeated?'Take the glowing Beacon Seal before climbing out':'Sunken Archive · defeat the Archive Keeper to recover the seal'):s.beaconSeal&&!s.archiveGateOpen?'Return to the seal gate · use INTERACT to open it':z.name+' · '+z.goal;}
+    const objective=this.ref('landObjective');objective.hidden=s.def.id!==0&&!s.def.expedition;
+    if(s.def.id===0){const z=DESERT_ZONES.filter(z=>z.x<=p.x).slice(-1)[0]??DESERT_ZONES[0];objective.textContent=s.awaitingBossReward?'Claim the guardian weapon before leaving':s.pathOpen?'The beacon awaits · follow the light east':p.y>550?(s.beaconSeal?'Seal recovered · climb the eastern shaft to the gate':s.archiveKeeperDefeated?'Take the glowing Beacon Seal before climbing out':'Sunken Archive · defeat the Archive Keeper to recover the seal'):s.beaconSeal&&!s.archiveGateOpen?'Return to the seal gate · use INTERACT to open it':z.name+' · '+z.goal;}
+    else if(s.def.expedition)objective.textContent=journeyObjective(s);
     const swap=mode==='keyboard'?'Q swap':mode==='gamepad'?'LT swap':'SWAP';
     const pickup=mode==='keyboard'?'E':mode==='gamepad'?'Y':'PICK UP';
     const stamp=`${p.weaponId}${p.weaponRank}${eq.alternate?.id}${eq.alternate?.rank}${mode}`;
@@ -278,7 +280,7 @@ export class UI {
     this.ref<HTMLButtonElement>('tSwap').setAttribute('aria-label','Swap weapon');
     if(action){
       this.ref('dropName').textContent=action;
-      this.ref('dropBenefit').textContent=action==='Take Beacon Seal'?'Recover the seal before leaving the Archive':canAct?'Use the Beacon Seal to open the onward path':'Recover the Beacon Seal from the Archive Keeper';
+      this.ref('dropBenefit').textContent=action.startsWith('Open chest ·')?'Open to reveal treasure, equipment or provisions':action==='Take Beacon Seal'?'Recover the seal before leaving the Archive':canAct?'Use the Beacon Seal to open the onward path':'Recover the Beacon Seal from the Archive Keeper';
       const control=mode==='keyboard'?'E':mode==='gamepad'?'Y':'INTERACT';
       this.ref('dropAction').textContent=canAct?`${control} · Interact`:'Return to the Sunken Archive';
     }else if(d){
@@ -373,7 +375,7 @@ export class UI {
     this.ref('resBadge').hidden = !newBest;
     const ending = this.ref('resEnding');
     ending.hidden = false;
-    ending.textContent = CHAPTERS[r.stageId].aftermath;
+    ending.textContent = CHAPTERS[r.stageId].aftermath+(def.expedition?` Guardian reward: ${WEAPONS[def.expedition.bossWeapon].name}.${hasNext?' Your earned weapon carries into the next land.':' All seven beacons are restored. Replay the lands to discover their hidden reliquaries.'}`:'');
     this.ref('nextBtn').hidden = !hasNext;
     this.ref('replayBtn').classList.toggle('primary', !hasNext);
     if(this.demoLand!==undefined){this.ref('resTitle').textContent='The beacon burns again';this.ref('resEnding').textContent='You have completed The Desert Ruins demo. Mara’s ribbon points toward the flooded road. Replay to explore the upper routes or forge the Sunblade to rank III.';}

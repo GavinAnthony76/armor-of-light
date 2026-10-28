@@ -13,7 +13,7 @@ for(let i=0;i<7;i++) save.record({stageId:i,score:1000,lamps:2,time:100,difficul
 assert.equal(save.data.unlocked,6);assert.equal(save.totalLamps(),14);
 await save.flush();
 const reloaded=new SaveStore(platform as never);await reloaded.load();assert.equal(reloaded.data.unlocked,6);
-raw=JSON.stringify({unlocked:6,run:{level:6,encounter:4,score:40,motes:2,kills:1,time:40,deaths:0,collected:[1,2],difficulty:'gentle'}});
+raw=JSON.stringify({unlocked:6,run:{level:6,layoutRevision:STAGES[6].layoutRevision,encounter:4,score:40,motes:2,kills:1,time:40,deaths:0,collected:[1,2],difficulty:'gentle'}});
 await reloaded.load();assert.equal(reloaded.data.run?.level,6);
 raw=JSON.stringify({unlocked:0,run:{level:6,encounter:4,score:40,motes:2,kills:1,time:40,deaths:0,collected:[],difficulty:'gentle'}});
 await reloaded.load();assert.equal(reloaded.data.run,undefined);

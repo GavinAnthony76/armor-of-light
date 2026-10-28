@@ -34,7 +34,7 @@ export const HEAVY_SWING: SwingDef = {
 export class Player implements Body {
   equipment: Equipment = freshEquipment();
   get weaponId(): WeaponId { return this.equipment.equipped==='alternate'&&this.equipment.alternate?this.equipment.alternate.id:'hammer'; }
-  get weaponRank(): Rank { return this.weaponId==='hammer'?1:this.equipment.alternate?.rank??1; }
+  get weaponRank(): Rank { return this.weaponId==='hammer'?this.equipment.hammerRank??1:this.equipment.alternate?.rank??1; }
   x: number;
   y: number;
   vx = 0;

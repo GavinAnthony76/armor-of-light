@@ -1,21 +1,18 @@
 ---
 name: Level-design ownership
-description: Division of responsibility between this work and the creator's separate level-design branch.
+description: Primary engineer now owns all level design as well as integration.
 ---
 
-The user has ChatGPT working on level design on a separate branch to merge later.
-Do not independently do level design as well unless the user asks.
-Remain the primary engineer and architect: if incoming ChatGPT work is not
-compatible, make the necessary changes before accepting it.
+The user reassigned level design here: “Take over level design. I need the remaining 6 levels and mini bosses.”
+The primary engineer owns all seven lands, encounters and progression as well as
+combat, movement, weapons, presentation and integration. The former restriction
+against independently designing levels no longer applies.
 
-**Why:** The user assigned this division of work to avoid duplicate level design,
-then explicitly retained primary engineering/architecture responsibility here.
+**Why:** The user explicitly replaced the separate-ChatGPT level-design arrangement.
 
-**How to apply:** Focus on combat, traversal mechanics, weapon systems, upgrades,
-animation, opening/story presentation, audio and integration. Do not change
-authored terrain, layouts, waves, encounter placement or encounter health tuning
-as an independent design effort without a new request. Compatibility fixes to
-incoming work are authorized before acceptance. Review combat, traversal,
+**How to apply:** Author the remaining lands and named mini-bosses, including vertical
+travel, wrong turns/optional branches, secrets and progression gates. Preserve the
+approved combat feel while developing the campaign. Review combat, traversal,
 weapons/rewards, saves, rendering, controls and build behavior rather than blindly
 merging. Preserve the level designer's intent while fixing integration problems,
 and keep loot/integration policies separate from level data where practical.

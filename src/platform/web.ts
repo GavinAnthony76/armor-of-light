@@ -5,7 +5,7 @@ const KEY = 'armor-of-light-save-v1';
 /** Standalone browser platform: localStorage saves, focus/visibility pause. */
 export class WebPlatform implements PlatformAdapter {
   readonly name = 'web';
-  constructor(private readonly storageKey=KEY){}
+  constructor(private readonly storageKey=KEY,private readonly legacyKey?:string){}
   private memory: string | null = null;
   private pauseCbs: (() => void)[] = [];
   private resumeCbs: (() => void)[] = [];
@@ -24,7 +24,17 @@ export class WebPlatform implements PlatformAdapter {
 
   async load(): Promise<string | null> {
     try {
-      return window.localStorage.getItem(this.storageKey) ?? this.memory;
+      const current=window.localStorage.getItem(this.storageKey);
+      if(current!==null)return current;
+      const legacy=this.legacyKey?window.localStorage.getItem(this.legacyKey):null;
+      if(legacy!==null){
+        // Import an existing single-land save only when no campaign save exists.
+        // Keep the old key intact and never replace established campaign data.
+        this.memory=legacy;
+        try{window.localStorage.setItem(this.storageKey,legacy);}catch{/* retain readable legacy data */}
+        return legacy;
+      }
+      return this.memory;
     } catch {
       return this.memory; // storage blocked (private mode, sandboxed iframe…)
     }

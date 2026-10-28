@@ -96,6 +96,7 @@ let nextId = 1;
 export type EnemyState = 'spawn' | 'move' | 'windup' | 'active' | 'recover' | 'stagger' | 'hurt' | 'dying';
 
 export class Enemy {
+  miniName?:string;
   rewardId: string | null = null;
   readonly id = nextId++;
   readonly kind: EnemyKind;

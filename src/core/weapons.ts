@@ -20,28 +20,30 @@ export const LAND_WEAPONS: WeaponId[] = ['sunblade','tide','thorn','storm','iron
 export const allowedInLand=(id:unknown,land:number):id is WeaponId =>
   id===LAND_WEAPONS[land] || (land===0 && id==='sling');
 export const ROMAN = ['','I','II','III'];
-export interface Equipment { alternate: {id:WeaponId;rank:Rank}|null; equipped:'hammer'|'alternate' }
+export interface Equipment { alternate: {id:WeaponId;rank:Rank}|null; equipped:'hammer'|'alternate';hammerRank?:Rank }
 export interface WeaponDrop { id:string; weapon:WeaponId; rank:Rank; copy:boolean; x:number;y:number;vx:number;vy:number;age:number;bounce:number;settled:boolean }
 export interface WeaponJournal { equipment:Equipment; issued:string[]; drops:WeaponDrop[]; serial:number }
-export const freshEquipment=():Equipment=>({alternate:null,equipped:'hammer'});
+export const freshEquipment=():Equipment=>({alternate:null,equipped:'hammer',hammerRank:1});
 export const validWeapon=(x:unknown):x is WeaponId=>typeof x==='string'&&Object.prototype.hasOwnProperty.call(WEAPONS,x);
 export const rankOf=(x:unknown):Rank=>x===2?2:x===3?3:1;
 /** Untrusted saves: only known identities, finite positions, bounded sizes; no aliasing. */
-export function cleanJournal(raw:unknown,land:number,length:number):WeaponJournal {
+export function cleanJournal(raw:unknown,land:number,length:number,campaign=false):WeaponJournal {
   const r=raw as Partial<WeaponJournal>|null;
   const equipment=freshEquipment();
+  equipment.hammerRank=rankOf(r?.equipment?.hammerRank);
   const alt=r?.equipment?.alternate;
-  if(alt&&allowedInLand(alt.id,land))equipment.alternate={id:alt.id,rank:rankOf(alt.rank)};
+  const allowed=(id:unknown):id is WeaponId=>campaign?validWeapon(id)&&id!=='hammer':allowedInLand(id,land);
+  if(alt&&allowed(alt.id))equipment.alternate={id:alt.id,rank:rankOf(alt.rank)};
   if(equipment.alternate&&r?.equipment?.equipped==='alternate')equipment.equipped='alternate';
-  const issued=Array.isArray(r?.issued)?[...new Set(r.issued.filter(x=>typeof x==='string'&&/^e\d+w\d+s\d+$/.test(x)))].slice(0,100):[];
+  const issued=Array.isArray(r?.issued)?[...new Set(r.issued.filter(x=>typeof x==='string'&&/^(?:e\d+w\d+s\d+|chest:[a-z0-9-]{1,60})$/.test(x)))].slice(0,100):[];
   const seen=new Set<string>();
   const drops:WeaponDrop[]=[];
   for(const d of Array.isArray(r?.drops)?r.drops.slice(0,20):[]){
-    if(!d||typeof d.id!=='string'||seen.has(d.id)||!allowedInLand(d.weapon,land)||!Number.isFinite(d.x)||!Number.isFinite(d.y))continue;
-    const source=d.id.split(':')[0];
+    if(!d||typeof d.id!=='string'||seen.has(d.id)||!allowed(d.weapon)||!Number.isFinite(d.x)||!Number.isFinite(d.y))continue;
+    const source=d.id==='e1w0s0:sunblade'?'e1w0s0':d.id;
     if(d.copy&&(!issued.includes(source)||(d.id!==source&&!(land===0&&source==='e1w0s0'&&d.id===`${source}:sunblade`&&d.weapon==='sunblade'))))continue;
     if(!d.copy&&!/^exchange\d+$/.test(d.id))continue;
-    seen.add(d.id);drops.push({id:d.id,weapon:d.weapon,rank:rankOf(d.rank),copy:!!d.copy,x:Math.max(24,Math.min(length-24,d.x)),y:Math.max(0,Math.min(land===0?1000:500,d.y)),vx:0,vy:0,age:1,bounce:1,settled:false});
+    seen.add(d.id);drops.push({id:d.id,weapon:d.weapon,rank:rankOf(d.rank),copy:!!d.copy,x:Math.max(24,Math.min(length-24,d.x)),y:Math.max(-400,Math.min(campaign?1400:land===0?1000:500,d.y)),vx:0,vy:0,age:1,bounce:1,settled:false});
   }
   return {equipment,issued,drops,serial:Math.max(0,Math.min(10000,Math.floor(Number(r?.serial)||0)))};
 }

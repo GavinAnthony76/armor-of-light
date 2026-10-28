@@ -1,3 +1,16 @@
+# Current campaign development milestone
+
+All seven lands now have playable routes. The six later lands have distinct
+vertical elevation profiles, optional secret trails, two named elite mini-bosses
+and gated crossings each, plus their final guardian. Treasure chests contain
+equipment, forging upgrades, score items, healing and heart-capacity relics.
+Ordinary enemies no longer drop equipment; guardian weapons carry into the next
+land after being claimed. Opened chests and earned progression survive Continue.
+
+See [CAMPAIGN_EXPEDITION.md](docs/CAMPAIGN_EXPEDITION.md) for design, controls,
+reward/persistence rules and honest release limitations. This web campaign is not
+a signed native build or an App Store-ready certification.
+
 # Armor of Light — Weapon Discovery development preview
 
 Built on the approved **v1.2.0 Keeper of the Ember** baseline, commit `2d37439ae961b06310493866089b58bfe1923be0`. Development branch: `dev/weapon-discovery`. The approved `armor-of-light` branch is preserved.
