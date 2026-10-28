@@ -40,3 +40,11 @@ a false test failure despite correct fallback.
 decode-failure diagnostics as well as the actual procedural fallback; use real
 HTTP status checks for web editions. Browser process startup is also not proof
 of rendered WebKit coverage: page creation can fail later at EGL initialization.
+
+Only use browser artifacts tied to the current run as evidence.
+
+**Why:** An older screenshot remained in an artifact directory and appeared to
+contradict a fresh failing assertion. Its timestamp showed it came from a prior run.
+
+**How to apply:** Enable captures explicitly, use a run-specific output directory,
+and verify timestamps before interpreting screenshots or reports.

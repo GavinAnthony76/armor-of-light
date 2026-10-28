@@ -1,5 +1,5 @@
 - [Approved combat and campaign rewards](game-direction.md) — preserve the approved combat; boss weapons carry forward, while chests hold discoveries and upgrades.
-- [Level-design ownership](work-ownership.md) — the primary engineer now owns all seven lands, vertical exploration, secrets and mini-boss progression.
+- [Production ownership](work-ownership.md) — ChatGPT owns levels and environments; Replit owns combat, presentation and integration.
 - [Timed combat browser tests](browser-combat-testing.md) — sample within animation windows; use trusted low-level touch rather than locator tap auto-waits.
 - [Art production direction](art-production.md) — Phase 2 uses externally approved painted art; preserve the combat engine and keep infrastructure separate from assets.
 - [Starter audio approval](starter-audio-approval.md) — user approved suitable starter effects only; draft music and unmatched event triggers remain excluded.

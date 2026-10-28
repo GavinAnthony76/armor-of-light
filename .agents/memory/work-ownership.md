@@ -1,18 +1,16 @@
 ---
-name: Level-design ownership
-description: Primary engineer now owns all level design as well as integration.
+name: Game production ownership
+description: ChatGPT owns levels and environments; Replit owns combat, presentation and integration.
 ---
 
-The user reassigned level design here: “Take over level design. I need the remaining 6 levels and mini bosses.”
-The primary engineer owns all seven lands, encounters and progression as well as
-combat, movement, weapons, presentation and integration. The former restriction
-against independently designing levels no longer applies.
+The current handoff assigns ChatGPT level layouts, encounter design and environment
+work. Replit owns combat, movement, weapons/upgrades, character animation,
+splash/story, music and integration, and remains the primary engineer.
 
-**Why:** The user explicitly replaced the separate-ChatGPT level-design arrangement.
+**Why:** The user's latest production handoff explicitly states this ownership split.
 
-**How to apply:** Author the remaining lands and named mini-bosses, including vertical
-travel, wrong turns/optional branches, secrets and progression gates. Preserve the
-approved combat feel while developing the campaign. Review combat, traversal,
+**How to apply:** Integrate the level designer's work rather than independently
+redesigning levels unless asked. Preserve the approved combat feel. Review combat, traversal,
 weapons/rewards, saves, rendering, controls and build behavior rather than blindly
 merging. Preserve the level designer's intent while fixing integration problems,
 and keep loot/integration policies separate from level data where practical.

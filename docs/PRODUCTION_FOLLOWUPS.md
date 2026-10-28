@@ -106,3 +106,52 @@ current failure suppression, not history. Only `src/assets.ts`, `src/production/
 browser QA and authoring infrastructure. Budgets remain 96 MiB cache, 80 MiB
 active scene and 32 MiB decoded SFX. Logical accounting does not certify backing
 store release; #30 remains open for real-device evidence.
+
+## Replit integration verification — October 28, 2026
+
+Integrated the requested merge `3189cb61b1834f71995e50b99c7e706ce33595e0`
+by fast-forward from a clean working tree. There were no conflicts and no
+subsequent upstream commits at the final fetch. The integrated runtime, artwork,
+combat, campaign, saves and hero/hammer rendering remain unchanged from that merge.
+
+The older end-to-end guardian-spawn probe initially reported 53 passes and one
+failure: it teleported horizontally past the first land's archive gate without
+the Beacon Seal, so the real gate correctly clamped the player before the boss
+trigger. Its isolated first-guardian fixture now uses the existing saved-state
+restore API to supply completed archive prerequisites. It does not set a boss or
+alter game logic. The separate full browser campaign and archive suites remain
+unchanged. The corrected run passed all 54 checks.
+
+Checks performed on the integrated tree:
+
+| Check | Result |
+| --- | --- |
+| `npm test` including posttests | Passed; includes 86 production, 9 calibration and 4 embedded-map checks, campaign/combat/save suites and enemy checks |
+| `npm run test:art` | Passed: 216 environment, 177 pack, 14,386 enemy and 800 scenery checks |
+| `npm run test:title` | 64 checks passed |
+| `npm run typecheck` | Passed |
+| `npm run build` | Passed; web and YouTube entry points generated with matching asset hashes |
+| `npm run build:single` | Passed; 14,615.1 KiB self-contained output |
+| `npm run test:bundles` | 181 checks passed |
+| Chromium sound browser suite | Web and offline each decoded all 18 shipped exports and passed four forced fallback scenarios |
+| Chromium offline scenery | 12 rooms, six playable missing-art fallbacks and zero sidecar requests passed |
+| Chromium calibration | All 24 actors, mirrored attack poses, invalid/transparent rejection, export and portrait layout passed |
+| Chromium end-to-end game | 54 passed, zero failed; seven guardian probes, full seven-land bot campaign, save/reload, portrait and landscape touch controls |
+| Chromium sustained scenery | 217 room samples, 24,177 rendered frames, 428.47 seconds; all unchanged pacing/residency assertions passed |
+| Built `index.html` and `youtube.html` local smoke | Both started gameplay, accepted keyboard movement and emitted no page errors |
+
+The scenery run used Chromium **152.0.7977.64**. Normal warm residency held at
+73.33 MiB. Peak decoded residency during deliberate pressure was 100,646,912
+bytes, below 96 MiB. Both recovery reports retained 38 cumulative evictions and
+27 reloads with no image issues or additional recovery-two reloads. Fresh
+portrait/landscape gameplay captures were inspected from the explicitly enabled
+`generated-artifacts/integration-main-e2e/` output; generated evidence is ignored.
+
+This session verified Chromium, not Firefox, WebKit, the Safari application or
+physical phones. No hardware listening, `REQUIRE_LIVE_AUDIO=1` certification,
+physical process/GPU memory release, actual GitHub Pages deployment or actual
+YouTube-host execution is claimed. The supplied handoff's earlier hosted
+Chromium post-pressure render-p95 failure (6.55 to 10.9 ms) and local Firefox
+pacing failures remain unresolved; this separate local pass does not invalidate
+them. No threshold or memory budget was weakened. Fuller recordings still
+require actual masters and owner approval, and synthesized cues remain in place.

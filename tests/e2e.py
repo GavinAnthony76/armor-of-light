@@ -122,6 +122,11 @@ with sync_playwright() as pw:
     for lv in range(7):
         page.evaluate(f'window.__aol.startLevel({lv})')
         page.wait_for_timeout(400)
+        # Isolate final-guardian spawning from route progression. The archive
+        # gate correctly blocks a horizontal teleport without the Beacon Seal.
+        # Full campaign playthroughs below and the archive suite cover the route.
+        if lv == 0:
+            page.evaluate("(() => { const s = window.__aol.game.stage; s.restoreLevelState({...s.levelState(), keeper:true, seal:true, gate:true}); })()")
         page.evaluate("(() => { const s = window.__aol.game.stage; s.nextEncounter = s.def.encounters.length - 1; s.player.x = s.def.encounters[s.nextEncounter].trigger + 5; })()")
         page.wait_for_timeout(3200)
         boss = page.evaluate("(() => { const b = window.__aol.game.stage.boss; return b ? b.kind : null })()")
