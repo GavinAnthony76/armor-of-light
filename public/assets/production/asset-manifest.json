@@ -300,6 +300,78 @@
       "scale": 0.32,
       "source": "Recreated from user-supplied Armor of Light Game Asset Bible direction with explicit user authorization on 2026-10-27; generated source in generated-artifacts/painted-desert-*.png.",
       "license": "Generated artwork for this project under generation service terms; user-supplied art direction used with user authorization."
+    },
+    "husk-painted-body": {
+      "src": "assets/production/enemies/husk/husk-painted-body.png",
+      "width": 512,
+      "height": 512,
+      "anchor": [
+        256,
+        448
+      ],
+      "scale": 0.25,
+      "source": "Recreated from the user-approved Armor of Light Complete Game Asset Showcase and Game Asset Bible; six-body painted source, articulated in the original combat poses.",
+      "license": "Generated artwork for this project under generation service terms; user-authorized recreation from supplied art direction."
+    },
+    "wisp-painted-body": {
+      "src": "assets/production/enemies/wisp/wisp-painted-body.png",
+      "width": 512,
+      "height": 512,
+      "anchor": [
+        256,
+        448
+      ],
+      "scale": 0.25,
+      "source": "Recreated from the user-approved Armor of Light Complete Game Asset Showcase and Game Asset Bible; six-body painted source, articulated in the original combat poses.",
+      "license": "Generated artwork for this project under generation service terms; user-authorized recreation from supplied art direction."
+    },
+    "caster-painted-body": {
+      "src": "assets/production/enemies/caster/caster-painted-body.png",
+      "width": 512,
+      "height": 512,
+      "anchor": [
+        256,
+        448
+      ],
+      "scale": 0.25,
+      "source": "Recreated from the user-approved Armor of Light Complete Game Asset Showcase and Game Asset Bible; six-body painted source, articulated in the original combat poses.",
+      "license": "Generated artwork for this project under generation service terms; user-authorized recreation from supplied art direction."
+    },
+    "lurker-painted-body": {
+      "src": "assets/production/enemies/lurker/lurker-painted-body.png",
+      "width": 512,
+      "height": 512,
+      "anchor": [
+        256,
+        448
+      ],
+      "scale": 0.25,
+      "source": "Recreated from the user-approved Armor of Light Complete Game Asset Showcase and Game Asset Bible; six-body painted source, articulated in the original combat poses.",
+      "license": "Generated artwork for this project under generation service terms; user-authorized recreation from supplied art direction."
+    },
+    "sentinel-painted-body": {
+      "src": "assets/production/enemies/sentinel/sentinel-painted-body.png",
+      "width": 512,
+      "height": 512,
+      "anchor": [
+        256,
+        448
+      ],
+      "scale": 0.25,
+      "source": "Recreated from the user-approved Armor of Light Complete Game Asset Showcase and Game Asset Bible; six-body painted source, articulated in the original combat poses.",
+      "license": "Generated artwork for this project under generation service terms; user-authorized recreation from supplied art direction."
+    },
+    "warden-painted-body": {
+      "src": "assets/production/bosses/warden/warden-painted-body.png",
+      "width": 512,
+      "height": 512,
+      "anchor": [
+        256,
+        448
+      ],
+      "scale": 0.5,
+      "source": "Recreated from the user-approved Armor of Light Complete Game Asset Showcase and Game Asset Bible; six-body painted source, articulated in the original combat poses.",
+      "license": "Generated artwork for this project under generation service terms; user-authorized recreation from supplied art direction."
     }
   },
   "clips": {
@@ -481,6 +553,606 @@
       "fps": 12,
       "loop": false,
       "mode": "replace"
+    },
+    "painted-husk-spawn": {
+      "image": "husk-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "spawn"
+    },
+    "painted-husk-move": {
+      "image": "husk-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": true,
+      "mode": "replace",
+      "bodyMotion": "move"
+    },
+    "painted-husk-stagger": {
+      "image": "husk-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "stagger"
+    },
+    "painted-husk-hurt": {
+      "image": "husk-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "hurt"
+    },
+    "painted-husk-dying": {
+      "image": "husk-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "dying"
+    },
+    "painted-husk-windup-huskswing": {
+      "image": "husk-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-husk-active-huskswing": {
+      "image": "husk-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-husk-recover-huskswing": {
+      "image": "husk-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-wisp-spawn": {
+      "image": "wisp-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "spawn"
+    },
+    "painted-wisp-move": {
+      "image": "wisp-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": true,
+      "mode": "replace",
+      "bodyMotion": "move"
+    },
+    "painted-wisp-stagger": {
+      "image": "wisp-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "stagger"
+    },
+    "painted-wisp-hurt": {
+      "image": "wisp-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "hurt"
+    },
+    "painted-wisp-dying": {
+      "image": "wisp-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "dying"
+    },
+    "painted-wisp-windup-wispdash": {
+      "image": "wisp-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-wisp-active-wispdash": {
+      "image": "wisp-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-wisp-recover-wispdash": {
+      "image": "wisp-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-caster-spawn": {
+      "image": "caster-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "spawn"
+    },
+    "painted-caster-move": {
+      "image": "caster-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": true,
+      "mode": "replace",
+      "bodyMotion": "move"
+    },
+    "painted-caster-stagger": {
+      "image": "caster-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "stagger"
+    },
+    "painted-caster-hurt": {
+      "image": "caster-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "hurt"
+    },
+    "painted-caster-dying": {
+      "image": "caster-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "dying"
+    },
+    "painted-caster-windup-casterorb": {
+      "image": "caster-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-caster-active-casterorb": {
+      "image": "caster-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-caster-recover-casterorb": {
+      "image": "caster-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-lurker-spawn": {
+      "image": "lurker-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "spawn"
+    },
+    "painted-lurker-move": {
+      "image": "lurker-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": true,
+      "mode": "replace",
+      "bodyMotion": "move"
+    },
+    "painted-lurker-stagger": {
+      "image": "lurker-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "stagger"
+    },
+    "painted-lurker-hurt": {
+      "image": "lurker-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "hurt"
+    },
+    "painted-lurker-dying": {
+      "image": "lurker-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "dying"
+    },
+    "painted-lurker-windup-lurkerleap": {
+      "image": "lurker-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-lurker-active-lurkerleap": {
+      "image": "lurker-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-lurker-recover-lurkerleap": {
+      "image": "lurker-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-lurker-windup-lurkersnap": {
+      "image": "lurker-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-lurker-active-lurkersnap": {
+      "image": "lurker-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-lurker-recover-lurkersnap": {
+      "image": "lurker-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-sentinel-spawn": {
+      "image": "sentinel-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "spawn"
+    },
+    "painted-sentinel-move": {
+      "image": "sentinel-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": true,
+      "mode": "replace",
+      "bodyMotion": "move"
+    },
+    "painted-sentinel-stagger": {
+      "image": "sentinel-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "stagger"
+    },
+    "painted-sentinel-hurt": {
+      "image": "sentinel-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "hurt"
+    },
+    "painted-sentinel-dying": {
+      "image": "sentinel-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "dying"
+    },
+    "painted-sentinel-windup-thrust1": {
+      "image": "sentinel-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-sentinel-active-thrust1": {
+      "image": "sentinel-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-sentinel-recover-thrust1": {
+      "image": "sentinel-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-sentinel-windup-thrust2": {
+      "image": "sentinel-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-sentinel-active-thrust2": {
+      "image": "sentinel-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-sentinel-recover-thrust2": {
+      "image": "sentinel-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-warden-spawn": {
+      "image": "warden-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "spawn"
+    },
+    "painted-warden-move": {
+      "image": "warden-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": true,
+      "mode": "replace",
+      "bodyMotion": "move"
+    },
+    "painted-warden-stagger": {
+      "image": "warden-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "stagger"
+    },
+    "painted-warden-hurt": {
+      "image": "warden-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "hurt"
+    },
+    "painted-warden-dying": {
+      "image": "warden-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "dying"
+    },
+    "painted-warden-windup-sweep": {
+      "image": "warden-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-warden-active-sweep": {
+      "image": "warden-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-warden-recover-sweep": {
+      "image": "warden-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-warden-windup-slam": {
+      "image": "warden-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-warden-active-slam": {
+      "image": "warden-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-warden-recover-slam": {
+      "image": "warden-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-warden-windup-summon": {
+      "image": "warden-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-warden-active-summon": {
+      "image": "warden-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-warden-recover-summon": {
+      "image": "warden-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
     }
   },
   "actors": {
@@ -500,6 +1172,90 @@
         "attack.hammer.heavy": "eliam-attack-hammer-heavy",
         "attack.hammer.air": "eliam-attack-hammer-air",
         "attack.hammer.air-heavy": "eliam-attack-hammer-air-heavy"
+      }
+    },
+    "husk": {
+      "states": {
+        "spawn": "painted-husk-spawn",
+        "move": "painted-husk-move",
+        "stagger": "painted-husk-stagger",
+        "hurt": "painted-husk-hurt",
+        "dying": "painted-husk-dying",
+        "windup.huskSwing": "painted-husk-windup-huskswing",
+        "active.huskSwing": "painted-husk-active-huskswing",
+        "recover.huskSwing": "painted-husk-recover-huskswing"
+      }
+    },
+    "wisp": {
+      "states": {
+        "spawn": "painted-wisp-spawn",
+        "move": "painted-wisp-move",
+        "stagger": "painted-wisp-stagger",
+        "hurt": "painted-wisp-hurt",
+        "dying": "painted-wisp-dying",
+        "windup.wispDash": "painted-wisp-windup-wispdash",
+        "active.wispDash": "painted-wisp-active-wispdash",
+        "recover.wispDash": "painted-wisp-recover-wispdash"
+      }
+    },
+    "caster": {
+      "states": {
+        "spawn": "painted-caster-spawn",
+        "move": "painted-caster-move",
+        "stagger": "painted-caster-stagger",
+        "hurt": "painted-caster-hurt",
+        "dying": "painted-caster-dying",
+        "windup.casterOrb": "painted-caster-windup-casterorb",
+        "active.casterOrb": "painted-caster-active-casterorb",
+        "recover.casterOrb": "painted-caster-recover-casterorb"
+      }
+    },
+    "lurker": {
+      "states": {
+        "spawn": "painted-lurker-spawn",
+        "move": "painted-lurker-move",
+        "stagger": "painted-lurker-stagger",
+        "hurt": "painted-lurker-hurt",
+        "dying": "painted-lurker-dying",
+        "windup.lurkerLeap": "painted-lurker-windup-lurkerleap",
+        "active.lurkerLeap": "painted-lurker-active-lurkerleap",
+        "recover.lurkerLeap": "painted-lurker-recover-lurkerleap",
+        "windup.lurkerSnap": "painted-lurker-windup-lurkersnap",
+        "active.lurkerSnap": "painted-lurker-active-lurkersnap",
+        "recover.lurkerSnap": "painted-lurker-recover-lurkersnap"
+      }
+    },
+    "sentinel": {
+      "states": {
+        "spawn": "painted-sentinel-spawn",
+        "move": "painted-sentinel-move",
+        "stagger": "painted-sentinel-stagger",
+        "hurt": "painted-sentinel-hurt",
+        "dying": "painted-sentinel-dying",
+        "windup.thrust1": "painted-sentinel-windup-thrust1",
+        "active.thrust1": "painted-sentinel-active-thrust1",
+        "recover.thrust1": "painted-sentinel-recover-thrust1",
+        "windup.thrust2": "painted-sentinel-windup-thrust2",
+        "active.thrust2": "painted-sentinel-active-thrust2",
+        "recover.thrust2": "painted-sentinel-recover-thrust2"
+      }
+    },
+    "boss.warden": {
+      "states": {
+        "spawn": "painted-warden-spawn",
+        "move": "painted-warden-move",
+        "stagger": "painted-warden-stagger",
+        "hurt": "painted-warden-hurt",
+        "dying": "painted-warden-dying",
+        "windup.sweep": "painted-warden-windup-sweep",
+        "active.sweep": "painted-warden-active-sweep",
+        "recover.sweep": "painted-warden-recover-sweep",
+        "windup.slam": "painted-warden-windup-slam",
+        "active.slam": "painted-warden-active-slam",
+        "recover.slam": "painted-warden-recover-slam",
+        "windup.summon": "painted-warden-windup-summon",
+        "active.summon": "painted-warden-active-summon",
+        "recover.summon": "painted-warden-recover-summon"
       }
     }
   },

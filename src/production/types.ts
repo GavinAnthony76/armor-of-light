@@ -16,6 +16,8 @@ export interface Clip {
   fps: number;
   loop: boolean;
   mode?: 'overlay' | 'replace';
+  /** Articulated body-only painting; procedural limbs, gear and warnings survive. */
+  bodyMotion?: 'spawn' | 'move' | 'windup' | 'active' | 'recover' | 'stagger' | 'hurt' | 'dying';
 }
 export interface SceneLayer {
   image: string;
@@ -47,6 +49,7 @@ export interface ProductionManifest {
 }
 export interface BodyArt {
   mode: 'overlay' | 'replace';
+  bodyOnly?: boolean;
   draw: () => boolean;
 }
 export const emptyManifest = (): ProductionManifest =>

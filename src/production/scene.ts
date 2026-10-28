@@ -5,6 +5,7 @@ import type { Difficulty } from '../core/config';
 import type { Terrain } from '../core/terrain';
 import type { BodyArt, Clip } from './types';
 import { productionAssets, type ProductionAssets } from './assets';
+import { drawPaintedEnemyBody } from '../render/painted-enemy';
 
 export function frameIndex(clip:Clip,time:number,duration?:number,still=false):number {
   if(still)return clip.frames[0];
@@ -20,7 +21,8 @@ export function playerVisual(p:Player):{key:string;time:number;duration?:number}
 }
 export function enemyVisual(e:Enemy,diff:Difficulty):{key:string;time:number;duration?:number} {
   const a=e.attack;
-  const duration=a?(e.state==='windup'?a.windup*diff.windup*(e.phase>=2?.85:1):e.state==='active'?a.active:e.state==='recover'?a.recover:undefined):undefined;
+  const duration=e.state==='spawn'?.5:e.state==='dying'?.6:e.state==='stagger'?e.staggerDur:e.state==='hurt'?.26:
+    a?(e.state==='windup'?a.windup*diff.windup*(e.phase>=2?.85:1):e.state==='active'?a.active:e.state==='recover'?a.recover*(e.phase>=2?.8:1):undefined):undefined;
   return {key:a&&['windup','active','recover'].includes(e.state)?`${e.state}.${a.id}`:e.state,time:e.t,duration};
 }
 
@@ -58,7 +60,18 @@ export class ProductionScene {
   }
   enemy(ctx:CanvasRenderingContext2D,e:Enemy,diff:Difficulty):BodyArt|undefined {
     const v=enemyVisual(e,diff);
-    const ids=e.miniName?[`mini.${e.miniName.toLowerCase().replace(/[^a-z0-9]+/g,'-')}`,e.kind]:[e.cfg.boss?`boss.${e.kind}`:e.kind];
+    const archetype=e.cfg.boss?`boss.${e.kind}`:e.kind;
+    const ids=e.miniName?[`mini.${e.miniName.toLowerCase().replace(/[^a-z0-9]+/g,'-')}`,archetype]:[archetype];
+    for(const id of ids){
+      const key=this.assets.manifest.actors[id]?.states[v.key],clip=this.assets.manifest.clips[key];
+      if(!clip)continue;
+      if(!clip.bodyMotion)break;
+      return {mode:clip.mode??'overlay',bodyOnly:true,draw:()=>{
+        const spec=this.assets.manifest.images[clip.image],im=this.assets.image(clip.image);
+        if(!im)return false;
+        drawPaintedEnemyBody(ctx,e,im,spec,clip.bodyMotion!,v.time,v.duration);return true;
+      }};
+    }
     return this.actor(ids,v.key,v.time,v.duration,ctx,e.x,e.y,e.facing);
   }
   layers(ctx:CanvasRenderingContext2D,theme:string,plane:'background'|'foreground',camX:number,camY:number,viewW:number,viewH:number,still=false,focusY=camY+viewH/2):void {

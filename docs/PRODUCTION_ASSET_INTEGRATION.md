@@ -137,11 +137,18 @@ Mini IDs are `mini.` plus the lowercase hyphenated in-game name, for example
 `mini.marshjaw` and `mini.the-bellwarden`. Use the names in CAMPAIGN_EXPEDITION.md.
 An absent mini-specific clip can use its unchanged archetype's exact-state clip.
 
+The first painted enemy pack uses the optional `bodyMotion` cutout path rather
+than duplicating source textures into large atlases. See
+PAINTED_ENEMY_BODIES.md for calibration, exact bindings and verification.
+Its single source frame is articulated into moving head/torso/leg parts;
+procedural limbs, gear, trails and warning cues remain active.
+
 Map `spawn`, `move`, `stagger`, `hurt`, `dying`, plus
 `windup.<attack-id>`, `active.<attack-id>`, `recover.<attack-id>`.
 Attack IDs come from the actual actor's `enemy.attack.id`, never renamed to
 fit animation files. Windup duration includes difficulty and guardian phase
-scaling; active/recovery use the actual attack definition. Spawn fade is 0.5 s;
+scaling; active uses the actual attack definition and recovery also includes
+the core's phase-two 0.8 multiplier. Spawn fade is 0.5 s;
 dying fade is 0.6 s. Do not bake gold/red warnings into artwork or extend the
 silhouette into warning/health-label space.
 

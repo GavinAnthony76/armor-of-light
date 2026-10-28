@@ -27,6 +27,29 @@ Adapt or recreate art to match the approved reference; do not replace responsive
 rig animation with a full-body still image. A board is not a ready animation sheet.
 Test before merging or publishing.
 
+Use shared, articulated body cutouts for the enemy visual pass rather than
+duplicating every action into full-size atlases. Preserve original limb poses,
+gear, warnings and exact-state fallback.
+
+**Why:** The detailed hero animation already consumes most of the mobile
+scene's decoded-image headroom. Small downloads do not make large atlases cheap
+to decode; shared cutouts allow painted motion without reducing calibration.
+
+**How to apply:** Keep body-only articulation tied to simulation state and
+actual attack-phase durations. Recheck active-scene residency before adding
+guardian packs; do not trade away warning readability or original attack reach.
+
+Judge transparent-art cleanliness from decoded pixels and contrasting-background
+composites as well as direct previews. Prefer normalized RGBA PNG body cutouts
+if lossless-alpha WebP direct previews disagree with browser canvas rendering.
+
+**Why:** Direct lossless WebP previews displayed large colored panels where
+the decoded alpha was zero, while browser canvas and flattened composites were
+clean. PNG re-exports removed that ambiguity without changing the silhouettes.
+
+**How to apply:** Check actual pixel alpha, hidden RGB, calibrated bounds and
+reviewed masks; an alpha-support flag alone cannot establish clean cutouts.
+
 The user clarified: "the key goal is more animation in the scenes. the
 backgrounds the items the environment its all still. i need it moving
 appropriately."

@@ -123,7 +123,7 @@ export function drawEnemy(ctx: Ctx, e: Enemy, diff: Difficulty, time: number, ar
   if (e.state === 'dying') alpha = Math.max(0, 1 - e.t / 0.6);
   if (e.state === 'spawn') alpha = Math.min(1, e.t / 0.5);
   ctx.globalAlpha = alpha;
-  if(art?.mode==='replace'&&art.draw()){
+  if(art?.mode==='replace'&&!art.bodyOnly&&art.draw()){
     ctx.restore();drawWarning(ctx,e,diff,time);return;
   }
 
@@ -142,6 +142,7 @@ export function drawEnemy(ctx: Ctx, e: Enemy, diff: Difficulty, time: number, ar
     ctx.ellipse(e.x, e.y + 1, e.w * 0.7, 5, 0, 0, Math.PI * 2);
     ctx.fill();
   }
+  const painted=!!(art?.bodyOnly&&art.mode==='replace'&&art.draw());
 
   ctx.translate(e.x, e.y);
   if (e.state === 'spawn') {
@@ -153,19 +154,19 @@ export function drawEnemy(ctx: Ctx, e: Enemy, diff: Difficulty, time: number, ar
   const t = time + e.id * 1.37;
   switch (e.kind) {
     case 'wisp':
-      drawWisp(ctx, e, diff, t);
+      if(!painted)drawWisp(ctx, e, diff, t);
       break;
     case 'husk':
-      drawHusk(ctx, e, diff, t);
+      drawHusk(ctx, e, diff, t, painted);
       break;
     case 'caster':
-      drawCaster(ctx, e, diff, t);
+      drawCaster(ctx, e, diff, t, painted);
       break;
     case 'lurker':
-      drawLurker(ctx, e, diff, t);
+      if(!painted)drawLurker(ctx, e, diff, t);
       break;
     case 'sentinel':
-      drawSentinel(ctx, e, diff, t);
+      drawSentinel(ctx, e, diff, t, painted);
       break;
     case 'colossus':
       
@@ -178,13 +179,13 @@ export function drawEnemy(ctx: Ctx, e: Enemy, diff: Difficulty, time: number, ar
       drawKing(ctx,e,diff,t);
       break;
     case 'warden':
-      drawWarden(ctx, e, diff, t);
+      drawWarden(ctx, e, diff, t, painted);
       break;
     case 'king':
       drawKing(ctx, e, diff, t);
       break;
   }
-  drawArmorDetail(ctx,e,diff,t);
+  if(!painted)drawArmorDetail(ctx,e,diff,t);
   if(['thorn','watcher','colossus','keeper'].includes(e.kind)){
     ctx.filter='none';ctx.strokeStyle=e.telegraphing?(e.attack?.heavy?WARN_RED:WARN_GOLD):e.kind==='thorn'?'#9fe2aa':e.kind==='watcher'?'#b1e9ff':e.kind==='colossus'?'#bfc9d4':'#dda7ff';
     ctx.lineWidth=3;const y=-e.h-10;
@@ -324,9 +325,10 @@ function drawWisp(ctx: Ctx, e: Enemy, diff: Difficulty, t: number): void {
   eyes(ctx, 5, -2, m, 3, 8);
 }
 
-function drawHusk(ctx: Ctx, e: Enemy, diff: Difficulty, t: number): void {
+function drawHusk(ctx: Ctx, e: Enemy, diff: Difficulty, t: number, painted=false): void {
   const m = material(ctx, e, -80, 0);
   const k = windK(e, diff);
+  if(!painted){
   legs(ctx, e, m, -22, 7, 22, 9);
   // hunched body
   blob(ctx, 0, -42, 17, 25, t, 0.06, 0.32 + k * 0.15);
@@ -335,6 +337,7 @@ function drawHusk(ctx: Ctx, e: Enemy, diff: Difficulty, t: number): void {
   blob(ctx, 13, -66 + k * 2, 10, 9, t * 1.3, 0.05);
   fillShape(ctx, m);
   eyes(ctx, 16, -67 + k * 2, m, 2.4, 6);
+  }
   // long clawed arm
   const a = swingArm(e, diff, 0.25, -2.5, 1.5);
   const sx = 8;
@@ -343,7 +346,7 @@ function drawHusk(ctx: Ctx, e: Enemy, diff: Difficulty, t: number): void {
   const ey = sy + Math.cos(a) * 18;
   const hx = ex + Math.sin(a + 0.3) * 20;
   const hy = ey + Math.cos(a + 0.3) * 20;
-  ctx.strokeStyle = '#1a0d2c';
+  ctx.strokeStyle = painted ? '#6d5540' : '#1a0d2c';
   ctx.lineCap = 'round';
   ctx.lineWidth = 8;
   ctx.beginPath();
@@ -351,7 +354,7 @@ function drawHusk(ctx: Ctx, e: Enemy, diff: Difficulty, t: number): void {
   ctx.lineTo(ex, ey);
   ctx.lineTo(hx, hy);
   ctx.stroke();
-  ctx.strokeStyle = e.telegraphing ? m.eye : '#8a62d9';
+  ctx.strokeStyle = e.telegraphing ? m.eye : painted ? '#c2aa7e' : '#8a62d9';
   ctx.lineWidth = 2.5;
   for (const off of [-0.5, 0, 0.5]) {
     ctx.beginPath();
@@ -375,10 +378,11 @@ function arcSwipe(ctx: Ctx, x: number, y: number, r: number, a0: number, a1: num
   ctx.restore();
 }
 
-function drawCaster(ctx: Ctx, e: Enemy, diff: Difficulty, t: number): void {
+function drawCaster(ctx: Ctx, e: Enemy, diff: Difficulty, t: number, painted=false): void {
   const m = material(ctx, e, -86, 0);
   const k = windK(e, diff);
   const sway = Math.sin(t * 2) * 2;
+  if(!painted){
   // robe
   ctx.beginPath();
   ctx.moveTo(-18, 0);
@@ -394,9 +398,10 @@ function drawCaster(ctx: Ctx, e: Enemy, diff: Difficulty, t: number): void {
   ctx.ellipse(6 + sway, -66, 8, 10, 0.2, 0, Math.PI * 2);
   ctx.fill();
   eyes(ctx, 8 + sway, -66, m, 2.2, 5);
+  }
   // arm and gathering orb
   const reach = e.state === 'windup' ? 10 + k * 14 : e.state === 'active' ? 26 : 6;
-  ctx.strokeStyle = '#1a0d2c';
+  ctx.strokeStyle = painted ? '#5d4564' : '#1a0d2c';
   ctx.lineWidth = 6;
   ctx.lineCap = 'round';
   ctx.beginPath();
@@ -468,9 +473,10 @@ function drawLurker(ctx: Ctx, e: Enemy, diff: Difficulty, t: number): void {
   ctx.restore();
 }
 
-function drawSentinel(ctx: Ctx, e: Enemy, diff: Difficulty, t: number): void {
+function drawSentinel(ctx: Ctx, e: Enemy, diff: Difficulty, t: number, painted=false): void {
   const m = material(ctx, e, -96, 0);
   const k = windK(e, diff);
+  if(!painted){
   legs(ctx, e, m, -32, 7, 32, 10);
   // armored torso
   ctx.beginPath();
@@ -493,6 +499,7 @@ function drawSentinel(ctx: Ctx, e: Enemy, diff: Difficulty, t: number): void {
   ctx.closePath();
   fillShape(ctx, m);
   eyes(ctx, 6, -92, m, 2, 5);
+  }
   // spear (thrusts forward)
   let reach = 0;
   if (e.state === 'windup') reach = -14 * Math.sqrt(k);
@@ -543,22 +550,25 @@ function drawSentinel(ctx: Ctx, e: Enemy, diff: Difficulty, t: number): void {
   void t;
 }
 
-function drawWarden(ctx: Ctx, e: Enemy, diff: Difficulty, t: number): void {
+function drawWarden(ctx: Ctx, e: Enemy, diff: Difficulty, t: number, painted=false): void {
   const m = material(ctx, e, -210, 0);
   const k = windK(e, diff);
   const id = e.attack?.id;
   // pillar legs
   const ph = Math.abs(e.vx) > 10 ? Math.sin(e.stride*.5) * 6 : 0;
+  if(!painted){
   ctx.fillStyle = '#140a22';
   ctx.beginPath();
   ctx.roundRect(-38 + ph, -70, 26, 70, 8);
   ctx.roundRect(12 - ph, -70, 26, 70, 8);
   ctx.fill();
+  }
   // great body
   const lean = id === 'slam' && e.state === 'windup' ? -0.12 * k : id === 'slam' && e.state === 'active' ? 0.25 : 0;
   ctx.save();
   ctx.translate(0, -70);
   ctx.rotate(lean);
+  if(!painted){
   ctx.beginPath();
   ctx.moveTo(-40, 0);
   ctx.quadraticCurveTo(-64, -70, -46, -124);
@@ -591,6 +601,7 @@ function drawWarden(ctx: Ctx, e: Enemy, diff: Difficulty, t: number): void {
   blob(ctx, 6, -146, 18, 15, t, 0.05);
   fillShape(ctx, m, 3);
   eyes(ctx, 12, -148, m, 3.6, 11, 1.4);
+  }
   // arms
   const front = id === 'sweep' ? swingArm(e, diff, 0.2, -1.9, 2.2) : id === 'slam' ? swingArm(e, diff, 0.2, -2.9, 0.5) : id === 'summon' ? -2.6 * Math.sqrt(k) : 0.2 + Math.sin(e.anim * 1.5) * 0.08;
   const back = id === 'slam' ? front : -0.2 + Math.sin(e.anim * 1.5 + 1) * 0.08;
@@ -611,6 +622,20 @@ function drawWarden(ctx: Ctx, e: Enemy, diff: Difficulty, t: number): void {
     ctx.beginPath();
     ctx.arc(ex, ey, 20, 0, Math.PI * 2);
     ctx.fill();
+    if(painted){
+      // Texture the original moving arm capsule and fist, not a new pose or
+      // hitbox. Reuse the resident body stone instead of loading another sheet.
+      const stone=productionAssets.image('warden-painted-body');
+      if(stone){
+        ctx.save();ctx.translate(sx,-110);ctx.rotate(-a);
+        ctx.beginPath();ctx.roundRect(-12,-12,24,74,12);
+        ctx.moveTo(20,50);ctx.arc(0,50,20,0,Math.PI*2);ctx.clip();
+        ctx.drawImage(stone,200,116,100,100,-46,-12,92,92);
+        ctx.restore();
+        // Paths aren't restored by canvas save/restore; rebuild the fist rim.
+        ctx.beginPath();ctx.arc(ex,ey,20,0,Math.PI*2);
+      }
+    }
     ctx.strokeStyle = e.telegraphing ? m.eye : 'rgba(155,107,255,0.6)';
     ctx.lineWidth = 2;
     ctx.stroke();

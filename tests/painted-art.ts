@@ -20,16 +20,17 @@ for(const [id,spec] of Object.entries(manifest.images)){
   else if(chunk==='VP8L'){const n=b.readUInt32LE(21);w=(n&0x3fff)+1;h=((n>>>14)&0x3fff)+1;}
   else {check(chunk==='VP8 ',`${id}: supported WebP header`);w=b.readUInt16LE(26)&0x3fff;h=b.readUInt16LE(28)&0x3fff;}
   check(w===spec.width&&h===spec.height,`${id}: exact manifest dimensions`);
-  if(id.startsWith('eliam-')||id==='desert-pillar'){
-    check(png?b[25]===6:chunk==='VP8X'&&(b[20]&16)!==0,`${id}: transparent RGBA export`);
+  if(id.startsWith('eliam-')||id.endsWith('-painted-body')||id==='desert-pillar'){
+    check(png?b[25]===6:chunk==='VP8X'&&(b[20]&16)!==0||chunk==='VP8L'&&(b.readUInt32LE(21)&0x10000000)!==0,
+      `${id}: transparent RGBA export`);
   }
   decoded+=w*h*4;compressed+=statSync(path).size;
 }
 check(decoded<80*1024*1024,'combined painted rig and animation pack fits 80MiB scene budget');
 check(compressed<6*1024*1024,'combined optimized paintings and atlas stay under 6MiB');
 for(const actor of Object.values(manifest.actors)){
-  check(Object.values(actor.states).every(id=>manifest.clips[id].frames.length>1),
-    'body animation mappings use multiple pose samples, never a static full-body portrait');
+  check(Object.values(actor.states).every(id=>manifest.clips[id].frames.length>1||!!manifest.clips[id].bodyMotion),
+    'body mappings use pose samples or live articulated body animation, never a static portrait');
 }
 for(const theme of ['desert','flood','garden','mountain','valley','city','river']){
   check(!!manifest.lands[theme]?.surfaces?.ground,`${theme}: actual textured terrain binding`);

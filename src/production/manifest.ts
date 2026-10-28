@@ -42,6 +42,10 @@ export function validateManifest(raw:unknown):ProductionManifest {
     const count=(image?.frame as Record<string,unknown>|undefined)?.count??1;
     if(!image||!Array.isArray(v.frames)||!v.frames.length||v.frames.length>256||v.frames.some(n=>!integer(n,0,Number(count)-1))||
       !finite(v.fps,1,60)||typeof v.loop!=='boolean'||(v.mode!==undefined&&v.mode!=='overlay'&&v.mode!=='replace'))fail(`clip ${id} mapping`);
+    if(v.bodyMotion!==undefined&&(!['spawn','move','windup','active','recover','stagger','hurt','dying'].includes(String(v.bodyMotion))||
+      image?.width!==512||image?.height!==512||!Array.isArray(v.frames)||v.frames.length!==1||v.frames[0]!==0||image.frame!==undefined||
+      !Array.isArray(image.anchor)||image.anchor[0]!==256||image.anchor[1]!==448||![.25,.5].includes(Number(image.scale))))
+      fail(`clip ${id} body articulation`);
   }
   for(const [id,value] of Object.entries(m.actors as object)){
     if(!record(value)||!record(value.states)||Object.values(value.states).some(c=>!owns(clips,c)))fail(`actor ${id}`);
