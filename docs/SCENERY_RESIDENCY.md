@@ -94,3 +94,22 @@ violating either the cache ceiling or the visible-scene target.
 Also passed: `npm test`, `npm run build`, `npm run typecheck`,
 `node --import tsx tests/painted-lands.ts`, and Python syntax compilation.
 The final lower-room scene was visually checked in the running preview.
+
+## Engine selection and repeatable browser setup
+
+Install `python3 -m pip install -r tests/requirements-browser.txt` and
+`python3 -m playwright install --with-deps chromium firefox webkit` on a supported
+host. `ENGINE=firefox npm run test:scenery-journey` and `ENGINE=webkit npm run
+test:scenery-journey` use the identical room, restart, pressure and recovery order.
+Without `BASE`, the runner starts and cleans up its own loopback Vite server;
+`BASE` still selects an existing development host. Engine/version are recorded
+in every report, now at `generated-artifacts/scenery-journey/<engine>/<viewport>/`.
+Unavailable engines exit nonzero and write an unavailable report. Linux WebKit
+is explicitly Playwright WebKit, never the Safari application. Firefox supports
+touch-sized viewports but omits Playwright's unsupported `is_mobile` flag.
+
+The pull-request/manual `Production browser regressions` workflow runs each
+engine separately and uploads its evidence, including failures. This workflow
+configuration is coverage infrastructure; its presence is not a successful run.
+See `PRODUCTION_FOLLOWUPS.md` for actual local results and limitations, and
+`PHYSICAL_SCENERY_QA.md` for the separate hardware evidence still required by #30.
