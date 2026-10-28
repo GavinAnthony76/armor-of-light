@@ -65,6 +65,13 @@ const a=assets.preloadImage('eliam-body'),b=assets.preloadImage('eliam-body');
 check(a===b,'in-flight image requests are shared');
 await a;check(imageRequests===1,'image requested once');
 check(!!assets.image('eliam-body')&&assets.diagnostics().decodedBytes===512*256*4,'decoded image cache accounts actual memory');
+check(assets.diagnostics().loads===1&&assets.diagnostics().reloads===0&&assets.diagnostics().pending===0,
+  'diagnostics count completed loads without duplicate in-flight requests');
+check(assets.diagnostics().visibleBytes===512*256*4,'diagnostics count only resident visible bytes');
+assets.beginFrame();
+check(assets.diagnostics().visibleBytes===0,'visible residency resets for each real render frame');
+const snapshot=assets.diagnostics();snapshot.residentIds.length=0;
+check(assets.diagnostics().residentIds.length===1,'diagnostic snapshots cannot mutate residency');
 const scene=new ProductionScene(assets),calls:{name:string;args:unknown[]}[]=[];
 const ctx=new Proxy({globalAlpha:1,globalCompositeOperation:'source-over'},{
   get(target,key){return key in target?target[key as keyof typeof target]:(...args:unknown[])=>calls.push({name:String(key),args});},
@@ -122,6 +129,28 @@ const broken=new ProductionAssets(p=>p,undefined,()=>{
 broken.install(manifest);
 check(await broken.preloadImage('eliam-body')===null,'dimension mismatch never draws corrupt atlas');
 check(await broken.preloadImage('eliam-body')===null&&broken.issues.length===1,'failed images stay in fallback without repeated requests');
+check(broken.diagnostics().failed===1&&broken.diagnostics().loads===1,
+  'failure diagnostics reveal single-shot fallback without retry storms');
+// Small deterministic cache mirrors sustained browser pressure at the real ceiling.
+const churn=new ProductionAssets(p=>p,undefined,()=>{
+  const im={naturalWidth:512,naturalHeight:256,onload:null as (()=>void)|null,onerror:null as (()=>void)|null};
+  Object.defineProperty(im,'src',{set:()=>queueMicrotask(()=>im.onload?.())});
+  return im as unknown as HTMLImageElement;
+});
+const churnManifest=structuredClone(manifest);
+churnManifest.images['third']={...manifest.images['eliam-body']};
+churn.install(churnManifest);
+Object.defineProperty(churn,'budget',{value:512*256*4*2});
+await churn.preloadImage('eliam-body');await churn.preloadImage('terrain-tile');
+churn.beginFrame();churn.image('eliam-body');
+await churn.preloadImage('third');
+check(churn.diagnostics().evictions===1&&churn.diagnostics().residentIds.includes('eliam-body')&&
+  !churn.diagnostics().residentIds.includes('terrain-tile'),'LRU pressure evicts only non-visible residency');
+await churn.preloadImage('terrain-tile');
+check(churn.diagnostics().loads===4&&churn.diagnostics().reloads===1&&churn.diagnostics().evictions===2,
+  'diagnostics distinguish first loads, successful reloads and evictions');
+check(churn.diagnostics().peakDecodedBytes===churn.budget&&churn.diagnostics().decodedBytes<=churn.budget&&
+  !churn.diagnostics().failed,'reload recovery stays bounded and has no failed assets');
 // A too-large active pack fails closed rather than evicting visible assets each frame.
 Object.defineProperty(assets,'budget',{value:512*256*4*2});
 assets.beginFrame();assets.image('eliam-body');assets.image('terrain-tile');

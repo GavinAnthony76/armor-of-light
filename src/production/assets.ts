@@ -23,7 +23,12 @@ export class ProductionAssets {
   private failed=new Set<string>();
   private visible=new Set<string>();
   private bytes=0;
+  private loaded=new Set<string>();
+  private loads=0;
   private materialChecks=new WeakMap<HTMLImageElement,Map<string,boolean>>();
+  private reloads=0;
+  private evictions=0;
+  private peakBytes=0;
   readonly budget=96*1024*1024;
   /** Protect this frame's assets from cache eviction/reload thrashing. */
   beginFrame():void {this.visible.clear();}
@@ -93,6 +98,8 @@ export class ProductionAssets {
     const pending=this.pending.get(id);if(pending)return pending;
     const spec=this.manifest.images[id];
     if(!spec)return Promise.resolve(null);
+    this.loads++;
+    if(this.loaded.has(id))this.reloads++;
     const promise=new Promise<HTMLImageElement|null>(resolve=>{
       const im=this.makeImage();
       const finish=(ok:boolean)=>{
@@ -107,9 +114,11 @@ export class ProductionAssets {
           if(!key)break;
           const old=this.cache.get(key)!;
           this.bytes-=old.naturalWidth*old.naturalHeight*4;this.cache.delete(key);
+          this.evictions++;
         }
         if(this.bytes+cost>this.budget){this.failed.add(id);this.report(`Current scene image budget exceeded: ${id}`);resolve(null);return;}
-        this.cache.set(id,im);this.bytes+=cost;resolve(im);
+        this.cache.set(id,im);this.bytes+=cost;this.loaded.add(id);
+        this.peakBytes=Math.max(this.peakBytes,this.bytes);resolve(im);
       };
       const timer=setTimeout(()=>finish(false),8000);
       im.onload=()=>finish(true);im.onerror=()=>finish(false);
@@ -119,8 +128,16 @@ export class ProductionAssets {
     void promise.finally(()=>this.pending.delete(id));
     return promise;
   }
-  diagnostics():{images:number;decodedBytes:number;issues:readonly string[]} {
-    return {images:this.cache.size,decodedBytes:this.bytes,issues:this.issues};
+  diagnostics():{images:number;decodedBytes:number;visibleBytes:number;pending:number;failed:number;
+    loads:number;reloads:number;evictions:number;peakDecodedBytes:number;residentIds:string[];issues:readonly string[]} {
+    let visibleBytes=0;
+    for(const id of this.visible){
+      const im=this.cache.get(id);
+      if(im)visibleBytes+=im.naturalWidth*im.naturalHeight*4;
+    }
+    return {images:this.cache.size,decodedBytes:this.bytes,visibleBytes,pending:this.pending.size,
+      failed:this.failed.size,loads:this.loads,reloads:this.reloads,evictions:this.evictions,
+      peakDecodedBytes:this.peakBytes,residentIds:[...this.cache.keys()],issues:[...this.issues]};
   }
 }
 export const productionAssets=new ProductionAssets();
