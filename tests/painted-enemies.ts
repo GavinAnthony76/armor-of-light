@@ -6,6 +6,7 @@ import { ProductionAssets } from '../src/production/assets';
 import { ProductionScene, enemyVisual } from '../src/production/scene';
 import { validateManifest } from '../src/production/manifest';
 import { drawEnemy, WARN_GOLD, WARN_RED } from '../src/render/shadows';
+import {campaignMinis} from './campaign-minis';
 import { bodyBands, materialSamples, validMaterialPixels } from '../src/production/enemy-presentation';
 import type { ImageSpec, SourceRect } from '../src/production/types';
 // @ts-expect-error Node-only PNG fixture reader.
@@ -121,6 +122,72 @@ check(exportBytes<1536*1024,'twelve lossless PNG delivery paintings remain small
 check(assets.diagnostics().decodedBytes===12*512*512*4,'twelve shared sources cost 12MiB across all state clips');
 check(requests.length===12,'changing states, difficulty, phase and facing never reloads images');
 check(pixelReads===3,'decoded material checks run once per image/rectangle, not per frame');
+// Named campaign actors must select their own painting ahead of shared art.
+check(campaignMinis.length===12,'all twelve live named campaign mini encounters audited');
+const miniSources=new Set<string>();
+for(const mini of campaignMinis){
+  const actor=m.actors[mini.actor],image=m.images[mini.image];
+  check(!!actor&&!!image,`${mini.name}: distinct live-name actor and source installed`);
+  check(image.scale===.25&&image.anchor.join(',')==='256,448'&&image.width===512&&image.height===512,
+    `${mini.name}: original body calibration`);
+  check(image.source.length>20&&image.license.length>20,`${mini.name}: provenance recorded`);
+  miniSources.add(image.src);
+  await assets.preloadImage(mini.image);
+  const foe=new Enemy(mini.kind,300,450,DIFFICULTIES.challenging);
+  foe.miniName=mini.name;foe.onGround=true;foe.vx=65;foe.stride=1.2;
+  const states=['spawn','move','stagger','hurt','dying',
+    ...attacks[mini.kind]!.flatMap(id=>['windup','active','recover'].map(state=>`${state}.${id}`))];
+  check(Object.keys(actor.states).length===states.length,`${mini.name}: no invented or omitted attack states`);
+  for(const diff of Object.values(DIFFICULTIES))for(const state of states){
+    const [motion,id]=state.split('.'),clip=m.clips[actor.states[state]];
+    check(clip?.image===mini.image&&clip.bodyMotion===motion&&clip.mode==='replace',
+      `${mini.name}: ${state} uses unique articulated painting`);
+    foe.state=motion as EnemyState;foe.attack=id?ATTACKS[id]:null;
+    for(const facing of [-1,1]){
+      foe.facing=facing;
+      const poses=[];
+      for(const progress of [.15,.7]){
+        foe.t=progress*(enemyVisual(foe,diff).duration??1);foe.anim=progress;foe.stride=progress*4;
+        const before=JSON.stringify(foe),box=JSON.stringify(foe.hurtBox());
+        calls=[];const art=scene.enemy(ctx,foe,diff);
+        check(art?.bodyOnly&&art.draw(),`${mini.name}: live body draws`);
+        check(art?.texture?.()===assets.image(mini.image),`${mini.name}: exact-name precedence over archetype`);
+        check(JSON.stringify(foe)===before&&JSON.stringify(foe.hurtBox())===box,
+          `${mini.name}: combat and hitboxes unchanged`);
+        poses.push(JSON.stringify(calls));
+      }
+      check(poses[0]!==poses[1],`${mini.name}: simulation-driven articulation`);
+    }
+    if(motion==='windup')for(const heavy of [false,true]){
+      foe.attack={...foe.attack!,heavy};
+      calls=[];drawEnemy(ctx,foe,diff,1,scene.enemy(ctx,foe,diff));
+      const last=calls.map(c=>c.op).lastIndexOf('drawImage');
+      check(calls.some((c,i)=>i>last&&c.op==='set:fillStyle'&&c.args[0]===(heavy?WARN_RED:WARN_GOLD)),
+        `${mini.name}: original warning stays above body`);
+      const geometry=(list:Call[])=>list.filter(c=>['moveTo','lineTo'].includes(c.op));
+      const painted=geometry(calls);
+      calls=[];drawEnemy(ctx,foe,diff,1,{mode:'replace',bodyOnly:true,draw:()=>true});
+      check(JSON.stringify(painted)===JSON.stringify(geometry(calls)),`${mini.name}: articulated gear geometry unchanged`);
+    }
+  }
+  foe.state='active';foe.attack={...ATTACKS.huskSwing,id:'unmapped'};
+  check(!scene.enemy(ctx,foe,DIFFICULTIES.challenging),`${mini.name}: unknown attack never borrows idle art`);
+  const missing=new ProductionAssets(p=>p,undefined,()=>{
+    const image={onload:null,onerror:null as (()=>void)|null,set src(_path:string){queueMicrotask(()=>image.onerror?.());}};
+    return image as unknown as HTMLImageElement;
+  });
+  missing.install(m);await missing.preloadImage(mini.image);
+  foe.state='windup';foe.attack=ATTACKS[attacks[mini.kind]![0]];
+  const fallback=new ProductionScene(missing);
+  calls=[];drawEnemy(ctx,foe,DIFFICULTIES.challenging,1,fallback.enemy(ctx,foe,DIFFICULTIES.challenging));
+  check(!calls.some(c=>c.op==='drawImage'),`${mini.name}: failed unique image keeps complete procedural presentation`);
+  for(let i=0;i<5;i++)fallback.enemy(ctx,foe,DIFFICULTIES.challenging)?.draw();
+  check(missing.diagnostics().issues.length===1&&missing.diagnostics().decodedBytes===0,
+    `${mini.name}: one diagnosed failure, no reload churn`);
+}
+check(miniSources.size===12,'twelve genuinely separate source files, not shared recolor bindings');
+check(assets.diagnostics().decodedBytes===24*512*512*4&&requests.length===24,
+  'all mini states share twelve 1MiB sources, with no state-triggered reloads');
 // Missing exact states never substitute standing art.
 const e=new Enemy('warden',300,450,DIFFICULTIES.challenging);
 e.state='active';e.attack={...ATTACKS.sweep,id:'unmapped'};
@@ -250,7 +317,8 @@ check(bodyBands({scale:.5} as ImageSpec,'warden',200).neck===140,'legacy body ba
 // Cache residency protects all visible bodies from eviction.
 assets.beginFrame();
 for(const kind of Object.keys(attacks))assets.image(`${kind}-painted-body`);
-Object.defineProperty(assets,'budget',{value:12*512*512*4});
+for(const mini of campaignMinis)assets.image(mini.image);
+Object.defineProperty(assets,'budget',{value:24*512*512*4});
 m.images['excess-body']={...m.images['husk-painted-body']};assets.install(m);
 check(await assets.preloadImage('excess-body')===null,'full visible scene falls back rather than evicting visible bodies');
 assets.beginFrame();

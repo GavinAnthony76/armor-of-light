@@ -20,6 +20,24 @@ const approved={
   colossus:'2055df433e320abc2bc20676d2e26d46d5cf18f4a124c4946f2dd2c1bb6971ba',
   keeper:'0f9a5188e940008ee9c99b7eedcce3a2df2252e035ac4e1272925d1bf2a08b61',
   king:'fe3b26c5bd89578e09fbf5f103644986a41bc1c09ec709f59f88013c5e46bc63',
+  'mini-briar-duelist':'df53769ef355134a666527f81ce1e0a12fb6bf8d66b96f3066947524925f66ec',
+  'mini-cinder-brute':'fdef9fb06637cb30975dd8bd4a9de1218807cd6779d497b684495427d77377ca',
+  'mini-dawn-revenant':'62be7f7b5272b04ed206bf4d6dd5ca28165dbc7f38dcdd26dba438ac88c98bda',
+  'mini-gale-harrier':'299ab4b42eec1b93a4e75db7a7187a13708075be5f44d0ce2645fceb5515841b',
+  'mini-grave-hound':'7b58b5bb6b46ba3e3933ac282534d8d0966ea5a8ec59f24b4caf5b9f3b85a16c',
+  'mini-iron-oathkeeper':'19b9004577bb91d9f517b32cb3fb40ffad92075cbe64a035e62bf77bb50339ed',
+  'mini-marshjaw':'e175eeed44a3f1c0fc7e45597325ac33ede7f2cb9322d9680990a346f729fc56',
+  'mini-rootmaw':'4e144fc4c391667883df9906446f20469893c0562ce646f5742e706e37d68e6d',
+  'mini-spring-oathkeeper':'60e7689d49608fbfc421638840c976e22f0033328dc5d1fbe4bd6cd1e2580e61',
+  'mini-the-bellwarden':'71d05e8a5ded8df257a3a7c6c8a9a2aa841ab3353549d4ffe224775fd1f3e5c0',
+  'mini-the-glass-seer':'5849f89ad50cfc925a90bebc3d77699fe7de4102a796692b8e92462a635b355d',
+  'mini-the-night-scribe':'0f0889c5b04ca0f15a73d9a3d2d8a9a8f9510b2d966ec34c4eac97ee63744850',
+};
+const miniKinds={
+  'mini-marshjaw':'lurker','mini-the-bellwarden':'sentinel','mini-briar-duelist':'sentinel',
+  'mini-rootmaw':'lurker','mini-gale-harrier':'wisp','mini-the-glass-seer':'caster',
+  'mini-cinder-brute':'husk','mini-iron-oathkeeper':'sentinel','mini-the-night-scribe':'caster',
+  'mini-grave-hound':'lurker','mini-spring-oathkeeper':'sentinel','mini-dawn-revenant':'husk',
 };
 let checks=0;
 const check=(condition,message)=>{if(!condition)throw Error(message);checks++;};
@@ -56,7 +74,7 @@ function decodePNG(path){
 function audit(rgba,kind){
   const spec=m.images[`${kind}-painted-body`];
   const dimensions={husk:[40,74],wisp:[34,34],caster:[40,82],lurker:[56,46],sentinel:[48,92],warden:[120,200],
-    serpent:[70,70],thorn:[64,128],watcher:[64,144],colossus:[120,200],keeper:[64,128],king:[64,128]}[kind];
+    serpent:[70,70],thorn:[64,128],watcher:[64,144],colossus:[120,200],keeper:[64,128],king:[64,128]}[miniKinds[kind]??kind];
   const [width,height]=dimensions.map(v=>v/spec.scale),mask=Buffer.alloc(512*512);
   let pixels=0,hidden=0,outside=0,x0=512,y0=512,x1=0,y1=0;
   for(let i=0;i<mask.length;i++){

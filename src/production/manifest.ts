@@ -14,7 +14,9 @@ export function validateManifest(raw:unknown):ProductionManifest {
   if(!record(raw)||raw.version!==1)fail('expected version 1');
   const m=raw as Record<string,unknown>;
   for(const key of ['images','clips','actors','effects','lands','audio']){
-    if(!record(m[key])||Object.keys(m[key] as object).length>256)fail(`invalid ${key}`);
+    // Exact attack-phase bindings grow faster than textures. Keep a bounded
+    // metadata allowance without increasing the image count or decoded budget.
+    if(!record(m[key])||Object.keys(m[key] as object).length>(key==='clips'?512:256))fail(`invalid ${key}`);
     const identity=key==='audio'?/^[a-zA-Z0-9][a-zA-Z0-9.-]*$/:/^[a-z0-9][a-z0-9.-]*$/;
     if(Object.keys(m[key] as object).some(id=>!identity.test(id)||['constructor','prototype','__proto__'].includes(id)))fail(`unsafe ${key} identity`);
   }

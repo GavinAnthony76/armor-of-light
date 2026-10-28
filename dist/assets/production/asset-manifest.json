@@ -661,6 +661,150 @@
       "scale": 0.5,
       "source": "User-authorized recreation from Armor of Light Complete Game Asset Showcase / Game Asset Bible; six-guardian armless painted source. Serpent material is clipped to original live neck and jaw geometry.",
       "license": "Generated artwork for this project under generation service terms; user-authorized recreation from supplied art direction."
+    },
+    "mini-marshjaw-painted-body": {
+      "src": "assets/production/enemies/minis/marshjaw/marshjaw-painted-body.png",
+      "width": 512,
+      "height": 512,
+      "anchor": [
+        256,
+        448
+      ],
+      "scale": 0.25,
+      "source": "User-authorized original marshjaw body painting following Armor of Light Complete Game Asset Showcase / Game Asset Bible; mini source sheet a, calibrated without arms, held gear, shadows or warning effects.",
+      "license": "Generated artwork for this project under generation service terms; user-authorized recreation from supplied art direction."
+    },
+    "mini-the-bellwarden-painted-body": {
+      "src": "assets/production/enemies/minis/the-bellwarden/the-bellwarden-painted-body.png",
+      "width": 512,
+      "height": 512,
+      "anchor": [
+        256,
+        448
+      ],
+      "scale": 0.25,
+      "source": "User-authorized original the-bellwarden body painting following Armor of Light Complete Game Asset Showcase / Game Asset Bible; mini source sheet a, calibrated without arms, held gear, shadows or warning effects.",
+      "license": "Generated artwork for this project under generation service terms; user-authorized recreation from supplied art direction."
+    },
+    "mini-briar-duelist-painted-body": {
+      "src": "assets/production/enemies/minis/briar-duelist/briar-duelist-painted-body.png",
+      "width": 512,
+      "height": 512,
+      "anchor": [
+        256,
+        448
+      ],
+      "scale": 0.25,
+      "source": "User-authorized original briar-duelist body painting following Armor of Light Complete Game Asset Showcase / Game Asset Bible; mini source sheet a, calibrated without arms, held gear, shadows or warning effects.",
+      "license": "Generated artwork for this project under generation service terms; user-authorized recreation from supplied art direction."
+    },
+    "mini-rootmaw-painted-body": {
+      "src": "assets/production/enemies/minis/rootmaw/rootmaw-painted-body.png",
+      "width": 512,
+      "height": 512,
+      "anchor": [
+        256,
+        448
+      ],
+      "scale": 0.25,
+      "source": "User-authorized original rootmaw body painting following Armor of Light Complete Game Asset Showcase / Game Asset Bible; mini source sheet a, calibrated without arms, held gear, shadows or warning effects.",
+      "license": "Generated artwork for this project under generation service terms; user-authorized recreation from supplied art direction."
+    },
+    "mini-gale-harrier-painted-body": {
+      "src": "assets/production/enemies/minis/gale-harrier/gale-harrier-painted-body.png",
+      "width": 512,
+      "height": 512,
+      "anchor": [
+        256,
+        448
+      ],
+      "scale": 0.25,
+      "source": "User-authorized original gale-harrier body painting following Armor of Light Complete Game Asset Showcase / Game Asset Bible; mini source sheet a, calibrated without arms, held gear, shadows or warning effects.",
+      "license": "Generated artwork for this project under generation service terms; user-authorized recreation from supplied art direction."
+    },
+    "mini-the-glass-seer-painted-body": {
+      "src": "assets/production/enemies/minis/the-glass-seer/the-glass-seer-painted-body.png",
+      "width": 512,
+      "height": 512,
+      "anchor": [
+        256,
+        448
+      ],
+      "scale": 0.25,
+      "source": "User-authorized original the-glass-seer body painting following Armor of Light Complete Game Asset Showcase / Game Asset Bible; mini source sheet a, calibrated without arms, held gear, shadows or warning effects.",
+      "license": "Generated artwork for this project under generation service terms; user-authorized recreation from supplied art direction."
+    },
+    "mini-cinder-brute-painted-body": {
+      "src": "assets/production/enemies/minis/cinder-brute/cinder-brute-painted-body.png",
+      "width": 512,
+      "height": 512,
+      "anchor": [
+        256,
+        448
+      ],
+      "scale": 0.25,
+      "source": "User-authorized original cinder-brute body painting following Armor of Light Complete Game Asset Showcase / Game Asset Bible; mini source sheet b, calibrated without arms, held gear, shadows or warning effects.",
+      "license": "Generated artwork for this project under generation service terms; user-authorized recreation from supplied art direction."
+    },
+    "mini-iron-oathkeeper-painted-body": {
+      "src": "assets/production/enemies/minis/iron-oathkeeper/iron-oathkeeper-painted-body.png",
+      "width": 512,
+      "height": 512,
+      "anchor": [
+        256,
+        448
+      ],
+      "scale": 0.25,
+      "source": "User-authorized original iron-oathkeeper body painting following Armor of Light Complete Game Asset Showcase / Game Asset Bible; mini source sheet b, calibrated without arms, held gear, shadows or warning effects.",
+      "license": "Generated artwork for this project under generation service terms; user-authorized recreation from supplied art direction."
+    },
+    "mini-the-night-scribe-painted-body": {
+      "src": "assets/production/enemies/minis/the-night-scribe/the-night-scribe-painted-body.png",
+      "width": 512,
+      "height": 512,
+      "anchor": [
+        256,
+        448
+      ],
+      "scale": 0.25,
+      "source": "User-authorized original the-night-scribe body painting following Armor of Light Complete Game Asset Showcase / Game Asset Bible; mini source sheet b, calibrated without arms, held gear, shadows or warning effects.",
+      "license": "Generated artwork for this project under generation service terms; user-authorized recreation from supplied art direction."
+    },
+    "mini-grave-hound-painted-body": {
+      "src": "assets/production/enemies/minis/grave-hound/grave-hound-painted-body.png",
+      "width": 512,
+      "height": 512,
+      "anchor": [
+        256,
+        448
+      ],
+      "scale": 0.25,
+      "source": "User-authorized original grave-hound body painting following Armor of Light Complete Game Asset Showcase / Game Asset Bible; mini source sheet b, calibrated without arms, held gear, shadows or warning effects.",
+      "license": "Generated artwork for this project under generation service terms; user-authorized recreation from supplied art direction."
+    },
+    "mini-spring-oathkeeper-painted-body": {
+      "src": "assets/production/enemies/minis/spring-oathkeeper/spring-oathkeeper-painted-body.png",
+      "width": 512,
+      "height": 512,
+      "anchor": [
+        256,
+        448
+      ],
+      "scale": 0.25,
+      "source": "User-authorized original spring-oathkeeper body painting following Armor of Light Complete Game Asset Showcase / Game Asset Bible; mini source sheet b, calibrated without arms, held gear, shadows or warning effects.",
+      "license": "Generated artwork for this project under generation service terms; user-authorized recreation from supplied art direction."
+    },
+    "mini-dawn-revenant-painted-body": {
+      "src": "assets/production/enemies/minis/dawn-revenant/dawn-revenant-painted-body.png",
+      "width": 512,
+      "height": 512,
+      "anchor": [
+        256,
+        448
+      ],
+      "scale": 0.25,
+      "source": "User-authorized original dawn-revenant body painting following Armor of Light Complete Game Asset Showcase / Game Asset Bible; mini source sheet b, calibrated without arms, held gear, shadows or warning effects.",
+      "license": "Generated artwork for this project under generation service terms; user-authorized recreation from supplied art direction."
     }
   },
   "clips": {
@@ -2522,6 +2666,1176 @@
       "loop": false,
       "mode": "replace",
       "bodyMotion": "recover"
+    },
+    "painted-mini-marshjaw-spawn": {
+      "image": "mini-marshjaw-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "spawn"
+    },
+    "painted-mini-marshjaw-move": {
+      "image": "mini-marshjaw-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": true,
+      "mode": "replace",
+      "bodyMotion": "move"
+    },
+    "painted-mini-marshjaw-stagger": {
+      "image": "mini-marshjaw-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "stagger"
+    },
+    "painted-mini-marshjaw-hurt": {
+      "image": "mini-marshjaw-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "hurt"
+    },
+    "painted-mini-marshjaw-dying": {
+      "image": "mini-marshjaw-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "dying"
+    },
+    "painted-mini-marshjaw-windup-lurkerleap": {
+      "image": "mini-marshjaw-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-mini-marshjaw-active-lurkerleap": {
+      "image": "mini-marshjaw-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-mini-marshjaw-recover-lurkerleap": {
+      "image": "mini-marshjaw-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-mini-marshjaw-windup-lurkersnap": {
+      "image": "mini-marshjaw-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-mini-marshjaw-active-lurkersnap": {
+      "image": "mini-marshjaw-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-mini-marshjaw-recover-lurkersnap": {
+      "image": "mini-marshjaw-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-mini-the-bellwarden-spawn": {
+      "image": "mini-the-bellwarden-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "spawn"
+    },
+    "painted-mini-the-bellwarden-move": {
+      "image": "mini-the-bellwarden-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": true,
+      "mode": "replace",
+      "bodyMotion": "move"
+    },
+    "painted-mini-the-bellwarden-stagger": {
+      "image": "mini-the-bellwarden-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "stagger"
+    },
+    "painted-mini-the-bellwarden-hurt": {
+      "image": "mini-the-bellwarden-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "hurt"
+    },
+    "painted-mini-the-bellwarden-dying": {
+      "image": "mini-the-bellwarden-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "dying"
+    },
+    "painted-mini-the-bellwarden-windup-thrust1": {
+      "image": "mini-the-bellwarden-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-mini-the-bellwarden-active-thrust1": {
+      "image": "mini-the-bellwarden-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-mini-the-bellwarden-recover-thrust1": {
+      "image": "mini-the-bellwarden-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-mini-the-bellwarden-windup-thrust2": {
+      "image": "mini-the-bellwarden-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-mini-the-bellwarden-active-thrust2": {
+      "image": "mini-the-bellwarden-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-mini-the-bellwarden-recover-thrust2": {
+      "image": "mini-the-bellwarden-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-mini-briar-duelist-spawn": {
+      "image": "mini-briar-duelist-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "spawn"
+    },
+    "painted-mini-briar-duelist-move": {
+      "image": "mini-briar-duelist-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": true,
+      "mode": "replace",
+      "bodyMotion": "move"
+    },
+    "painted-mini-briar-duelist-stagger": {
+      "image": "mini-briar-duelist-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "stagger"
+    },
+    "painted-mini-briar-duelist-hurt": {
+      "image": "mini-briar-duelist-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "hurt"
+    },
+    "painted-mini-briar-duelist-dying": {
+      "image": "mini-briar-duelist-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "dying"
+    },
+    "painted-mini-briar-duelist-windup-thrust1": {
+      "image": "mini-briar-duelist-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-mini-briar-duelist-active-thrust1": {
+      "image": "mini-briar-duelist-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-mini-briar-duelist-recover-thrust1": {
+      "image": "mini-briar-duelist-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-mini-briar-duelist-windup-thrust2": {
+      "image": "mini-briar-duelist-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-mini-briar-duelist-active-thrust2": {
+      "image": "mini-briar-duelist-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-mini-briar-duelist-recover-thrust2": {
+      "image": "mini-briar-duelist-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-mini-rootmaw-spawn": {
+      "image": "mini-rootmaw-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "spawn"
+    },
+    "painted-mini-rootmaw-move": {
+      "image": "mini-rootmaw-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": true,
+      "mode": "replace",
+      "bodyMotion": "move"
+    },
+    "painted-mini-rootmaw-stagger": {
+      "image": "mini-rootmaw-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "stagger"
+    },
+    "painted-mini-rootmaw-hurt": {
+      "image": "mini-rootmaw-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "hurt"
+    },
+    "painted-mini-rootmaw-dying": {
+      "image": "mini-rootmaw-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "dying"
+    },
+    "painted-mini-rootmaw-windup-lurkerleap": {
+      "image": "mini-rootmaw-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-mini-rootmaw-active-lurkerleap": {
+      "image": "mini-rootmaw-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-mini-rootmaw-recover-lurkerleap": {
+      "image": "mini-rootmaw-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-mini-rootmaw-windup-lurkersnap": {
+      "image": "mini-rootmaw-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-mini-rootmaw-active-lurkersnap": {
+      "image": "mini-rootmaw-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-mini-rootmaw-recover-lurkersnap": {
+      "image": "mini-rootmaw-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-mini-gale-harrier-spawn": {
+      "image": "mini-gale-harrier-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "spawn"
+    },
+    "painted-mini-gale-harrier-move": {
+      "image": "mini-gale-harrier-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": true,
+      "mode": "replace",
+      "bodyMotion": "move"
+    },
+    "painted-mini-gale-harrier-stagger": {
+      "image": "mini-gale-harrier-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "stagger"
+    },
+    "painted-mini-gale-harrier-hurt": {
+      "image": "mini-gale-harrier-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "hurt"
+    },
+    "painted-mini-gale-harrier-dying": {
+      "image": "mini-gale-harrier-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "dying"
+    },
+    "painted-mini-gale-harrier-windup-wispdash": {
+      "image": "mini-gale-harrier-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-mini-gale-harrier-active-wispdash": {
+      "image": "mini-gale-harrier-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-mini-gale-harrier-recover-wispdash": {
+      "image": "mini-gale-harrier-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-mini-the-glass-seer-spawn": {
+      "image": "mini-the-glass-seer-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "spawn"
+    },
+    "painted-mini-the-glass-seer-move": {
+      "image": "mini-the-glass-seer-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": true,
+      "mode": "replace",
+      "bodyMotion": "move"
+    },
+    "painted-mini-the-glass-seer-stagger": {
+      "image": "mini-the-glass-seer-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "stagger"
+    },
+    "painted-mini-the-glass-seer-hurt": {
+      "image": "mini-the-glass-seer-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "hurt"
+    },
+    "painted-mini-the-glass-seer-dying": {
+      "image": "mini-the-glass-seer-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "dying"
+    },
+    "painted-mini-the-glass-seer-windup-casterorb": {
+      "image": "mini-the-glass-seer-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-mini-the-glass-seer-active-casterorb": {
+      "image": "mini-the-glass-seer-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-mini-the-glass-seer-recover-casterorb": {
+      "image": "mini-the-glass-seer-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-mini-cinder-brute-spawn": {
+      "image": "mini-cinder-brute-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "spawn"
+    },
+    "painted-mini-cinder-brute-move": {
+      "image": "mini-cinder-brute-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": true,
+      "mode": "replace",
+      "bodyMotion": "move"
+    },
+    "painted-mini-cinder-brute-stagger": {
+      "image": "mini-cinder-brute-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "stagger"
+    },
+    "painted-mini-cinder-brute-hurt": {
+      "image": "mini-cinder-brute-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "hurt"
+    },
+    "painted-mini-cinder-brute-dying": {
+      "image": "mini-cinder-brute-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "dying"
+    },
+    "painted-mini-cinder-brute-windup-huskswing": {
+      "image": "mini-cinder-brute-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-mini-cinder-brute-active-huskswing": {
+      "image": "mini-cinder-brute-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-mini-cinder-brute-recover-huskswing": {
+      "image": "mini-cinder-brute-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-mini-iron-oathkeeper-spawn": {
+      "image": "mini-iron-oathkeeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "spawn"
+    },
+    "painted-mini-iron-oathkeeper-move": {
+      "image": "mini-iron-oathkeeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": true,
+      "mode": "replace",
+      "bodyMotion": "move"
+    },
+    "painted-mini-iron-oathkeeper-stagger": {
+      "image": "mini-iron-oathkeeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "stagger"
+    },
+    "painted-mini-iron-oathkeeper-hurt": {
+      "image": "mini-iron-oathkeeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "hurt"
+    },
+    "painted-mini-iron-oathkeeper-dying": {
+      "image": "mini-iron-oathkeeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "dying"
+    },
+    "painted-mini-iron-oathkeeper-windup-thrust1": {
+      "image": "mini-iron-oathkeeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-mini-iron-oathkeeper-active-thrust1": {
+      "image": "mini-iron-oathkeeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-mini-iron-oathkeeper-recover-thrust1": {
+      "image": "mini-iron-oathkeeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-mini-iron-oathkeeper-windup-thrust2": {
+      "image": "mini-iron-oathkeeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-mini-iron-oathkeeper-active-thrust2": {
+      "image": "mini-iron-oathkeeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-mini-iron-oathkeeper-recover-thrust2": {
+      "image": "mini-iron-oathkeeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-mini-the-night-scribe-spawn": {
+      "image": "mini-the-night-scribe-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "spawn"
+    },
+    "painted-mini-the-night-scribe-move": {
+      "image": "mini-the-night-scribe-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": true,
+      "mode": "replace",
+      "bodyMotion": "move"
+    },
+    "painted-mini-the-night-scribe-stagger": {
+      "image": "mini-the-night-scribe-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "stagger"
+    },
+    "painted-mini-the-night-scribe-hurt": {
+      "image": "mini-the-night-scribe-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "hurt"
+    },
+    "painted-mini-the-night-scribe-dying": {
+      "image": "mini-the-night-scribe-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "dying"
+    },
+    "painted-mini-the-night-scribe-windup-casterorb": {
+      "image": "mini-the-night-scribe-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-mini-the-night-scribe-active-casterorb": {
+      "image": "mini-the-night-scribe-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-mini-the-night-scribe-recover-casterorb": {
+      "image": "mini-the-night-scribe-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-mini-grave-hound-spawn": {
+      "image": "mini-grave-hound-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "spawn"
+    },
+    "painted-mini-grave-hound-move": {
+      "image": "mini-grave-hound-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": true,
+      "mode": "replace",
+      "bodyMotion": "move"
+    },
+    "painted-mini-grave-hound-stagger": {
+      "image": "mini-grave-hound-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "stagger"
+    },
+    "painted-mini-grave-hound-hurt": {
+      "image": "mini-grave-hound-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "hurt"
+    },
+    "painted-mini-grave-hound-dying": {
+      "image": "mini-grave-hound-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "dying"
+    },
+    "painted-mini-grave-hound-windup-lurkerleap": {
+      "image": "mini-grave-hound-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-mini-grave-hound-active-lurkerleap": {
+      "image": "mini-grave-hound-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-mini-grave-hound-recover-lurkerleap": {
+      "image": "mini-grave-hound-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-mini-grave-hound-windup-lurkersnap": {
+      "image": "mini-grave-hound-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-mini-grave-hound-active-lurkersnap": {
+      "image": "mini-grave-hound-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-mini-grave-hound-recover-lurkersnap": {
+      "image": "mini-grave-hound-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-mini-spring-oathkeeper-spawn": {
+      "image": "mini-spring-oathkeeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "spawn"
+    },
+    "painted-mini-spring-oathkeeper-move": {
+      "image": "mini-spring-oathkeeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": true,
+      "mode": "replace",
+      "bodyMotion": "move"
+    },
+    "painted-mini-spring-oathkeeper-stagger": {
+      "image": "mini-spring-oathkeeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "stagger"
+    },
+    "painted-mini-spring-oathkeeper-hurt": {
+      "image": "mini-spring-oathkeeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "hurt"
+    },
+    "painted-mini-spring-oathkeeper-dying": {
+      "image": "mini-spring-oathkeeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "dying"
+    },
+    "painted-mini-spring-oathkeeper-windup-thrust1": {
+      "image": "mini-spring-oathkeeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-mini-spring-oathkeeper-active-thrust1": {
+      "image": "mini-spring-oathkeeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-mini-spring-oathkeeper-recover-thrust1": {
+      "image": "mini-spring-oathkeeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-mini-spring-oathkeeper-windup-thrust2": {
+      "image": "mini-spring-oathkeeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-mini-spring-oathkeeper-active-thrust2": {
+      "image": "mini-spring-oathkeeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-mini-spring-oathkeeper-recover-thrust2": {
+      "image": "mini-spring-oathkeeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-mini-dawn-revenant-spawn": {
+      "image": "mini-dawn-revenant-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "spawn"
+    },
+    "painted-mini-dawn-revenant-move": {
+      "image": "mini-dawn-revenant-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": true,
+      "mode": "replace",
+      "bodyMotion": "move"
+    },
+    "painted-mini-dawn-revenant-stagger": {
+      "image": "mini-dawn-revenant-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "stagger"
+    },
+    "painted-mini-dawn-revenant-hurt": {
+      "image": "mini-dawn-revenant-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "hurt"
+    },
+    "painted-mini-dawn-revenant-dying": {
+      "image": "mini-dawn-revenant-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "dying"
+    },
+    "painted-mini-dawn-revenant-windup-huskswing": {
+      "image": "mini-dawn-revenant-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-mini-dawn-revenant-active-huskswing": {
+      "image": "mini-dawn-revenant-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-mini-dawn-revenant-recover-huskswing": {
+      "image": "mini-dawn-revenant-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
     }
   },
   "actors": {
@@ -2757,6 +4071,171 @@
         "windup.summon": "painted-king-windup-summon",
         "active.summon": "painted-king-active-summon",
         "recover.summon": "painted-king-recover-summon"
+      }
+    },
+    "mini.marshjaw": {
+      "states": {
+        "spawn": "painted-mini-marshjaw-spawn",
+        "move": "painted-mini-marshjaw-move",
+        "stagger": "painted-mini-marshjaw-stagger",
+        "hurt": "painted-mini-marshjaw-hurt",
+        "dying": "painted-mini-marshjaw-dying",
+        "windup.lurkerLeap": "painted-mini-marshjaw-windup-lurkerleap",
+        "active.lurkerLeap": "painted-mini-marshjaw-active-lurkerleap",
+        "recover.lurkerLeap": "painted-mini-marshjaw-recover-lurkerleap",
+        "windup.lurkerSnap": "painted-mini-marshjaw-windup-lurkersnap",
+        "active.lurkerSnap": "painted-mini-marshjaw-active-lurkersnap",
+        "recover.lurkerSnap": "painted-mini-marshjaw-recover-lurkersnap"
+      }
+    },
+    "mini.the-bellwarden": {
+      "states": {
+        "spawn": "painted-mini-the-bellwarden-spawn",
+        "move": "painted-mini-the-bellwarden-move",
+        "stagger": "painted-mini-the-bellwarden-stagger",
+        "hurt": "painted-mini-the-bellwarden-hurt",
+        "dying": "painted-mini-the-bellwarden-dying",
+        "windup.thrust1": "painted-mini-the-bellwarden-windup-thrust1",
+        "active.thrust1": "painted-mini-the-bellwarden-active-thrust1",
+        "recover.thrust1": "painted-mini-the-bellwarden-recover-thrust1",
+        "windup.thrust2": "painted-mini-the-bellwarden-windup-thrust2",
+        "active.thrust2": "painted-mini-the-bellwarden-active-thrust2",
+        "recover.thrust2": "painted-mini-the-bellwarden-recover-thrust2"
+      }
+    },
+    "mini.briar-duelist": {
+      "states": {
+        "spawn": "painted-mini-briar-duelist-spawn",
+        "move": "painted-mini-briar-duelist-move",
+        "stagger": "painted-mini-briar-duelist-stagger",
+        "hurt": "painted-mini-briar-duelist-hurt",
+        "dying": "painted-mini-briar-duelist-dying",
+        "windup.thrust1": "painted-mini-briar-duelist-windup-thrust1",
+        "active.thrust1": "painted-mini-briar-duelist-active-thrust1",
+        "recover.thrust1": "painted-mini-briar-duelist-recover-thrust1",
+        "windup.thrust2": "painted-mini-briar-duelist-windup-thrust2",
+        "active.thrust2": "painted-mini-briar-duelist-active-thrust2",
+        "recover.thrust2": "painted-mini-briar-duelist-recover-thrust2"
+      }
+    },
+    "mini.rootmaw": {
+      "states": {
+        "spawn": "painted-mini-rootmaw-spawn",
+        "move": "painted-mini-rootmaw-move",
+        "stagger": "painted-mini-rootmaw-stagger",
+        "hurt": "painted-mini-rootmaw-hurt",
+        "dying": "painted-mini-rootmaw-dying",
+        "windup.lurkerLeap": "painted-mini-rootmaw-windup-lurkerleap",
+        "active.lurkerLeap": "painted-mini-rootmaw-active-lurkerleap",
+        "recover.lurkerLeap": "painted-mini-rootmaw-recover-lurkerleap",
+        "windup.lurkerSnap": "painted-mini-rootmaw-windup-lurkersnap",
+        "active.lurkerSnap": "painted-mini-rootmaw-active-lurkersnap",
+        "recover.lurkerSnap": "painted-mini-rootmaw-recover-lurkersnap"
+      }
+    },
+    "mini.gale-harrier": {
+      "states": {
+        "spawn": "painted-mini-gale-harrier-spawn",
+        "move": "painted-mini-gale-harrier-move",
+        "stagger": "painted-mini-gale-harrier-stagger",
+        "hurt": "painted-mini-gale-harrier-hurt",
+        "dying": "painted-mini-gale-harrier-dying",
+        "windup.wispDash": "painted-mini-gale-harrier-windup-wispdash",
+        "active.wispDash": "painted-mini-gale-harrier-active-wispdash",
+        "recover.wispDash": "painted-mini-gale-harrier-recover-wispdash"
+      }
+    },
+    "mini.the-glass-seer": {
+      "states": {
+        "spawn": "painted-mini-the-glass-seer-spawn",
+        "move": "painted-mini-the-glass-seer-move",
+        "stagger": "painted-mini-the-glass-seer-stagger",
+        "hurt": "painted-mini-the-glass-seer-hurt",
+        "dying": "painted-mini-the-glass-seer-dying",
+        "windup.casterOrb": "painted-mini-the-glass-seer-windup-casterorb",
+        "active.casterOrb": "painted-mini-the-glass-seer-active-casterorb",
+        "recover.casterOrb": "painted-mini-the-glass-seer-recover-casterorb"
+      }
+    },
+    "mini.cinder-brute": {
+      "states": {
+        "spawn": "painted-mini-cinder-brute-spawn",
+        "move": "painted-mini-cinder-brute-move",
+        "stagger": "painted-mini-cinder-brute-stagger",
+        "hurt": "painted-mini-cinder-brute-hurt",
+        "dying": "painted-mini-cinder-brute-dying",
+        "windup.huskSwing": "painted-mini-cinder-brute-windup-huskswing",
+        "active.huskSwing": "painted-mini-cinder-brute-active-huskswing",
+        "recover.huskSwing": "painted-mini-cinder-brute-recover-huskswing"
+      }
+    },
+    "mini.iron-oathkeeper": {
+      "states": {
+        "spawn": "painted-mini-iron-oathkeeper-spawn",
+        "move": "painted-mini-iron-oathkeeper-move",
+        "stagger": "painted-mini-iron-oathkeeper-stagger",
+        "hurt": "painted-mini-iron-oathkeeper-hurt",
+        "dying": "painted-mini-iron-oathkeeper-dying",
+        "windup.thrust1": "painted-mini-iron-oathkeeper-windup-thrust1",
+        "active.thrust1": "painted-mini-iron-oathkeeper-active-thrust1",
+        "recover.thrust1": "painted-mini-iron-oathkeeper-recover-thrust1",
+        "windup.thrust2": "painted-mini-iron-oathkeeper-windup-thrust2",
+        "active.thrust2": "painted-mini-iron-oathkeeper-active-thrust2",
+        "recover.thrust2": "painted-mini-iron-oathkeeper-recover-thrust2"
+      }
+    },
+    "mini.the-night-scribe": {
+      "states": {
+        "spawn": "painted-mini-the-night-scribe-spawn",
+        "move": "painted-mini-the-night-scribe-move",
+        "stagger": "painted-mini-the-night-scribe-stagger",
+        "hurt": "painted-mini-the-night-scribe-hurt",
+        "dying": "painted-mini-the-night-scribe-dying",
+        "windup.casterOrb": "painted-mini-the-night-scribe-windup-casterorb",
+        "active.casterOrb": "painted-mini-the-night-scribe-active-casterorb",
+        "recover.casterOrb": "painted-mini-the-night-scribe-recover-casterorb"
+      }
+    },
+    "mini.grave-hound": {
+      "states": {
+        "spawn": "painted-mini-grave-hound-spawn",
+        "move": "painted-mini-grave-hound-move",
+        "stagger": "painted-mini-grave-hound-stagger",
+        "hurt": "painted-mini-grave-hound-hurt",
+        "dying": "painted-mini-grave-hound-dying",
+        "windup.lurkerLeap": "painted-mini-grave-hound-windup-lurkerleap",
+        "active.lurkerLeap": "painted-mini-grave-hound-active-lurkerleap",
+        "recover.lurkerLeap": "painted-mini-grave-hound-recover-lurkerleap",
+        "windup.lurkerSnap": "painted-mini-grave-hound-windup-lurkersnap",
+        "active.lurkerSnap": "painted-mini-grave-hound-active-lurkersnap",
+        "recover.lurkerSnap": "painted-mini-grave-hound-recover-lurkersnap"
+      }
+    },
+    "mini.spring-oathkeeper": {
+      "states": {
+        "spawn": "painted-mini-spring-oathkeeper-spawn",
+        "move": "painted-mini-spring-oathkeeper-move",
+        "stagger": "painted-mini-spring-oathkeeper-stagger",
+        "hurt": "painted-mini-spring-oathkeeper-hurt",
+        "dying": "painted-mini-spring-oathkeeper-dying",
+        "windup.thrust1": "painted-mini-spring-oathkeeper-windup-thrust1",
+        "active.thrust1": "painted-mini-spring-oathkeeper-active-thrust1",
+        "recover.thrust1": "painted-mini-spring-oathkeeper-recover-thrust1",
+        "windup.thrust2": "painted-mini-spring-oathkeeper-windup-thrust2",
+        "active.thrust2": "painted-mini-spring-oathkeeper-active-thrust2",
+        "recover.thrust2": "painted-mini-spring-oathkeeper-recover-thrust2"
+      }
+    },
+    "mini.dawn-revenant": {
+      "states": {
+        "spawn": "painted-mini-dawn-revenant-spawn",
+        "move": "painted-mini-dawn-revenant-move",
+        "stagger": "painted-mini-dawn-revenant-stagger",
+        "hurt": "painted-mini-dawn-revenant-hurt",
+        "dying": "painted-mini-dawn-revenant-dying",
+        "windup.huskSwing": "painted-mini-dawn-revenant-windup-huskswing",
+        "active.huskSwing": "painted-mini-dawn-revenant-active-huskswing",
+        "recover.huskSwing": "painted-mini-dawn-revenant-recover-huskswing"
       }
     }
   },

@@ -5,11 +5,13 @@
 The five shared enemy archetypes (husk, wisp, caster, lurker and sentinel)
 and all seven guardians now use body-only painting recreated from the
 user-approved Complete Game Asset Showcase / Game Asset Bible direction.
-These shared enemy bodies appear wherever their archetypes occur, including
-mini-bosses with no mini-specific exact-state binding.
+These shared enemy bodies appear wherever their archetypes occur. The twelve
+named campaign mini-bosses now have their own exact-state body paintings.
 The Tide Serpent, Thorn Sentinel, Storm Watcher, Iron Colossus, Keeper of
 Shadows and Hollow King each have a distinct calibrated source. Named minis
-still inherit shared archetype art rather than unique portraits.
+use distinct sources rather than inheriting those shared archetype paintings.
+The Desert Archive Keeper is a separate `sealGuardian` encounter, not a live
+`miniName` actor; its presentation remains unchanged.
 
 The generated source is an **armless body sheet**, not a finished animation
 sheet. `scripts/prepare-painted-enemies.mjs` calibrates six lossless RGBA PNG
@@ -36,15 +38,17 @@ breathing and attack lean, and the low lurker silhouette uses its own hip band.
 `frames: [0]` identifies the shared **source texture**, not a static pose.
 Atlas-based clips without `bodyMotion` continue using the unchanged frame path.
 
-This choice keeps all twelve body textures at **12 MiB decoded total** instead of
+This choice keeps all twenty-four body textures at **24 MiB decoded total** instead of
 multiplying the already large hero atlas by every enemy/action. The installed
 pack is audited by **current scene**, not by summing future lands/guardians.
 The conservative bound includes all hero poses/materials, shared enemies,
-the current guardian and all land layers/depth bands/props/surfaces/effects:
-71.7 MiB for desert and 64.0 MiB for each other currently installed land.
-A Chromium stress scene retaining all twelve body sources measured **75.5 MiB**
-resident with no issues, below the 80 MiB scene target.
+the current guardian, both local minis and all land layers/depth bands/props/
+surfaces/effects: 71.7 MiB for desert and 66.0 MiB for each other installed land.
+Chromium checks loading all current-land resources plus retained startup
+resources measured at most **72.6 MiB** resident with no issues, below the
+80 MiB scene target.
 No future guardians are preloaded and no state transition needs another image.
+Mini paintings are also demand-loaded; future-land minis are not requested.
 
 Body replacement skips only the corresponding procedural body/armor.
 Procedural claws, caster arms/orb, spear/shield, Warden arm poses, trails,
@@ -54,21 +58,6 @@ texture; their coordinates and arcs are unchanged. Spawn and death alpha stay
 in the original renderer. Damage brightness affects paintings, not warnings.
 Missing/not-yet-loaded body sources always draw the entire original actor.
 An unmapped action never borrows a move/idle portrait.
-
-The six-guardian source master is calibrated by
-`scripts/prepare-painted-guardians.mjs`; like the first master it stays ignored.
-Low-confidence background-removal alpha is removed before resampling, and
-transparent delivery RGB is normalized. Every humanoid guardian uses scale 0.5,
-the stable foot pivot and original body box. The original moving capes draw
-behind the new bodies; sword arms, greatswords and Colossus arm capsules/fists
-keep their original coordinates, arcs and warning rims.
-
-The serpent deliberately does **not** use humanoid cutout articulation. Its
-calibrated source provides a painted scale material inside the original live
-tapered neck polygon and opening jaw path. Neck/head position, Bézier samples,
-fins, eyes and water churn retain their original geometry; no portrait is
-positioned at a fictitious serpent foot pivot. This also preserves the existing
-head hurtbox and bite/lunge presentation. Missing material draws the full original.
 
 ### Replacement painting calibration
 
@@ -107,6 +96,59 @@ are needed. Keep the existing weapons, warning geometry and combat timing.
 `npm run test:enemies` compares explicit and omitted metadata in every live
 state, checks custom crops, rejects malformed/transparent samples, and verifies
 the original hitboxes, arm/weapon endpoints, timing and missing-file fallback.
+
+## Named mini-boss paintings
+
+All twelve paintings are new body-only artwork following the approved showcase,
+not recolored shared textures. Humanoid sources omit arms and held gear.
+The original animation continues to draw claws, casting arms/orbs, spears and
+shields, nameplates, contact shadows, warning cues and spawn/death fades.
+Each 512-square RGBA source uses scale 0.25 and pivot (256,448), fitted without
+stretching inside its archetype's unchanged body box. Gale Harrier retains the
+wisp's actual center-origin presentation offset.
+
+| Exact actor identity | Body design | Archetype / exact attack IDs |
+|---|---|---|
+| `mini.marshjaw` | Moss-covered crocodilian | lurker / `lurkerLeap`, `lurkerSnap` |
+| `mini.the-bellwarden` | Patinated bronze bell helmet | sentinel / `thrust1`, `thrust2` |
+| `mini.briar-duelist` | Ivory bark and thorn armor | sentinel / `thrust1`, `thrust2` |
+| `mini.rootmaw` | Gnarled root boar | lurker / `lurkerLeap`, `lurkerSnap` |
+| `mini.gale-harrier` | Blue-white feathered storm spirit | wisp / `wispDash` |
+| `mini.the-glass-seer` | Faceted indigo crystal robes | caster / `casterOrb` |
+| `mini.cinder-brute` | Cracked charcoal and ember torso | husk / `huskSwing` |
+| `mini.iron-oathkeeper` | Riveted black iron and copper | sentinel / `thrust1`, `thrust2` |
+| `mini.the-night-scribe` | Parchment-trimmed robes and bone mask | caster / `casterOrb` |
+| `mini.grave-hound` | Skeletal wolf with exposed ribs | lurker / `lurkerLeap`, `lurkerSnap` |
+| `mini.spring-oathkeeper` | Pearl armor with turquoise channels | sentinel / `thrust1`, `thrust2` |
+| `mini.dawn-revenant` | Gold funerary plate and compact sun crown | husk / `huskSwing` |
+
+Actor names come from live campaign encounters, including the leading `The`
+omitted in some prose descriptions. Every source has `spawn`, `move`, `stagger`,
+`hurt`, `dying` and `windup`/`active`/`recover` for each listed attack. The existing
+mini-before-archetype precedence in `src/production/scene.ts` is unchanged.
+Missing exact mini states may use only the archetype's same exact state;
+an unreadable unique source keeps the complete procedural actor.
+
+`scripts/prepare-painted-minis.mjs` calibrates the two ignored authoring sheets.
+Only the twelve optimized PNGs are needed for builds and offline play.
+The manifest's bounded clip allowance is 512 because exact per-actor phase
+bindings outnumber textures; image limits and decoded cache ceilings did not
+increase.
+
+The six-guardian source master is calibrated by
+`scripts/prepare-painted-guardians.mjs`; like the first master it stays ignored.
+Low-confidence background-removal alpha is removed before resampling, and
+transparent delivery RGB is normalized. Every humanoid guardian uses scale 0.5,
+the stable foot pivot and original body box. The original moving capes draw
+behind the new bodies; sword arms, greatswords and Colossus arm capsules/fists
+keep their original coordinates, arcs and warning rims.
+
+The serpent deliberately does **not** use humanoid cutout articulation. Its
+calibrated source provides a painted scale material inside the original live
+tapered neck polygon and opening jaw path. Neck/head position, Bézier samples,
+fins, eyes and water churn retain their original geometry; no portrait is
+positioned at a fictitious serpent foot pivot. This also preserves the existing
+head hurtbox and bite/lunge presentation. Missing material draws the full original.
 
 ## Exact attack mapping
 
@@ -151,7 +193,7 @@ phase, timer, movement, collision, sound or damage.
 - `npm run test:art` includes animation, pack and enemy coverage.
 - `npm run build`, `npm run build:single`, `npm run test:bundles` verify web,
   YouTube-host entrypoints and the offline edition. The single HTML is about
-  13.1 MiB with the expanded scenery, below the 20 MiB target.
+  14.3 MiB with the named mini paintings, below the 20 MiB target.
 - `BASE=https://<development-domain> python3 tests/painted-enemies-browser.py`
   checks actual painted bodies in all states, warnings, phone-sized portrait/
   landscape, reduced motion, a real 404 body-file fallback without reload
@@ -159,6 +201,13 @@ phase, timer, movement, collision, sound or damage.
   offline startup with zero network sidecars. Each guardian is also captured
   individually at portrait/landscape sizes, not only in a crowded stress fixture.
   Evidence stays in `generated-artifacts/painted-enemy-qa/`.
+- `BASE=https://<development-domain> python3 tests/painted-minis-browser.py`
+  checks all exact states against actual unique-image draw calls, mirrored phone
+  portrait/landscape views with reduced motion, every mini source returning a
+  real 404 without retry churn, seven current-land residency bounds including
+  both local minis, and no future-mini requests. It also boots the single HTML
+  with the browser offline and renders all twelve embedded paintings with zero
+  network sidecars. Evidence stays in `generated-artifacts/painted-mini-qa/`.
 - Core campaign, weapon, action, traversal and save tests remain unchanged.
   Browser fixture enemies are test-only and never enter normal gameplay.
 

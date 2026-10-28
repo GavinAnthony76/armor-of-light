@@ -22,9 +22,12 @@ continuous except authored jumpable water/chasm gaps.
 | City of the Watch | Night Scribe / Watch Spire | Grave Hound / Underwall Reliquary | Keeper of Shadows / Watch Twinblades |
 | River of Life | Spring Oathkeeper / Deep Spring | Dawn Revenant / Dawn Sanctuary | Hollow King / River Greatsword |
 
-Mini-bosses currently use distinct existing enemy archetypes with named identity,
-difficulty-scaled elite health and illustrated name/health plates. Bespoke new
-AI movesets and unique sprite sets are not claimed by this pass.
+The twelve later-land mini-bosses now have distinct painted body sources with
+simulation-driven cutout motion, named identity, difficulty-scaled elite health
+and name/health plates. Their original archetype AI movesets, articulated gear
+and warning cues are unchanged. The Desert Archive Keeper remains a separate
+seal-guardian encounter. See PAINTED_ENEMY_BODIES.md for the exact live-name
+bindings and artwork verification.
 
 ## Chests and rewards
 

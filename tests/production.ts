@@ -46,6 +46,14 @@ for(const mutate of [
   let failed=false;try{validateManifest(copy);}catch{failed=true;}check(failed,'invalid manifest rejects safely');
 }
 const clip=manifest.clips['eliam-run'];
+// Many exact state bindings may share a texture; metadata growth must not
+// silently disable the whole installed pack, nor remove its finite ceiling.
+const manyClips=JSON.parse(JSON.stringify(manifest)) as typeof manifest;
+for(let i=1;i<512;i++)manyClips.clips[`test-${i}`]={...clip};
+check(Object.keys(validateManifest(manyClips).clips).length===512,'512 bounded clips accepted');
+manyClips.clips['one-too-many']={...clip};
+let oversized=false;try{validateManifest(manyClips);}catch{oversized=true;}
+check(oversized,'513 clips rejected without expanding image/cache limits');
 check(frameIndex(clip,1)===0,'cyclic animation wraps');
 check(frameIndex(clip,.2,.4)===4,'attack frames use actual engine duration');
 check(frameIndex(clip,99,.4)===6,'attack never loops into an extra strike');

@@ -1,7 +1,8 @@
 import type {ProductionManifest} from '../src/production/types';
+import {campaignMinis} from './campaign-minis';
 
 /** Conservative current-land bound: all hero poses, shared enemies, one live
- * guardian, every layer/depth band, prop, surface and effect in that land.
+ * guardian, both named minis, every layer/depth band, prop, surface and effect.
  * Future-land guardians/layers are NOT concurrent scene residency. */
 export function sceneResidency(m:ProductionManifest):[string,number][] {
   const guardians:Record<string,string>={desert:'warden',flood:'serpent',garden:'thorn',
@@ -9,7 +10,8 @@ export function sceneResidency(m:ProductionManifest):[string,number][] {
   return Object.entries(m.lands).map(([theme,land])=>{
     const ids=new Set<string>();
     const clip=(id:string)=>{if(m.clips[id])ids.add(m.clips[id].image);};
-    for(const id of ['eliam','husk','wisp','caster','lurker','sentinel',`boss.${guardians[theme]}`])
+    for(const id of ['eliam','husk','wisp','caster','lurker','sentinel',`boss.${guardians[theme]}`,
+      ...campaignMinis.filter(mini=>mini.theme===theme).map(mini=>mini.actor)])
       for(const key of Object.values(m.actors[id]?.states??{}))clip(key);
     for(const key of Object.values(m.effects))clip(key);
     for(const l of land.layers)ids.add(l.image);
