@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Six painted lands · live scenery review</title>
+<style>html,body,iframe{margin:0;width:100%;height:100%;border:0;overflow:hidden;background:#131724}iframe{display:block}</style>
+<iframe id="scene" title="Live painted land"></iframe>
+<script type="module">
+// Test-only route; no runtime debug controls or gameplay shortcuts are shipped.
+const params = new URLSearchParams(location.search);
+const land = Math.max(1, Math.min(6, Number(params.get('land')) || 1));
+const lower = params.get('room') === 'lower';
+const frame = document.querySelector('iframe');
+frame.src = '/?debug' + (params.has('touch') ? '&touch' : '');
+frame.addEventListener('load', () => {
+  const timer = setInterval(() => {
+    const app = frame.contentWindow.__aol;
+    if (!app) return;
+    clearInterval(timer);
+    app.startLevel(land);
+    const g = app.game, s = g.stage, p = s.player;
+    const x = lower ? [0, 2450, 5500, 5500, 2450, 5500, 2450][land] : 650;
+    const y = lower ? [0, 900, 900, 1020, 1050, 960, 960][land] : 450;
+    p.x = x; p.y = y; p.prevX = x; p.prevY = y;
+    s.prevPlayerX = x; s.prevPlayerY = y;
+    p.vx = 0; p.vy = 0; p.onGround = true;
+    g.camX = x - 260; g.paused = true; g.banners = [];
+    if (params.has('reduce')) g.reduceMotion = true;
+    document.title = s.def.name + (lower ? ' · lower room' : ' · surface');
+    window.reviewReady = true;
+  }, 30);
+});
+</script>
+</html>

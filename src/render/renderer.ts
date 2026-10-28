@@ -135,7 +135,8 @@ export class Renderer {
     world.drawProps(ctx, s.terrain, camX, worldW, sceneryTime(game.time,game.reduceMotion), game.gateOpen);
     this.production.props(ctx,s.def.theme,camX,camTop,worldW,l.viewH/Z,game.time,game.reduceMotion);
     this.drawExit(game);
-    world.drawTerrain(ctx, s.terrain, camX, worldW, game.time,Math.max(VIEW_H,camTop+l.viewH/Z));
+    const backdropOpacity=s.def.id===0?1:1-.82*this.production.lowerRoomCoverage(s.def.theme,s.player.y);
+    world.drawTerrain(ctx, s.terrain, camX, worldW, game.time,Math.max(VIEW_H,camTop+l.viewH/Z),backdropOpacity);
     this.production.surfaces(ctx,s.def.theme,s.terrain,camX,camTop,worldW,l.viewH/Z);
     if(s.def.id===0)this.drawDesertLandmarks(game);
     if (!game.demo) for (const sign of s.def.signs.filter(q=>Math.abs(q.x-s.player.x)<170).sort((a,b)=>Math.abs(a.x-s.player.x)-Math.abs(b.x-s.player.x)).slice(0,1)) this.drawSign(sign, s.terrain.groundAt(sign.x) ?? 450, inputMode);

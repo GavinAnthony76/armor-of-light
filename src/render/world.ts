@@ -373,12 +373,16 @@ export class WorldView {
   }
 
   /** Ground blocks, platforms and water. World space. */
-  drawTerrain(ctx: CanvasRenderingContext2D, terrain: Terrain, camX: number, viewW: number, time: number, bottom=VIEW_H): void {
+  drawTerrain(ctx: CanvasRenderingContext2D, terrain: Terrain, camX: number, viewW: number, time: number, bottom=VIEW_H, backdropOpacity=1): void {
     if(this.masonry?.complete&&this.masonry.naturalWidth&&!this.masonryPattern){const tile=document.createElement('canvas');tile.width=tile.height=256;tile.getContext('2d')!.drawImage(this.masonry,0,0,256,256);this.masonryPattern=ctx.createPattern(tile,'repeat');}
     const pal = this.def.id===0&&bottom>800?{...this.pal,groundTop:'#b4ad91',groundA:'#5c5651',groundB:'#26313d',groundEdge:'#172b35',platTop:'#a8a58f',platBody:'#4a5560'}:this.pal;
     const x0 = camX - 40;
     const x1 = camX + viewW + 40;
 
+    // Full-screen void/water wash used to hide every lower-room background.
+    // Fade only that wash over ready painted rooms, never solid terrain below.
+    ctx.save();
+    ctx.globalAlpha *= backdropOpacity;
     if (pal.water) {
       // water fills everything below the banks
       const wy = 462;
@@ -407,6 +411,7 @@ export class WorldView {
       ctx.fillStyle = '#1b1020';
       ctx.fillRect(x0, this.def.id===0?1050:470, x1 - x0, bottom);
     }
+    ctx.restore();
 
     for (const s of terrain.ground) {
       if(s.y<-1000)continue;

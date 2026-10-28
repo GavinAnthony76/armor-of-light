@@ -14,7 +14,7 @@
     "posttest": "npm run test:enemies && npm run test:enemy-silhouettes",
     "test:e2e": "python3 tests/e2e.py",
     "test:bundles": "node tests/verify-bundles.mjs",
-    "test:art": "node --import tsx tests/atmosphere.ts && node --import tsx tests/production-pack.ts && node --import tsx tests/painted-enemies.ts",
+    "test:art": "node --import tsx tests/atmosphere.ts && node --import tsx tests/production-pack.ts && node --import tsx tests/painted-enemies.ts && node --import tsx tests/painted-lands.ts",
     "test:enemies": "node --import tsx tests/painted-enemies.ts",
     "test:enemy-silhouettes": "node tests/painted-enemy-silhouettes.mjs"
   },

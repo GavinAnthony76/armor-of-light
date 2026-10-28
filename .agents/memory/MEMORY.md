@@ -3,3 +3,4 @@
 - [Timed combat browser tests](browser-combat-testing.md) — sample within animation windows; use trusted low-level touch rather than locator tap auto-waits.
 - [Art production direction](art-production.md) — Phase 2 uses externally approved painted art; preserve the combat engine and keep infrastructure separate from assets.
 - [Starter audio approval](starter-audio-approval.md) — user approved suitable starter effects only; draft music and unmatched event triggers remain excluded.
+- [Painted export pitfalls](painted-export-pitfalls.md) — preserve alpha through ImageMagick extent; verify final scene pixels, not only successful image loading.

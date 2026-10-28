@@ -3,9 +3,14 @@ import type { Enemy } from '../core/enemy';
 import type { Particle } from '../render/fx';
 import type { Difficulty } from '../core/config';
 import type { Terrain } from '../core/terrain';
-import type { BodyArt, Clip } from './types';
+import type { BodyArt, Clip, SceneLayer } from './types';
 import { productionAssets, type ProductionAssets } from './assets';
 import { drawPaintedEnemyBody } from '../render/painted-enemy';
+
+export function layerDepthAlpha(layer:SceneLayer,focusY:number):number {
+  const fade=layer.fadeY??0;
+  return layer.depth?(focusY<layer.depth[0]||focusY>layer.depth[1]?0:fade?Math.min(1,(focusY-layer.depth[0])/fade,(layer.depth[1]-focusY)/fade):1):1;
+}
 
 export function frameIndex(clip:Clip,time:number,duration?:number,still=false):number {
   if(still)return clip.frames[0];
@@ -74,11 +79,22 @@ export class ProductionScene {
     }
     return this.actor(ids,v.key,v.time,v.duration,ctx,e.x,e.y,e.facing);
   }
+  /** Only a decoded lower-room painting can soften the old full-screen void.
+   * This is NOT terrain opacity: solid blocks and water hazards stay intact.
+   */
+  lowerRoomCoverage(theme:string,focusY:number):number {
+    let coverage=0;
+    for(const l of this.assets.manifest.lands[theme]?.layers??[]){
+      if(l.plane!=='background'||!l.depth||l.depth[0]<450)continue;
+      const alpha=layerDepthAlpha(l,focusY)*(l.opacity??1);
+      if(alpha>0&&this.assets.image(l.image))coverage=Math.max(coverage,alpha);
+    }
+    return coverage;
+  }
   layers(ctx:CanvasRenderingContext2D,theme:string,plane:'background'|'foreground',camX:number,camY:number,viewW:number,viewH:number,still=false,focusY=camY+viewH/2):void {
     for(const l of this.assets.manifest.lands[theme]?.layers??[]){
       if(l.plane!==plane)continue;
-      const fade=l.fadeY??0;
-      const depthAlpha=l.depth?(focusY<l.depth[0]||focusY>l.depth[1]?0:fade?Math.min(1,(focusY-l.depth[0])/fade,(l.depth[1]-focusY)/fade):1):1;
+      const depthAlpha=layerDepthAlpha(l,focusY);
       if(depthAlpha<=0)continue;
       const spec=this.assets.manifest.images[l.image],im=this.assets.image(l.image);
       if(!im)continue;

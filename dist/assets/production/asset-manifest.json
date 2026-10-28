@@ -85,30 +85,6 @@
       "source": "Dark steel painted armor variant",
       "license": "Generated for project use"
     },
-    "desert-ruins-painted": {
-      "src": "assets/production/world/desert/painted-ruins.webp",
-      "width": 1024,
-      "height": 640,
-      "anchor": [
-        0,
-        0
-      ],
-      "scale": 1,
-      "source": "Recreated from approved Complete Game Asset Showcase",
-      "license": "Generated for project use"
-    },
-    "desert-pillars-painted": {
-      "src": "assets/production/world/desert/parallax-pillars.webp",
-      "width": 1536,
-      "height": 512,
-      "anchor": [
-        0,
-        0
-      ],
-      "scale": 1,
-      "source": "Separated recreated scenery tower",
-      "license": "Generated for project use"
-    },
     "desert-pillar": {
       "src": "assets/production/world/desert/pillar.webp",
       "width": 128,
@@ -372,6 +348,222 @@
       "scale": 0.5,
       "source": "Recreated from the user-approved Armor of Light Complete Game Asset Showcase and Game Asset Bible; six-body painted source, articulated in the original combat poses.",
       "license": "Generated artwork for this project under generation service terms; user-authorized recreation from supplied art direction."
+    },
+    "flood-painted-sky": {
+      "src": "assets/production/world/flood/flood-painted-sky.webp",
+      "width": 512,
+      "height": 170,
+      "anchor": [
+        0,
+        0
+      ],
+      "scale": 1,
+      "source": "AI-generated flood three-panel scenery, adapted from the user-supplied Armor of Light Game Asset Bible / Complete Game Asset Showcase direction with user authorization. Source: generated-artifacts/painted-flood-sheet.png.",
+      "license": "Generated artwork for this project under generation-service terms; user-supplied reference direction used with user authorization. Verify reference rights before public release."
+    },
+    "flood-painted-mid": {
+      "src": "assets/production/world/flood/flood-painted-mid.webp",
+      "width": 512,
+      "height": 170,
+      "anchor": [
+        0,
+        0
+      ],
+      "scale": 1,
+      "source": "AI-generated flood three-panel scenery, adapted from the user-supplied Armor of Light Game Asset Bible / Complete Game Asset Showcase direction with user authorization. Source: generated-artifacts/painted-flood-sheet.png.",
+      "license": "Generated artwork for this project under generation-service terms; user-supplied reference direction used with user authorization. Verify reference rights before public release."
+    },
+    "flood-painted-lower": {
+      "src": "assets/production/world/flood/flood-painted-lower.webp",
+      "width": 512,
+      "height": 170,
+      "anchor": [
+        0,
+        0
+      ],
+      "scale": 1,
+      "source": "AI-generated flood three-panel scenery, adapted from the user-supplied Armor of Light Game Asset Bible / Complete Game Asset Showcase direction with user authorization. Source: generated-artifacts/painted-flood-sheet.png.",
+      "license": "Generated artwork for this project under generation-service terms; user-supplied reference direction used with user authorization. Verify reference rights before public release."
+    },
+    "garden-painted-sky": {
+      "src": "assets/production/world/garden/garden-painted-sky.webp",
+      "width": 512,
+      "height": 170,
+      "anchor": [
+        0,
+        0
+      ],
+      "scale": 1,
+      "source": "AI-generated garden three-panel scenery, adapted from the user-supplied Armor of Light Game Asset Bible / Complete Game Asset Showcase direction with user authorization. Source: generated-artifacts/painted-garden-sheet.png.",
+      "license": "Generated artwork for this project under generation-service terms; user-supplied reference direction used with user authorization. Verify reference rights before public release."
+    },
+    "garden-painted-mid": {
+      "src": "assets/production/world/garden/garden-painted-mid.webp",
+      "width": 512,
+      "height": 170,
+      "anchor": [
+        0,
+        0
+      ],
+      "scale": 1,
+      "source": "AI-generated garden three-panel scenery, adapted from the user-supplied Armor of Light Game Asset Bible / Complete Game Asset Showcase direction with user authorization. Source: generated-artifacts/painted-garden-sheet.png.",
+      "license": "Generated artwork for this project under generation-service terms; user-supplied reference direction used with user authorization. Verify reference rights before public release."
+    },
+    "garden-painted-lower": {
+      "src": "assets/production/world/garden/garden-painted-lower.webp",
+      "width": 512,
+      "height": 170,
+      "anchor": [
+        0,
+        0
+      ],
+      "scale": 1,
+      "source": "AI-generated garden three-panel scenery, adapted from the user-supplied Armor of Light Game Asset Bible / Complete Game Asset Showcase direction with user authorization. Source: generated-artifacts/painted-garden-sheet.png.",
+      "license": "Generated artwork for this project under generation-service terms; user-supplied reference direction used with user authorization. Verify reference rights before public release."
+    },
+    "mountain-painted-sky": {
+      "src": "assets/production/world/mountain/mountain-painted-sky.webp",
+      "width": 512,
+      "height": 170,
+      "anchor": [
+        0,
+        0
+      ],
+      "scale": 1,
+      "source": "AI-generated mountain three-panel scenery, adapted from the user-supplied Armor of Light Game Asset Bible / Complete Game Asset Showcase direction with user authorization. Source: generated-artifacts/painted-mountain-sheet.png.",
+      "license": "Generated artwork for this project under generation-service terms; user-supplied reference direction used with user authorization. Verify reference rights before public release."
+    },
+    "mountain-painted-mid": {
+      "src": "assets/production/world/mountain/mountain-painted-mid.webp",
+      "width": 512,
+      "height": 170,
+      "anchor": [
+        0,
+        0
+      ],
+      "scale": 1,
+      "source": "AI-generated mountain three-panel scenery, adapted from the user-supplied Armor of Light Game Asset Bible / Complete Game Asset Showcase direction with user authorization. Source: generated-artifacts/painted-mountain-sheet.png.",
+      "license": "Generated artwork for this project under generation-service terms; user-supplied reference direction used with user authorization. Verify reference rights before public release."
+    },
+    "mountain-painted-lower": {
+      "src": "assets/production/world/mountain/mountain-painted-lower.webp",
+      "width": 512,
+      "height": 170,
+      "anchor": [
+        0,
+        0
+      ],
+      "scale": 1,
+      "source": "AI-generated mountain three-panel scenery, adapted from the user-supplied Armor of Light Game Asset Bible / Complete Game Asset Showcase direction with user authorization. Source: generated-artifacts/painted-mountain-sheet.png.",
+      "license": "Generated artwork for this project under generation-service terms; user-supplied reference direction used with user authorization. Verify reference rights before public release."
+    },
+    "valley-painted-sky": {
+      "src": "assets/production/world/valley/valley-painted-sky.webp",
+      "width": 512,
+      "height": 170,
+      "anchor": [
+        0,
+        0
+      ],
+      "scale": 1,
+      "source": "AI-generated valley three-panel scenery, adapted from the user-supplied Armor of Light Game Asset Bible / Complete Game Asset Showcase direction with user authorization. Source: generated-artifacts/painted-valley-sheet.png.",
+      "license": "Generated artwork for this project under generation-service terms; user-supplied reference direction used with user authorization. Verify reference rights before public release."
+    },
+    "valley-painted-mid": {
+      "src": "assets/production/world/valley/valley-painted-mid.webp",
+      "width": 512,
+      "height": 170,
+      "anchor": [
+        0,
+        0
+      ],
+      "scale": 1,
+      "source": "AI-generated valley three-panel scenery, adapted from the user-supplied Armor of Light Game Asset Bible / Complete Game Asset Showcase direction with user authorization. Source: generated-artifacts/painted-valley-sheet.png.",
+      "license": "Generated artwork for this project under generation-service terms; user-supplied reference direction used with user authorization. Verify reference rights before public release."
+    },
+    "valley-painted-lower": {
+      "src": "assets/production/world/valley/valley-painted-lower.webp",
+      "width": 512,
+      "height": 170,
+      "anchor": [
+        0,
+        0
+      ],
+      "scale": 1,
+      "source": "AI-generated valley three-panel scenery, adapted from the user-supplied Armor of Light Game Asset Bible / Complete Game Asset Showcase direction with user authorization. Source: generated-artifacts/painted-valley-sheet.png.",
+      "license": "Generated artwork for this project under generation-service terms; user-supplied reference direction used with user authorization. Verify reference rights before public release."
+    },
+    "city-painted-sky": {
+      "src": "assets/production/world/city/city-painted-sky.webp",
+      "width": 512,
+      "height": 170,
+      "anchor": [
+        0,
+        0
+      ],
+      "scale": 1,
+      "source": "AI-generated city three-panel scenery, adapted from the user-supplied Armor of Light Game Asset Bible / Complete Game Asset Showcase direction with user authorization. Source: generated-artifacts/painted-city-sheet.png.",
+      "license": "Generated artwork for this project under generation-service terms; user-supplied reference direction used with user authorization. Verify reference rights before public release."
+    },
+    "city-painted-mid": {
+      "src": "assets/production/world/city/city-painted-mid.webp",
+      "width": 512,
+      "height": 170,
+      "anchor": [
+        0,
+        0
+      ],
+      "scale": 1,
+      "source": "AI-generated city three-panel scenery, adapted from the user-supplied Armor of Light Game Asset Bible / Complete Game Asset Showcase direction with user authorization. Source: generated-artifacts/painted-city-sheet.png.",
+      "license": "Generated artwork for this project under generation-service terms; user-supplied reference direction used with user authorization. Verify reference rights before public release."
+    },
+    "city-painted-lower": {
+      "src": "assets/production/world/city/city-painted-lower.webp",
+      "width": 512,
+      "height": 170,
+      "anchor": [
+        0,
+        0
+      ],
+      "scale": 1,
+      "source": "AI-generated city three-panel scenery, adapted from the user-supplied Armor of Light Game Asset Bible / Complete Game Asset Showcase direction with user authorization. Source: generated-artifacts/painted-city-sheet.png.",
+      "license": "Generated artwork for this project under generation-service terms; user-supplied reference direction used with user authorization. Verify reference rights before public release."
+    },
+    "river-painted-sky": {
+      "src": "assets/production/world/river/river-painted-sky.webp",
+      "width": 512,
+      "height": 170,
+      "anchor": [
+        0,
+        0
+      ],
+      "scale": 1,
+      "source": "AI-generated river three-panel scenery, adapted from the user-supplied Armor of Light Game Asset Bible / Complete Game Asset Showcase direction with user authorization. Source: generated-artifacts/painted-river-sheet.png.",
+      "license": "Generated artwork for this project under generation-service terms; user-supplied reference direction used with user authorization. Verify reference rights before public release."
+    },
+    "river-painted-mid": {
+      "src": "assets/production/world/river/river-painted-mid.webp",
+      "width": 512,
+      "height": 170,
+      "anchor": [
+        0,
+        0
+      ],
+      "scale": 1,
+      "source": "AI-generated river three-panel scenery, adapted from the user-supplied Armor of Light Game Asset Bible / Complete Game Asset Showcase direction with user authorization. Source: generated-artifacts/painted-river-sheet.png.",
+      "license": "Generated artwork for this project under generation-service terms; user-supplied reference direction used with user authorization. Verify reference rights before public release."
+    },
+    "river-painted-lower": {
+      "src": "assets/production/world/river/river-painted-lower.webp",
+      "width": 512,
+      "height": 170,
+      "anchor": [
+        0,
+        0
+      ],
+      "scale": 1,
+      "source": "AI-generated river three-panel scenery, adapted from the user-supplied Armor of Light Game Asset Bible / Complete Game Asset Showcase direction with user authorization. Source: generated-artifacts/painted-river-sheet.png.",
+      "license": "Generated artwork for this project under generation-service terms; user-supplied reference direction used with user authorization. Verify reference rights before public release."
     }
   },
   "clips": {
@@ -1367,7 +1559,64 @@
       }
     },
     "flood": {
-      "layers": [],
+      "layers": [
+        {
+          "image": "flood-painted-sky",
+          "plane": "background",
+          "height": 540,
+          "speedX": 0.035,
+          "speedY": 0,
+          "cover": true,
+          "depth": [
+            -2000,
+            720
+          ],
+          "fadeY": 120
+        },
+        {
+          "image": "flood-painted-mid",
+          "plane": "background",
+          "height": 500,
+          "y": 70,
+          "speedX": 0.28,
+          "speedY": 0,
+          "cover": true,
+          "opacity": 0.48,
+          "depth": [
+            -2000,
+            660
+          ],
+          "fadeY": 100
+        },
+        {
+          "image": "flood-painted-mid",
+          "plane": "foreground",
+          "height": 620,
+          "y": 220,
+          "speedX": 0.85,
+          "speedY": 0,
+          "cover": true,
+          "opacity": 0.1,
+          "depth": [
+            -2000,
+            660
+          ],
+          "fadeY": 100
+        },
+        {
+          "image": "flood-painted-lower",
+          "plane": "background",
+          "height": 540,
+          "speedX": 0.12,
+          "speedY": 0,
+          "cover": true,
+          "depth": [
+            500,
+            2400
+          ],
+          "fadeY": 180
+        }
+      ],
       "props": [],
       "surfaces": {
         "ground": "flood-stone",
@@ -1375,7 +1624,64 @@
       }
     },
     "garden": {
-      "layers": [],
+      "layers": [
+        {
+          "image": "garden-painted-sky",
+          "plane": "background",
+          "height": 540,
+          "speedX": 0.035,
+          "speedY": 0,
+          "cover": true,
+          "depth": [
+            -2000,
+            720
+          ],
+          "fadeY": 120
+        },
+        {
+          "image": "garden-painted-mid",
+          "plane": "background",
+          "height": 500,
+          "y": 70,
+          "speedX": 0.28,
+          "speedY": 0,
+          "cover": true,
+          "opacity": 0.48,
+          "depth": [
+            -2000,
+            660
+          ],
+          "fadeY": 100
+        },
+        {
+          "image": "garden-painted-mid",
+          "plane": "foreground",
+          "height": 620,
+          "y": 220,
+          "speedX": 0.85,
+          "speedY": 0,
+          "cover": true,
+          "opacity": 0.1,
+          "depth": [
+            -2000,
+            660
+          ],
+          "fadeY": 100
+        },
+        {
+          "image": "garden-painted-lower",
+          "plane": "background",
+          "height": 540,
+          "speedX": 0.12,
+          "speedY": 0,
+          "cover": true,
+          "depth": [
+            500,
+            2400
+          ],
+          "fadeY": 180
+        }
+      ],
       "props": [],
       "surfaces": {
         "ground": "garden-stone",
@@ -1383,7 +1689,64 @@
       }
     },
     "mountain": {
-      "layers": [],
+      "layers": [
+        {
+          "image": "mountain-painted-sky",
+          "plane": "background",
+          "height": 540,
+          "speedX": 0.035,
+          "speedY": 0,
+          "cover": true,
+          "depth": [
+            -2000,
+            840
+          ],
+          "fadeY": 120
+        },
+        {
+          "image": "mountain-painted-mid",
+          "plane": "background",
+          "height": 500,
+          "y": 70,
+          "speedX": 0.28,
+          "speedY": 0,
+          "cover": true,
+          "opacity": 0.48,
+          "depth": [
+            -2000,
+            780
+          ],
+          "fadeY": 100
+        },
+        {
+          "image": "mountain-painted-mid",
+          "plane": "foreground",
+          "height": 620,
+          "y": 220,
+          "speedX": 0.85,
+          "speedY": 0,
+          "cover": true,
+          "opacity": 0.1,
+          "depth": [
+            -2000,
+            780
+          ],
+          "fadeY": 100
+        },
+        {
+          "image": "mountain-painted-lower",
+          "plane": "background",
+          "height": 540,
+          "speedX": 0.12,
+          "speedY": 0,
+          "cover": true,
+          "depth": [
+            620,
+            2400
+          ],
+          "fadeY": 180
+        }
+      ],
       "props": [],
       "surfaces": {
         "ground": "mountain-stone",
@@ -1391,7 +1754,64 @@
       }
     },
     "valley": {
-      "layers": [],
+      "layers": [
+        {
+          "image": "valley-painted-sky",
+          "plane": "background",
+          "height": 540,
+          "speedX": 0.035,
+          "speedY": 0,
+          "cover": true,
+          "depth": [
+            -2000,
+            870
+          ],
+          "fadeY": 120
+        },
+        {
+          "image": "valley-painted-mid",
+          "plane": "background",
+          "height": 500,
+          "y": 70,
+          "speedX": 0.28,
+          "speedY": 0,
+          "cover": true,
+          "opacity": 0.48,
+          "depth": [
+            -2000,
+            810
+          ],
+          "fadeY": 100
+        },
+        {
+          "image": "valley-painted-mid",
+          "plane": "foreground",
+          "height": 620,
+          "y": 220,
+          "speedX": 0.85,
+          "speedY": 0,
+          "cover": true,
+          "opacity": 0.1,
+          "depth": [
+            -2000,
+            810
+          ],
+          "fadeY": 100
+        },
+        {
+          "image": "valley-painted-lower",
+          "plane": "background",
+          "height": 540,
+          "speedX": 0.12,
+          "speedY": 0,
+          "cover": true,
+          "depth": [
+            650,
+            2400
+          ],
+          "fadeY": 180
+        }
+      ],
       "props": [],
       "surfaces": {
         "ground": "valley-stone",
@@ -1399,7 +1819,64 @@
       }
     },
     "city": {
-      "layers": [],
+      "layers": [
+        {
+          "image": "city-painted-sky",
+          "plane": "background",
+          "height": 540,
+          "speedX": 0.035,
+          "speedY": 0,
+          "cover": true,
+          "depth": [
+            -2000,
+            780
+          ],
+          "fadeY": 120
+        },
+        {
+          "image": "city-painted-mid",
+          "plane": "background",
+          "height": 500,
+          "y": 70,
+          "speedX": 0.28,
+          "speedY": 0,
+          "cover": true,
+          "opacity": 0.48,
+          "depth": [
+            -2000,
+            720
+          ],
+          "fadeY": 100
+        },
+        {
+          "image": "city-painted-mid",
+          "plane": "foreground",
+          "height": 620,
+          "y": 220,
+          "speedX": 0.85,
+          "speedY": 0,
+          "cover": true,
+          "opacity": 0.1,
+          "depth": [
+            -2000,
+            720
+          ],
+          "fadeY": 100
+        },
+        {
+          "image": "city-painted-lower",
+          "plane": "background",
+          "height": 540,
+          "speedX": 0.12,
+          "speedY": 0,
+          "cover": true,
+          "depth": [
+            560,
+            2400
+          ],
+          "fadeY": 180
+        }
+      ],
       "props": [],
       "surfaces": {
         "ground": "city-stone",
@@ -1407,7 +1884,64 @@
       }
     },
     "river": {
-      "layers": [],
+      "layers": [
+        {
+          "image": "river-painted-sky",
+          "plane": "background",
+          "height": 540,
+          "speedX": 0.035,
+          "speedY": 0,
+          "cover": true,
+          "depth": [
+            -2000,
+            780
+          ],
+          "fadeY": 120
+        },
+        {
+          "image": "river-painted-mid",
+          "plane": "background",
+          "height": 500,
+          "y": 70,
+          "speedX": 0.28,
+          "speedY": 0,
+          "cover": true,
+          "opacity": 0.48,
+          "depth": [
+            -2000,
+            720
+          ],
+          "fadeY": 100
+        },
+        {
+          "image": "river-painted-mid",
+          "plane": "foreground",
+          "height": 620,
+          "y": 220,
+          "speedX": 0.85,
+          "speedY": 0,
+          "cover": true,
+          "opacity": 0.1,
+          "depth": [
+            -2000,
+            720
+          ],
+          "fadeY": 100
+        },
+        {
+          "image": "river-painted-lower",
+          "plane": "background",
+          "height": 540,
+          "speedX": 0.12,
+          "speedY": 0,
+          "cover": true,
+          "depth": [
+            560,
+            2400
+          ],
+          "fadeY": 180
+        }
+      ],
       "props": [],
       "surfaces": {
         "ground": "river-stone",
