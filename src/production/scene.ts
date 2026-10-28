@@ -13,6 +13,13 @@ export function layerDepthAlpha(layer:SceneLayer,focusY:number):number {
   return layer.depth?(focusY<layer.depth[0]||focusY>layer.depth[1]?0:fade?Math.min(1,(focusY-layer.depth[0])/fade,(layer.depth[1]-focusY)/fade):1):1;
 }
 
+function layerBounds(l:SceneLayer,sw:number,sh:number,camX:number,camY:number,viewW:number,viewH:number,still:boolean) {
+  const h=l.cover?Math.max(l.height,viewH,viewW*sh/sw):l.height,w=h*sw/sh;
+  const y=(l.y??0)-(still?0:camY*l.speedY),offset=still?0:camX*l.speedX;
+  const x=(l.x??0)-(l.repeatX?((offset%w)+w)%w:l.cover?Math.min(Math.max(0,w-viewW),Math.max(0,offset)):offset);
+  return {x,y,w,h};
+}
+
 export function frameIndex(clip:Clip,time:number,duration?:number,still=false):number {
   if(still)return clip.frames[0];
   const n=duration&&duration>0?Math.floor(Math.max(0,time)/duration*clip.frames.length):Math.floor(Math.max(0,time)*clip.fps);
@@ -98,6 +105,17 @@ export class ProductionScene {
     }
     return coverage;
   }
+  /** Skip hidden work only when a fully opaque, resident layer covers the viewport. */
+  coversBackground(theme:string,camX:number,camY:number,viewW:number,viewH:number,still=false,focusY=camY+viewH/2):boolean {
+    for(const l of this.assets.manifest.lands[theme]?.layers??[]){
+      if(l.plane!=='background'||(l.opacity??1)*layerDepthAlpha(l,focusY)!==1)continue;
+      const spec=this.assets.manifest.images[l.image];
+      const {x,y,w,h}=layerBounds(l,spec.frame?.width??spec.width,spec.frame?.height??spec.height,camX,camY,viewW,viewH,still);
+      if(x>0||(!l.repeatX&&x+w<viewW)||y>0||y+h<viewH)continue;
+      if(this.assets.opaqueImage(l.image))return true;
+    }
+    return false;
+  }
   layers(ctx:CanvasRenderingContext2D,theme:string,plane:'background'|'foreground',camX:number,camY:number,viewW:number,viewH:number,still=false,focusY=camY+viewH/2):void {
     for(const l of this.assets.manifest.lands[theme]?.layers??[]){
       if(l.plane!==plane)continue;
@@ -106,10 +124,7 @@ export class ProductionScene {
       const spec=this.assets.manifest.images[l.image],im=this.assets.image(l.image);
       if(!im)continue;
       const sw=spec.frame?.width??spec.width,sh=spec.frame?.height??spec.height;
-      const h=l.cover?Math.max(l.height,viewH,viewW*sh/sw):l.height,w=h*sw/sh;
-      const y=(l.y??0)-(still?0:camY*l.speedY);
-      const offset=still?0:camX*l.speedX;
-      const x=(l.x??0)-(l.repeatX?((offset%w)+w)%w:l.cover?Math.min(Math.max(0,w-viewW),Math.max(0,offset)):offset);
+      const {x,y,w,h}=layerBounds(l,sw,sh,camX,camY,viewW,viewH,still);
       ctx.save();ctx.globalAlpha=(l.opacity??(plane==='foreground'?.25:1))*depthAlpha;
       for(let xx=x;xx<viewW;xx+=w){ctx.drawImage(im,0,0,sw,sh,xx,y,w,h);if(!l.repeatX)break;}
       ctx.restore();

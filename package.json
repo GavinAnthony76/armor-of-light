@@ -16,6 +16,7 @@
     "test:bundles": "node tests/verify-bundles.mjs",
     "test:art": "node --import tsx tests/atmosphere.ts && node --import tsx tests/production-pack.ts && node --import tsx tests/painted-enemies.ts && node --import tsx tests/painted-lands.ts",
     "test:scenery-journey": "python3 tests/scenery-journey-browser.py",
+    "test:background-occlusion": "python3 tests/background-occlusion-browser.py",
     "test:title": "node --import tsx tests/title-scene.ts",
     "test:enemies": "node --import tsx tests/painted-enemies.ts",
     "test:enemy-silhouettes": "node tests/painted-enemy-silhouettes.mjs",

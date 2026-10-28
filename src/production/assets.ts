@@ -28,6 +28,7 @@ export class ProductionAssets {
   private loaded=new Set<string>();
   private loads=0;
   private materialChecks=new WeakMap<HTMLImageElement,Map<string,boolean>>();
+  private opacityChecks=new WeakMap<HTMLImageElement,boolean>();
   private reloads=0;
   private evictions=0;
   private peakBytes=0;
@@ -40,6 +41,20 @@ export class ProductionAssets {
     private makeImage:()=>HTMLImageElement=()=>new Image(),
     private readPixels:(im:HTMLImageElement,rect:SourceRect)=>Uint8ClampedArray=readMaterialPixels,
   ){}
+  /** Audit decoded pixels once per image identity; metadata alone cannot hide fallback. */
+  opaqueImage(id:string):HTMLImageElement|null {
+    const im=this.image(id);if(!im)return null;
+    if(!this.opacityChecks.has(im)){
+      let opaque=false;
+      try{
+        const data=this.readPixels(im,[0,0,im.naturalWidth,im.naturalHeight]);
+        opaque=data.length===im.naturalWidth*im.naturalHeight*4;
+        for(let i=3;opaque&&i<data.length;i+=4)if(data[i]!==255)opaque=false;
+      }catch{/* Unreadable images retain the complete procedural background. */}
+      this.opacityChecks.set(im,opaque);
+    }
+    return this.opacityChecks.get(im)?im:null;
+  }
   /** Check each decoded source/rectangle once, outside the repeated drawing path. */
   materialImage(id:string,samples:NonNullable<EnemyPresentation['samples']>):HTMLImageElement|undefined {
     const im=this.image(id);if(!im)return undefined;
