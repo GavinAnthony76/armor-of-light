@@ -1,4 +1,5 @@
 import { showOpening } from './ui/opening';
+import { productionAssets } from './production/assets';
 import { showChapterIntro } from './ui/chapter';
 import './polyfill';
 import './style.css';
@@ -253,7 +254,7 @@ async function boot(): Promise<void> {
   if (params.has('debug')) {
     game.speed = Math.max(1, Math.min(8, Number(params.get('speed')) || 1));
     if(params.has('qa'))void import('./qa').then(m=>m.mountQA(game,save,startLevel,audio));
-    (window as unknown as Record<string, unknown>).__aol = { game, save, ui, startLevel, getState: () => state, input, audio };
+    (window as unknown as Record<string, unknown>).__aol = { game, save, ui, startLevel, getState: () => state, input, audio, productionAssets };
   }
 }
 

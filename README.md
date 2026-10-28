@@ -1,5 +1,9 @@
 # Current campaign development milestone
 
+Phase 2 asset integration infrastructure is ready without replacing artwork.
+See [the production asset handoff](docs/PRODUCTION_ASSET_INTEGRATION.md) for exact
+formats, atlas pivots, state mappings, layer rules, audio limits and approval gates.
+
 All seven lands now have playable routes. The six later lands have distinct
 vertical elevation profiles, optional secret trails, two named elite mini-bosses
 and gated crossings each, plus their final guardian. Treasure chests contain

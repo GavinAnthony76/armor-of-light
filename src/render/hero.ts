@@ -1,4 +1,5 @@
 import { drawWeapon } from './weapons';
+import type { BodyArt } from '../production/types';
 import { WEAPONS } from '../core/weapons';
 import type { Player } from '../core/player';
 
@@ -208,7 +209,7 @@ export class HeroView {
     while(this.capeAccumulator>=1/120){this.stepCape(W({x:neck.x-4,y:neck.y+2}),p,1/120);this.capeAccumulator-=1/120;}
   }
 
-  draw(ctx: CanvasRenderingContext2D, p: Player, alpha = 1): void {
+  draw(ctx: CanvasRenderingContext2D, p: Player, alpha = 1, art?:BodyArt): void {
     const pose = this.pose;
     const f = p.facing;
 
@@ -262,6 +263,10 @@ export class HeroView {
       ctx.fill();
     }
 
+    // Only an explicitly approved, ready mapped clip can replace the body.
+    // Procedural hands, shield, weapons, cape and trails remain authoritative.
+    const replaced=art?.mode==='replace'&&art.draw();
+    if(!replaced){
     // back leg
     this.limb(ctx, hip, lb.knee, lb.foot, 7, C.steelMid);
     this.boot(ctx, lb.foot, lb.sa, C.steelDark);
@@ -338,6 +343,9 @@ export class HeroView {
     ctx.fillRect(4.5, -2, 5, 2);
     ctx.globalAlpha = alpha;
     ctx.restore();
+
+    }
+    if(art?.mode==='overlay')art.draw();
 
     // shield arm + shield
     this.limb(ctx, shoulder, ah.elbow, ah.hand, 6, C.steelMid);

@@ -116,16 +116,20 @@ function legs(ctx: Ctx, e: Enemy, m: Mat, hipY: number, spread: number, len: num
   }
 }
 
-export function drawEnemy(ctx: Ctx, e: Enemy, diff: Difficulty, time: number): void {
+export function drawEnemy(ctx: Ctx, e: Enemy, diff: Difficulty, time: number, art?:import('../production/types').BodyArt): void {
   ctx.save();
   let alpha = 1;
   if (e.state === 'dying') alpha = Math.max(0, 1 - e.t / 0.6);
   if (e.state === 'spawn') alpha = Math.min(1, e.t / 0.5);
   ctx.globalAlpha = alpha;
+  if(art?.mode==='replace'&&art.draw()){
+    ctx.restore();drawWarning(ctx,e,diff,time);return;
+  }
 
   if (e.kind === 'serpent') {
     drawSerpent(ctx, e, diff, time);
     ctx.restore();
+    if(art?.mode==='overlay'){ctx.save();ctx.globalAlpha=alpha;art.draw();ctx.restore();}
     drawWarning(ctx, e, diff, time);
     return;
   }
@@ -189,6 +193,7 @@ export function drawEnemy(ctx: Ctx, e: Enemy, diff: Difficulty, time: number): v
     else {ctx.beginPath();ctx.arc(0,y,30,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(-45,-70);ctx.lineTo(-65+Math.sin(time*4)*8,-160);ctx.moveTo(45,-70);ctx.lineTo(65,-160);ctx.stroke();}
   }
   ctx.restore();
+  if(art?.mode==='overlay'){ctx.save();ctx.globalAlpha=alpha;art.draw();ctx.restore();}
   drawWarning(ctx, e, diff, time);
 }
 

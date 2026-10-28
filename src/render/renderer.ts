@@ -8,6 +8,8 @@ import type { Game } from '../game';
 import type { InputMode } from '../input';
 import { drawEnemy, WARN_RED } from './shadows';
 import { drawJourney } from './journey';
+import { productionAssets } from '../production/assets';
+import { ProductionScene } from '../production/scene';
 
 export interface Layout {
   w: number; // CSS px viewport
@@ -66,10 +68,12 @@ export class Renderer {
   readonly ctx: CanvasRenderingContext2D;
   layout: Layout;
   private desertArt:HTMLImageElement[]=[];
+  private production=new ProductionScene();
 
   constructor(readonly canvas: HTMLCanvasElement) {
     this.ctx = canvas.getContext('2d', { alpha: false })!;
     this.layout = this.resize();
+    void productionAssets.load();
     this.desertArt=['desert-sky-v2.webp','desert-aqueduct-v2.webp','desert-archive-v2.webp'].map(name=>{const im=new Image();im.src=asset('assets/'+name);return im;});
   }
 
@@ -97,6 +101,7 @@ export class Renderer {
     ctx.fillStyle = '#100b18';
     ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     if (!s || !game.world) return;
+    productionAssets.beginFrame();
     const Z = l.zoom;
     const worldW = l.viewW / Z;
     const camTop = cameraTop(l.viewH,s.player.y,Z,l.touch&&!l.portrait?Math.max(90,106/l.scale):90)+Math.max(0,s.player.y-450);
@@ -116,6 +121,9 @@ export class Renderer {
 
     if(s.def.id===0)this.drawDesertDepth(game);
     else world.drawBackground(ctx, game.camX, l.viewW, game.time,l.viewH);
+    this.production.layers(ctx,s.def.theme,'background',game.camX,camTop,l.viewW,l.viewH,game.reduceMotion,s.player.y);
+    // Close scenery is intentionally below collision geometry and all actors.
+    this.production.layers(ctx,s.def.theme,'foreground',game.camX,camTop,l.viewW,l.viewH,game.reduceMotion,s.player.y);
 
     // ---------------- world space
     ctx.save();
@@ -123,8 +131,10 @@ export class Renderer {
     ctx.translate(-Math.round(game.camX * 4) / 4 + sx, -camTop + sy);
     const camX = game.camX;
     world.drawProps(ctx, s.terrain, camX, worldW, game.time, game.gateOpen);
+    this.production.props(ctx,s.def.theme,camX,camTop,worldW,l.viewH/Z,game.time,game.reduceMotion);
     this.drawExit(game);
     world.drawTerrain(ctx, s.terrain, camX, worldW, game.time,Math.max(VIEW_H,camTop+l.viewH/Z));
+    this.production.surfaces(ctx,s.def.theme,s.terrain,camX,camTop,worldW,l.viewH/Z);
     if(s.def.id===0)this.drawDesertLandmarks(game);
     if (!game.demo) for (const sign of s.def.signs.filter(q=>Math.abs(q.x-s.player.x)<170).sort((a,b)=>Math.abs(a.x-s.player.x)-Math.abs(b.x-s.player.x)).slice(0,1)) this.drawSign(sign, s.terrain.groundAt(sign.x) ?? 450, inputMode);
     this.drawPickups(game);
@@ -135,7 +145,7 @@ export class Renderer {
     for(const e of s.enemies){
       if(e.x+200<camX||e.x-200>camX+worldW)continue;
       const t=game.renderAlpha,dx=e.prevX+(e.x-e.prevX)*t-e.x,dy=e.prevY+(e.y-e.prevY)*t-e.y;
-      ctx.save();ctx.translate(dx,dy);drawEnemy(ctx,e,s.diff,game.time);ctx.restore();
+      ctx.save();ctx.translate(dx,dy);drawEnemy(ctx,e,s.diff,game.time,this.production.enemy(ctx,e,s.diff));ctx.restore();
     }
     if (s.def.theme === 'flood') this.drawWaterFront(game);
     const p = s.player;
@@ -143,12 +153,12 @@ export class Renderer {
     const alpha = p.state === 'dead' ? Math.max(0, 1 - p.t / 0.8) : blink ? 0.35 : 1;
     const t=game.renderAlpha;
     const rendered=Object.assign(Object.create(Object.getPrototypeOf(p)),p,{x:s.prevPlayerX+(p.x-s.prevPlayerX)*t,y:s.prevPlayerY+(p.y-s.prevPlayerY)*t});
-    game.hero.draw(ctx, rendered, alpha);
+    game.hero.draw(ctx, rendered, alpha,this.production.hero(ctx,p));
     this.drawOrbs(game);
     drawLightstones(ctx,s.ranged.stones);
     this.drawArenaWalls(game);
-    game.fx.drawBase(ctx);
-    game.fx.drawGlow(ctx);
+    game.fx.drawBase(ctx,q=>this.production.effect(ctx,q,game.reduceMotion));
+    game.fx.drawGlow(ctx,q=>this.production.effect(ctx,q,game.reduceMotion));
     this.drawTexts(game);
     ctx.restore();
 

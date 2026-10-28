@@ -2,7 +2,7 @@
 
 export type ParticleKind = 'spark' | 'dust' | 'wisp' | 'smoke' | 'ring' | 'drop' | 'ember' | 'flash' | 'shard' | 'impact';
 
-interface Particle {
+export interface Particle {
   kind: ParticleKind;
   x: number;
   y: number;
@@ -96,8 +96,9 @@ export class Fx {
   }
 
   /** Normal-blended particles (dust, smoke, drops). */
-  drawBase(ctx: CanvasRenderingContext2D): void {
+  drawBase(ctx: CanvasRenderingContext2D,art?:(p:Particle)=>boolean): void {
     for (const p of this.list) {
+      if(['dust','smoke','drop','shard'].includes(p.kind)&&art?.(p))continue;
       const k = Math.max(0, p.life / p.max);
       switch (p.kind) {
         case 'dust':
@@ -134,9 +135,10 @@ export class Fx {
   }
 
   /** Glowing particles, drawn with additive blending. */
-  drawGlow(ctx: CanvasRenderingContext2D): void {
+  drawGlow(ctx: CanvasRenderingContext2D,art?:(p:Particle)=>boolean): void {
     ctx.globalCompositeOperation = 'lighter';
     for (const p of this.list) {
+      if(['spark','wisp','ring','ember','flash','impact'].includes(p.kind)&&art?.(p))continue;
       const k = Math.max(0, p.life / p.max);
       switch (p.kind) {
         case 'impact': {

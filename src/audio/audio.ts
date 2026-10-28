@@ -1,7 +1,8 @@
 import type { Theme } from '../core/levels';
+import { SampleBank } from '../production/samples';
 
 /**
- * All sound is synthesized with Web Audio: no files to download.
+ * Synthesized Web Audio with optional, manifest-driven recorded SFX.
  * Music is generated live from a chord progression per level, with a
  * battle layer (drums, faster arpeggios) that swells during fights.
  * The AudioContext is created only after the first user gesture.
@@ -32,6 +33,7 @@ const SONGS: Record<Theme | 'title', Song> = {
 const mtof = (m: number) => 440 * Math.pow(2, (m - 69) / 12);
 
 export class AudioEngine {
+  private samples:SampleBank|null=null;
   private ctx: AudioContext | null = null;
   private master!: GainNode;
   private sfxBus!: GainNode;
@@ -90,6 +92,7 @@ export class AudioEngine {
         if (!Ctor) return;
         const ctx = new Ctor();
         this.ctx = ctx;
+        this.samples=null;
         // Request resume synchronously inside the initiating gesture, before creating impulse buffers.
         if(ctx.state!=='running')void ctx.resume().catch(()=>{});
         const comp = ctx.createDynamicsCompressor();
@@ -375,6 +378,8 @@ export class AudioEngine {
     if (t - last < 0.03) return;
     this.lastPlay[name] = t;
     const b = this.sfxBus;
+    this.samples??=new SampleBank(ctx,b);
+    if(this.samples.play(name))return;
     switch (name) {
       case 'sling':
         this.note('triangle',480+k*100,t,.14,.18,b,.002,0,160);

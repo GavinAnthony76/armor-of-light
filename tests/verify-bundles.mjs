@@ -10,6 +10,8 @@ check(yt.includes('searchParams.set("youtube","1")'),'YouTube host selected');
 check(!index.includes('game_api'),'standalone web has no mandatory external SDK');
 check(!single.includes('src="/src/main.ts"'),'single edition includes code');
 check(single.includes('data:image/webp;base64,'),'single edition includes artwork');
+check(single.includes('"assets/production/asset-manifest.json":"data:application/json;base64,'),'single edition embeds production manifest for offline lookup');
+check(existsSync('dist/assets/production/asset-manifest.json'),'web and YouTube editions ship production manifest');
 check(!/<script[^>]+src=/.test(single),'single edition has no external JS dependency');
 check(!/<link[^>]+stylesheet/.test(single),'single edition has no external stylesheet dependency');
 console.log(`${n} build/standalone/reference checks passed.`);
