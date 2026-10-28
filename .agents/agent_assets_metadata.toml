@@ -1,0 +1,16 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "Ylscanofgpp7XzQaOXyGw"
+uri = "file://generated-artifacts/painted-desktop.png"
+type = "image"
+title = "Updated Desert Ruins gameplay"
+description = "Actual running game with the painted animated warrior, burning hammer, layered desert scenery and textured terrain."
+logical_id = "1d87e588-f6f4-4f80-9c99-0c74d77da439"
+content_hash = "sha256:8032d97f29f9483e06c979a5ee6f922ef1348a4d973b5f451c5e7a09fad8f011"
+size = 3147142
+mtime_ms = 1793156623723
+storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:93a97830-2e6c-4e1c-9c35-d8cf85f7843c/1d87e588-f6f4-4f80-9c99-0c74d77da439/363f1027-a940-4442-98b1-ac924acf2018"
+storage_version_token = "1793156710903023"
+content_type = "image/png"
