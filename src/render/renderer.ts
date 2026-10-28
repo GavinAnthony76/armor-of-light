@@ -120,8 +120,10 @@ export class Renderer {
     ctx.rect(0, 0, l.viewW, l.viewH);
     ctx.clip();
 
-    if(s.def.id===0)this.drawDesertDepth(game);
-    else world.drawBackground(ctx, game.camX, l.viewW, game.time,l.viewH);
+    if(!this.production.coversBackground(s.def.theme,game.camX,camTop,l.viewW,l.viewH,game.reduceMotion,s.player.y)){
+      if(s.def.id===0)this.drawDesertDepth(game);
+      else world.drawBackground(ctx, game.camX, l.viewW, game.time,l.viewH);
+    }
     this.production.layers(ctx,s.def.theme,'background',game.camX,camTop,l.viewW,l.viewH,game.reduceMotion,s.player.y);
     // Close scenery is intentionally below collision geometry and all actors.
     this.production.layers(ctx,s.def.theme,'foreground',game.camX,camTop,l.viewW,l.viewH,game.reduceMotion,s.player.y);

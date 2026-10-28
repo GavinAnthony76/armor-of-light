@@ -284,4 +284,35 @@ check(deadlineDecodes===2&&deadlineBank.play('hit'),'decode deadline advances to
 lateResolve({length:1,numberOfChannels:1,duration:99} as AudioBuffer);
 await Promise.resolve();
 check(deadlineBank.play('hit'),'late timed-out decoder cannot replace accepted WAV or consume its budget');
+// Occlusion must rely on actual decoded alpha, not cover/opacity metadata alone.
+{
+  const pack=emptyManifest();
+  pack.images.sky={src:'assets/production/sky.png',width:2,height:2,anchor:[0,0],scale:1,source:'test',license:'test'};
+  pack.lands.garden={layers:[{image:'sky',plane:'background',height:540,speedX:.1,speedY:0,cover:true,depth:[-2000,720],fadeY:120}],props:[]};
+  let reads=0,alpha=255,unreadable=false;
+  const images=new ProductionAssets(p=>p,fetch,()=>{
+    const im={naturalWidth:2,naturalHeight:2,onload:null as (()=>void)|null,onerror:null as (()=>void)|null};
+    Object.defineProperty(im,'src',{set:()=>queueMicrotask(()=>im.onload?.())});
+    return im as unknown as HTMLImageElement;
+  },()=>{
+    reads++;if(unreadable)throw Error('tainted');
+    const pixels=new Uint8ClampedArray(16).fill(255);pixels[7]=alpha;return pixels;
+  });
+  images.install(pack);const scene=new ProductionScene(images);
+  const covers=(y=450,w=960,h=540,still=false)=>scene.coversBackground('garden',390,0,w,h,still,y);
+  check(!covers(),'cold painting retains fallback');await images.preloadImage('sky');
+  for(const [w,h] of [[960,540],[390,844],[844,390]])check(covers(450,w,h),'opaque cover fills every viewport aspect');
+  check(covers(450,960,540,true)&&reads===1,'opacity inspected once per resident image, including reduced motion');
+  check(!covers(660),'depth crossfade retains background beneath translucent painting');
+  const layer=pack.lands.garden.layers[0];
+  layer.opacity=.99;check(!covers(),'near-opaque layer cannot suppress fallback');delete layer.opacity;
+  layer.y=1;check(!covers(),'uncovered top edge retains fallback');layer.y=0;
+  layer.x=1;check(!covers(),'uncovered left edge retains fallback');layer.x=0;
+  layer.cover=false;check(!covers(450,960,800),'short painting retains fallback');layer.cover=true;
+  layer.plane='foreground';check(!covers(),'foreground cannot suppress background');layer.plane='background';
+  alpha=254;pack.images.sky.src='assets/production/transparent.png';images.install(pack);await images.preloadImage('sky');
+  check(!covers()&&reads===2,'reinstalled transparent source invalidates prior opacity proof');
+  unreadable=true;pack.images.sky.src='assets/production/unreadable.png';images.install(pack);await images.preloadImage('sky');
+  check(!covers()&&!covers()&&reads===3,'unreadable alpha fails closed and does not retry each frame');
+}
 console.log(`${count} production manifest, atlas, fallback, parallax, pose, sample codec and audio-gate checks passed.`);

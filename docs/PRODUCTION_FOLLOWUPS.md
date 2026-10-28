@@ -1,5 +1,10 @@
 # Production follow-ups — October 28, 2026
 
+Subsequent performance work from integration commit `286a3d4` is documented in
+[BACKGROUND_OCCLUSION.md](BACKGROUND_OCCLUSION.md). It removes fully hidden
+background drawing only after a decoded-alpha/viewport-coverage check, with
+exact framebuffer comparisons; historical pacing failures below remain evidence.
+
 Starting source: `d33f190b9bb9b672a6551517ec121eca7593c7d0` (`main`, Copy remaining
 project tasks into docs). Work branch: `fix/production-followups`. No repository
 AGENTS.md was present. The baseline passed `npm test`, `test:art`, `test:title`,
