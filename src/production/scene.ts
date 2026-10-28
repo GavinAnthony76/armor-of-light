@@ -113,8 +113,12 @@ export class ProductionScene {
   effect(ctx:CanvasRenderingContext2D,p:Particle,still:boolean):boolean {
     const id=this.assets.manifest.effects[p.kind],clip=this.assets.manifest.clips[id];
     if(!clip)return false;
+    const spec=this.assets.manifest.images[clip.image];
+    const width=(spec.frame?.width??spec.width)*spec.scale;
+    const scale=Math.max(.1,p.size*2/width);
     ctx.save();ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.globalCompositeOperation='source-over';
-    const drawn=this.drawClip(ctx,clip,p.max-p.life,p.x,p.y,1,p.max,still);
+    ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.scale(scale,scale);
+    const drawn=this.drawClip(ctx,clip,p.max-p.life,0,0,1,p.max,still);
     ctx.restore();return drawn;
   }
 }

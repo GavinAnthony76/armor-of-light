@@ -2,6 +2,7 @@ import { drawWeapon } from './weapons';
 import type { BodyArt } from '../production/types';
 import { WEAPONS } from '../core/weapons';
 import type { Player } from '../core/player';
+import { drawPaintedBoot, drawPaintedHead, drawPaintedSegment, drawPaintedTorso } from './painted-rig';
 
 /**
  * The traveler is a small procedural rig: joint angles are computed from the
@@ -33,8 +34,8 @@ const C = {
   outline: '#111e30',
   gold: '#f2c14e',
   goldDeep: '#b9821f',
-  cape: '#285867',
-  capeDark: '#152b41',
+  cape: '#e7dfc9',
+  capeDark: '#b52d32',
   plume: '#e8573f',
   skin: '#2a2f45',
 };
@@ -268,13 +269,15 @@ export class HeroView {
     const replaced=art?.mode==='replace'&&art.draw();
     if(!replaced){
     // back leg
-    this.limb(ctx, hip, lb.knee, lb.foot, 7, C.steelMid);
+    this.limb(ctx, hip, lb.knee, lb.foot, 7, C.steelMid, 'eliam-thigh');
     this.boot(ctx, lb.foot, lb.sa, C.steelDark);
 
     // torso
     ctx.save();
     ctx.translate(hip.x, hip.y);
     ctx.rotate(pose.lean);
+    const paintedTorso = drawPaintedTorso(ctx, 0, -12, 0);
+    if (!paintedTorso) {
     // tunic skirt
     ctx.fillStyle = C.capeDark;
     ctx.beginPath();
@@ -310,16 +313,19 @@ export class HeroView {
     ctx.moveTo(0.5, -21);
     ctx.lineTo(0.5, -9);
     ctx.stroke();
+    }
     ctx.restore();
 
     // front leg
-    this.limb(ctx, hip, lf.knee, lf.foot, 7, C.steel);
+    this.limb(ctx, hip, lf.knee, lf.foot, 7, C.steel, 'eliam-thigh');
     this.boot(ctx, lf.foot, lf.sa, C.steelDark);
 
     // head: helmet with plume and glowing visor
     ctx.save();
     ctx.translate(headC.x, headC.y);
     ctx.rotate(pose.lean * 0.6 + pose.head);
+    const paintedHead = drawPaintedHead(ctx, 0, 0, 0);
+    if (!paintedHead) {
     const sway = Math.sin(this.time * 7) * 0.12 - Math.min(0.5, Math.abs(p.vx) / 600);
     ctx.fillStyle = C.plume;
     ctx.beginPath();
@@ -342,17 +348,18 @@ export class HeroView {
     ctx.globalAlpha = alpha * (0.75 + Math.sin(this.time * 3) * 0.2);
     ctx.fillRect(4.5, -2, 5, 2);
     ctx.globalAlpha = alpha;
+    }
     ctx.restore();
 
     }
     if(art?.mode==='overlay')art.draw();
 
     // shield arm + shield
-    this.limb(ctx, shoulder, ah.elbow, ah.hand, 6, C.steelMid);
+    this.limb(ctx, shoulder, ah.elbow, ah.hand, 6, C.steelMid, 'eliam-bracer');
     this.shield(ctx, ah.hand, p.blocking);
 
     // Hammer follows the original hand and swing poses; combat timing is unchanged.
-    this.limb(ctx, shoulder, as.elbow, as.hand, 6, C.steel);
+    this.limb(ctx, shoulder, as.elbow, as.hand, 6, C.steel, 'eliam-bracer');
     const slingRelease=p.weaponId==='sling'&&p.attacking&&p.t>=p.swing.hitFrom&&p.t<=p.swing.hitTo;
     drawWeapon(ctx,p.weaponId,p.weaponRank,as.hand,bladeA,this.time,p.weaponId==='sling'?slingRelease:p.attacking,false);
     if(p.weaponId==='watch')drawWeapon(ctx,'watch',p.weaponRank,ah.hand,bladeA-.8,this.time,p.attacking,false);
@@ -360,10 +367,11 @@ export class HeroView {
     ctx.restore();
   }
 
-  private limb(ctx:CanvasRenderingContext2D,a:V,b:V,c:V,w:number,color:string):void {
-    ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=C.outline;ctx.lineWidth=w+2;
-    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.stroke();
-    for(const [u,v] of [[a,b],[b,c]]){
+  private limb(ctx:CanvasRenderingContext2D,a:V,b:V,c:V,w:number,color:string,paintId?:'eliam-thigh'|'eliam-bracer'):void {
+    for(const [u,v] of [[a,b],[b,c]] as [V,V][]){
+      if(paintId&&drawPaintedSegment(ctx,paintId,u,v,w*1.7))continue;
+      ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=C.outline;ctx.lineWidth=w+2;
+      ctx.beginPath();ctx.moveTo(u.x,u.y);ctx.lineTo(v.x,v.y);ctx.stroke();
       const dx=v.x-u.x,dy=v.y-u.y,len=Math.hypot(dx,dy)||1,nx=-dy/len,ny=dx/len;
       const metal=ctx.createLinearGradient(u.x+nx*w,u.y+ny*w,v.x-nx*w,v.y-ny*w);
       metal.addColorStop(0,'#d1dacf');metal.addColorStop(.28,color);metal.addColorStop(1,C.steelDark);
@@ -376,6 +384,8 @@ export class HeroView {
   private boot(ctx: CanvasRenderingContext2D, foot: V, a: number, color: string): void {
     ctx.save();
     ctx.translate(foot.x, foot.y);
+    const painted = drawPaintedBoot(ctx, 0, 0, -a * 0.5);
+    if (!painted) {
     ctx.rotate(-a * 0.5);
     ctx.fillStyle = C.outline;
     ctx.beginPath();
@@ -385,6 +395,7 @@ export class HeroView {
     ctx.beginPath();
     ctx.roundRect(-3.2, -3, 10, 4, 2);
     ctx.fill();
+    }
     ctx.restore();
   }
 
@@ -513,14 +524,35 @@ export class HeroView {
       right.push({ x: pts[i].x + (dy / d) * w, y: pts[i].y - (dx / d) * w });
     }
     ctx.fillStyle = C.cape;
-    ctx.strokeStyle = C.capeDark;
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#7f2c32';
+    ctx.lineWidth = 1.6;
     ctx.beginPath();
     ctx.moveTo(left[0].x, left[0].y);
     for (const v of left) ctx.lineTo(v.x, v.y);
     for (let i = right.length - 1; i >= 0; i--) ctx.lineTo(right[i].x, right[i].y);
     ctx.closePath();
     ctx.fill();
+    ctx.stroke();
+    // A narrow crimson lining rides the trailing edge of the same simulated
+    // silhouette; it adds surface detail without affecting Verlet motion.
+    const lining = right.map((v, i) => ({
+      x: v.x + (left[i].x - v.x) * 0.3,
+      y: v.y + (left[i].y - v.y) * 0.3,
+    }));
+    ctx.beginPath();
+    ctx.moveTo(right[0].x, right[0].y);
+    for (const v of right) ctx.lineTo(v.x, v.y);
+    for (let i = lining.length - 1; i >= 0; i--) ctx.lineTo(lining[i].x, lining[i].y);
+    ctx.closePath();
+    ctx.fillStyle = '#a52d34';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(139, 91, 44, .7)';
+    ctx.lineWidth = 0.7;
+    ctx.beginPath();
+    for (let i = 1; i < pts.length - 1; i++) {
+      ctx.moveTo(left[i].x, left[i].y);
+      ctx.lineTo(right[i].x, right[i].y);
+    }
     ctx.stroke();
   }
 }

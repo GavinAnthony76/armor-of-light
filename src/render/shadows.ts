@@ -8,6 +8,7 @@ import type { Enemy } from '../core/enemy';
  *   red   = unblockable (jump or move away)
  */
 
+import { productionAssets } from '../production/assets';
 export const WARN_GOLD = '#ffd25e';
 export const WARN_RED = '#ff4b4b';
 
@@ -208,6 +209,15 @@ function drawArmorDetail(ctx:Ctx,e:Enemy,diff:Difficulty,t:number):void {
  ctx.fillStyle=m.body;ctx.strokeStyle=m.rim;ctx.lineWidth=1.1;
  // Breastplate and overlapping abdominal lames.
  ctx.beginPath();ctx.moveTo(-w,-h*.76);ctx.lineTo(-w*.5,-h*.81);ctx.lineTo(w*.6,-h*.79);ctx.lineTo(w,-h*.70);ctx.lineTo(w*.65,-h*.44);ctx.lineTo(0,-h*.39);ctx.lineTo(-w*.75,-h*.48);ctx.closePath();ctx.fill();ctx.stroke();
+ // Painted metal follows the same torso bob; telegraphs and weapons stay above it.
+ if(['sentinel','king','keeper','watcher'].includes(e.kind)){
+   const armor=productionAssets.image('shadow-armor');
+   if(armor){
+     const scale=Math.min(w*2.4/armor.naturalWidth,h*.44/armor.naturalHeight);
+     const aw=armor.naturalWidth*scale,ah=armor.naturalHeight*scale;
+     ctx.drawImage(armor,-aw/2,-h*.61-ah/2,aw,ah);
+   }
+ }
  ctx.globalAlpha*=.7;for(let i=0;i<3;i++){const y=-h*.57+i*5;ctx.beginPath();ctx.moveTo(-w*.7,y);ctx.lineTo(0,y+4);ctx.lineTo(w*.7,y);ctx.stroke();}ctx.globalAlpha/=.7;
  // Asymmetric pauldrons with distinct crowns and helmet ridges.
  for(const side of [-1,1]){ctx.beginPath();ctx.moveTo(side*w*.7,-h*.77);ctx.lineTo(side*(w+7),-h*.80);ctx.lineTo(side*(w+11),-h*.68);ctx.lineTo(side*w*.75,-h*.66);ctx.closePath();ctx.fill();ctx.stroke();}

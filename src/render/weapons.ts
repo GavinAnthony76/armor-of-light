@@ -1,4 +1,5 @@
 import { WEAPONS, type WeaponId, type Rank } from '../core/weapons';
+import { productionAssets } from '../production/assets';
 type V={x:number;y:number};
 const C={outline:'#111e30'};
 /** Same silhouettes in the hand, on the ground and in the equipment display. +Y is blade/shaft axis. */
@@ -120,6 +121,12 @@ function drawHammer(ctx: CanvasRenderingContext2D, hand: V, a: number, swinging:
     ctx.beginPath();ctx.moveTo(-7,-10);ctx.lineTo(-3,-14);ctx.lineTo(5,-14);ctx.lineTo(9,-10);ctx.lineTo(9,10);ctx.lineTo(5,14);ctx.lineTo(-3,14);ctx.lineTo(-7,10);ctx.closePath();ctx.fill();ctx.stroke();
     ctx.strokeStyle='#f7ca69';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-4,-11);ctx.lineTo(5,-11);ctx.moveTo(-4,11);ctx.lineTo(5,11);ctx.stroke();
     ctx.fillStyle='#fff0ac';ctx.beginPath();ctx.arc(1,0,3.2,0,Math.PI*2);ctx.fill();
+    const painted=productionAssets.image('hammer-head');
+    if(painted){
+      const scale=Math.min(34/painted.naturalWidth,26/painted.naturalHeight);
+      const w=painted.naturalWidth*scale,h=painted.naturalHeight*scale;
+      ctx.save();ctx.rotate(Math.PI/2);ctx.drawImage(painted,-w/2,-h/2,w,h);ctx.restore();
+    }
     ctx.restore();
   }
 
