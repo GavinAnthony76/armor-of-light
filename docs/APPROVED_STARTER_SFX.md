@@ -123,7 +123,7 @@ not application settings or deployment instructions.
 With that workaround, rendered offline graphs establish real codec/synth output,
 while a suspended live context is recorded as **not verified** for live unlock.
 Do not equate a passing codec report with speaker listening, stock-browser
-process sandbox coverage, actual Safari, or physical-phone audio. Normal runs
-without the workaround additionally require the gesture-created live context to
-reach `running`. The existing adaptive score and event mappings are unchanged.
+process sandbox coverage, actual Safari, or physical-phone audio. Set `REQUIRE_LIVE_AUDIO=1` on a hardware-equipped host to additionally require
+the gesture-created live context to reach `running`; otherwise its state is an
+explicit observation rather than a codec-pass criterion. The existing adaptive score and event mappings are unchanged.
 See `PRODUCTION_FOLLOWUPS.md` for this revision's actual results.
