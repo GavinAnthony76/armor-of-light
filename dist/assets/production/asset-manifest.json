@@ -564,6 +564,78 @@
       "scale": 1,
       "source": "AI-generated river three-panel scenery, adapted from the user-supplied Armor of Light Game Asset Bible / Complete Game Asset Showcase direction with user authorization. Source: generated-artifacts/painted-river-sheet.png.",
       "license": "Generated artwork for this project under generation-service terms; user-supplied reference direction used with user authorization. Verify reference rights before public release."
+    },
+    "serpent-painted-body": {
+      "src": "assets/production/bosses/serpent/serpent-painted-body.png",
+      "width": 512,
+      "height": 512,
+      "anchor": [
+        256,
+        448
+      ],
+      "scale": 0.5,
+      "source": "User-authorized recreation from Armor of Light Complete Game Asset Showcase / Game Asset Bible; six-guardian armless painted source. Serpent material is clipped to original live neck and jaw geometry.",
+      "license": "Generated artwork for this project under generation service terms; user-authorized recreation from supplied art direction."
+    },
+    "thorn-painted-body": {
+      "src": "assets/production/bosses/thorn/thorn-painted-body.png",
+      "width": 512,
+      "height": 512,
+      "anchor": [
+        256,
+        448
+      ],
+      "scale": 0.5,
+      "source": "User-authorized recreation from Armor of Light Complete Game Asset Showcase / Game Asset Bible; six-guardian armless painted source. Serpent material is clipped to original live neck and jaw geometry.",
+      "license": "Generated artwork for this project under generation service terms; user-authorized recreation from supplied art direction."
+    },
+    "watcher-painted-body": {
+      "src": "assets/production/bosses/watcher/watcher-painted-body.png",
+      "width": 512,
+      "height": 512,
+      "anchor": [
+        256,
+        448
+      ],
+      "scale": 0.5,
+      "source": "User-authorized recreation from Armor of Light Complete Game Asset Showcase / Game Asset Bible; six-guardian armless painted source. Serpent material is clipped to original live neck and jaw geometry.",
+      "license": "Generated artwork for this project under generation service terms; user-authorized recreation from supplied art direction."
+    },
+    "colossus-painted-body": {
+      "src": "assets/production/bosses/colossus/colossus-painted-body.png",
+      "width": 512,
+      "height": 512,
+      "anchor": [
+        256,
+        448
+      ],
+      "scale": 0.5,
+      "source": "User-authorized recreation from Armor of Light Complete Game Asset Showcase / Game Asset Bible; six-guardian armless painted source. Serpent material is clipped to original live neck and jaw geometry.",
+      "license": "Generated artwork for this project under generation service terms; user-authorized recreation from supplied art direction."
+    },
+    "keeper-painted-body": {
+      "src": "assets/production/bosses/keeper/keeper-painted-body.png",
+      "width": 512,
+      "height": 512,
+      "anchor": [
+        256,
+        448
+      ],
+      "scale": 0.5,
+      "source": "User-authorized recreation from Armor of Light Complete Game Asset Showcase / Game Asset Bible; six-guardian armless painted source. Serpent material is clipped to original live neck and jaw geometry.",
+      "license": "Generated artwork for this project under generation service terms; user-authorized recreation from supplied art direction."
+    },
+    "king-painted-body": {
+      "src": "assets/production/bosses/king/king-painted-body.png",
+      "width": 512,
+      "height": 512,
+      "anchor": [
+        256,
+        448
+      ],
+      "scale": 0.5,
+      "source": "User-authorized recreation from Armor of Light Complete Game Asset Showcase / Game Asset Bible; six-guardian armless painted source. Serpent material is clipped to original live neck and jaw geometry.",
+      "license": "Generated artwork for this project under generation service terms; user-authorized recreation from supplied art direction."
     }
   },
   "clips": {
@@ -1345,6 +1417,1086 @@
       "loop": false,
       "mode": "replace",
       "bodyMotion": "recover"
+    },
+    "painted-serpent-spawn": {
+      "image": "serpent-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "spawn"
+    },
+    "painted-serpent-move": {
+      "image": "serpent-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": true,
+      "mode": "replace",
+      "bodyMotion": "move"
+    },
+    "painted-serpent-stagger": {
+      "image": "serpent-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "stagger"
+    },
+    "painted-serpent-hurt": {
+      "image": "serpent-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "hurt"
+    },
+    "painted-serpent-dying": {
+      "image": "serpent-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "dying"
+    },
+    "painted-serpent-windup-spit": {
+      "image": "serpent-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-serpent-active-spit": {
+      "image": "serpent-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-serpent-recover-spit": {
+      "image": "serpent-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-serpent-windup-tail": {
+      "image": "serpent-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-serpent-active-tail": {
+      "image": "serpent-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-serpent-recover-tail": {
+      "image": "serpent-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-serpent-windup-bite": {
+      "image": "serpent-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-serpent-active-bite": {
+      "image": "serpent-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-serpent-recover-bite": {
+      "image": "serpent-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-thorn-spawn": {
+      "image": "thorn-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "spawn"
+    },
+    "painted-thorn-move": {
+      "image": "thorn-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": true,
+      "mode": "replace",
+      "bodyMotion": "move"
+    },
+    "painted-thorn-stagger": {
+      "image": "thorn-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "stagger"
+    },
+    "painted-thorn-hurt": {
+      "image": "thorn-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "hurt"
+    },
+    "painted-thorn-dying": {
+      "image": "thorn-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "dying"
+    },
+    "painted-thorn-windup-thrust1": {
+      "image": "thorn-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-thorn-active-thrust1": {
+      "image": "thorn-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-thorn-recover-thrust1": {
+      "image": "thorn-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-thorn-windup-thrust2": {
+      "image": "thorn-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-thorn-active-thrust2": {
+      "image": "thorn-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-thorn-recover-thrust2": {
+      "image": "thorn-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-thorn-windup-tail": {
+      "image": "thorn-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-thorn-active-tail": {
+      "image": "thorn-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-thorn-recover-tail": {
+      "image": "thorn-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-thorn-windup-summon": {
+      "image": "thorn-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-thorn-active-summon": {
+      "image": "thorn-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-thorn-recover-summon": {
+      "image": "thorn-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-watcher-spawn": {
+      "image": "watcher-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "spawn"
+    },
+    "painted-watcher-move": {
+      "image": "watcher-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": true,
+      "mode": "replace",
+      "bodyMotion": "move"
+    },
+    "painted-watcher-stagger": {
+      "image": "watcher-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "stagger"
+    },
+    "painted-watcher-hurt": {
+      "image": "watcher-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "hurt"
+    },
+    "painted-watcher-dying": {
+      "image": "watcher-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "dying"
+    },
+    "painted-watcher-windup-casterorb": {
+      "image": "watcher-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-watcher-active-casterorb": {
+      "image": "watcher-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-watcher-recover-casterorb": {
+      "image": "watcher-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-watcher-windup-tail": {
+      "image": "watcher-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-watcher-active-tail": {
+      "image": "watcher-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-watcher-recover-tail": {
+      "image": "watcher-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-watcher-windup-kingwave": {
+      "image": "watcher-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-watcher-active-kingwave": {
+      "image": "watcher-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-watcher-recover-kingwave": {
+      "image": "watcher-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-watcher-windup-kingdash": {
+      "image": "watcher-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-watcher-active-kingdash": {
+      "image": "watcher-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-watcher-recover-kingdash": {
+      "image": "watcher-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-colossus-spawn": {
+      "image": "colossus-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "spawn"
+    },
+    "painted-colossus-move": {
+      "image": "colossus-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": true,
+      "mode": "replace",
+      "bodyMotion": "move"
+    },
+    "painted-colossus-stagger": {
+      "image": "colossus-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "stagger"
+    },
+    "painted-colossus-hurt": {
+      "image": "colossus-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "hurt"
+    },
+    "painted-colossus-dying": {
+      "image": "colossus-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "dying"
+    },
+    "painted-colossus-windup-sweep": {
+      "image": "colossus-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-colossus-active-sweep": {
+      "image": "colossus-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-colossus-recover-sweep": {
+      "image": "colossus-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-colossus-windup-slam": {
+      "image": "colossus-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-colossus-active-slam": {
+      "image": "colossus-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-colossus-recover-slam": {
+      "image": "colossus-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-keeper-spawn": {
+      "image": "keeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "spawn"
+    },
+    "painted-keeper-move": {
+      "image": "keeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": true,
+      "mode": "replace",
+      "bodyMotion": "move"
+    },
+    "painted-keeper-stagger": {
+      "image": "keeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "stagger"
+    },
+    "painted-keeper-hurt": {
+      "image": "keeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "hurt"
+    },
+    "painted-keeper-dying": {
+      "image": "keeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "dying"
+    },
+    "painted-keeper-windup-kingdash": {
+      "image": "keeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-keeper-active-kingdash": {
+      "image": "keeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-keeper-recover-kingdash": {
+      "image": "keeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-keeper-windup-combo1": {
+      "image": "keeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-keeper-active-combo1": {
+      "image": "keeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-keeper-recover-combo1": {
+      "image": "keeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-keeper-windup-combo2": {
+      "image": "keeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-keeper-active-combo2": {
+      "image": "keeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-keeper-recover-combo2": {
+      "image": "keeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-keeper-windup-combo3": {
+      "image": "keeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-keeper-active-combo3": {
+      "image": "keeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-keeper-recover-combo3": {
+      "image": "keeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-keeper-windup-kingwave": {
+      "image": "keeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-keeper-active-kingwave": {
+      "image": "keeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-keeper-recover-kingwave": {
+      "image": "keeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-keeper-windup-summon": {
+      "image": "keeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-keeper-active-summon": {
+      "image": "keeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-keeper-recover-summon": {
+      "image": "keeper-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-king-spawn": {
+      "image": "king-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "spawn"
+    },
+    "painted-king-move": {
+      "image": "king-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": true,
+      "mode": "replace",
+      "bodyMotion": "move"
+    },
+    "painted-king-stagger": {
+      "image": "king-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "stagger"
+    },
+    "painted-king-hurt": {
+      "image": "king-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "hurt"
+    },
+    "painted-king-dying": {
+      "image": "king-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "dying"
+    },
+    "painted-king-windup-combo1": {
+      "image": "king-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-king-active-combo1": {
+      "image": "king-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-king-recover-combo1": {
+      "image": "king-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-king-windup-combo2": {
+      "image": "king-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-king-active-combo2": {
+      "image": "king-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-king-recover-combo2": {
+      "image": "king-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-king-windup-combo3": {
+      "image": "king-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-king-active-combo3": {
+      "image": "king-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-king-recover-combo3": {
+      "image": "king-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-king-windup-kingdash": {
+      "image": "king-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-king-active-kingdash": {
+      "image": "king-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-king-recover-kingdash": {
+      "image": "king-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-king-windup-kingwave": {
+      "image": "king-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-king-active-kingwave": {
+      "image": "king-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-king-recover-kingwave": {
+      "image": "king-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-king-windup-kingleap": {
+      "image": "king-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-king-active-kingleap": {
+      "image": "king-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-king-recover-kingleap": {
+      "image": "king-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
+    },
+    "painted-king-windup-summon": {
+      "image": "king-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "windup"
+    },
+    "painted-king-active-summon": {
+      "image": "king-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "active"
+    },
+    "painted-king-recover-summon": {
+      "image": "king-painted-body",
+      "frames": [
+        0
+      ],
+      "fps": 12,
+      "loop": false,
+      "mode": "replace",
+      "bodyMotion": "recover"
     }
   },
   "actors": {
@@ -1448,6 +2600,138 @@
         "windup.summon": "painted-warden-windup-summon",
         "active.summon": "painted-warden-active-summon",
         "recover.summon": "painted-warden-recover-summon"
+      }
+    },
+    "boss.serpent": {
+      "states": {
+        "spawn": "painted-serpent-spawn",
+        "move": "painted-serpent-move",
+        "stagger": "painted-serpent-stagger",
+        "hurt": "painted-serpent-hurt",
+        "dying": "painted-serpent-dying",
+        "windup.spit": "painted-serpent-windup-spit",
+        "active.spit": "painted-serpent-active-spit",
+        "recover.spit": "painted-serpent-recover-spit",
+        "windup.tail": "painted-serpent-windup-tail",
+        "active.tail": "painted-serpent-active-tail",
+        "recover.tail": "painted-serpent-recover-tail",
+        "windup.bite": "painted-serpent-windup-bite",
+        "active.bite": "painted-serpent-active-bite",
+        "recover.bite": "painted-serpent-recover-bite"
+      }
+    },
+    "boss.thorn": {
+      "states": {
+        "spawn": "painted-thorn-spawn",
+        "move": "painted-thorn-move",
+        "stagger": "painted-thorn-stagger",
+        "hurt": "painted-thorn-hurt",
+        "dying": "painted-thorn-dying",
+        "windup.thrust1": "painted-thorn-windup-thrust1",
+        "active.thrust1": "painted-thorn-active-thrust1",
+        "recover.thrust1": "painted-thorn-recover-thrust1",
+        "windup.thrust2": "painted-thorn-windup-thrust2",
+        "active.thrust2": "painted-thorn-active-thrust2",
+        "recover.thrust2": "painted-thorn-recover-thrust2",
+        "windup.tail": "painted-thorn-windup-tail",
+        "active.tail": "painted-thorn-active-tail",
+        "recover.tail": "painted-thorn-recover-tail",
+        "windup.summon": "painted-thorn-windup-summon",
+        "active.summon": "painted-thorn-active-summon",
+        "recover.summon": "painted-thorn-recover-summon"
+      }
+    },
+    "boss.watcher": {
+      "states": {
+        "spawn": "painted-watcher-spawn",
+        "move": "painted-watcher-move",
+        "stagger": "painted-watcher-stagger",
+        "hurt": "painted-watcher-hurt",
+        "dying": "painted-watcher-dying",
+        "windup.casterOrb": "painted-watcher-windup-casterorb",
+        "active.casterOrb": "painted-watcher-active-casterorb",
+        "recover.casterOrb": "painted-watcher-recover-casterorb",
+        "windup.tail": "painted-watcher-windup-tail",
+        "active.tail": "painted-watcher-active-tail",
+        "recover.tail": "painted-watcher-recover-tail",
+        "windup.kingWave": "painted-watcher-windup-kingwave",
+        "active.kingWave": "painted-watcher-active-kingwave",
+        "recover.kingWave": "painted-watcher-recover-kingwave",
+        "windup.kingDash": "painted-watcher-windup-kingdash",
+        "active.kingDash": "painted-watcher-active-kingdash",
+        "recover.kingDash": "painted-watcher-recover-kingdash"
+      }
+    },
+    "boss.colossus": {
+      "states": {
+        "spawn": "painted-colossus-spawn",
+        "move": "painted-colossus-move",
+        "stagger": "painted-colossus-stagger",
+        "hurt": "painted-colossus-hurt",
+        "dying": "painted-colossus-dying",
+        "windup.sweep": "painted-colossus-windup-sweep",
+        "active.sweep": "painted-colossus-active-sweep",
+        "recover.sweep": "painted-colossus-recover-sweep",
+        "windup.slam": "painted-colossus-windup-slam",
+        "active.slam": "painted-colossus-active-slam",
+        "recover.slam": "painted-colossus-recover-slam"
+      }
+    },
+    "boss.keeper": {
+      "states": {
+        "spawn": "painted-keeper-spawn",
+        "move": "painted-keeper-move",
+        "stagger": "painted-keeper-stagger",
+        "hurt": "painted-keeper-hurt",
+        "dying": "painted-keeper-dying",
+        "windup.kingDash": "painted-keeper-windup-kingdash",
+        "active.kingDash": "painted-keeper-active-kingdash",
+        "recover.kingDash": "painted-keeper-recover-kingdash",
+        "windup.combo1": "painted-keeper-windup-combo1",
+        "active.combo1": "painted-keeper-active-combo1",
+        "recover.combo1": "painted-keeper-recover-combo1",
+        "windup.combo2": "painted-keeper-windup-combo2",
+        "active.combo2": "painted-keeper-active-combo2",
+        "recover.combo2": "painted-keeper-recover-combo2",
+        "windup.combo3": "painted-keeper-windup-combo3",
+        "active.combo3": "painted-keeper-active-combo3",
+        "recover.combo3": "painted-keeper-recover-combo3",
+        "windup.kingWave": "painted-keeper-windup-kingwave",
+        "active.kingWave": "painted-keeper-active-kingwave",
+        "recover.kingWave": "painted-keeper-recover-kingwave",
+        "windup.summon": "painted-keeper-windup-summon",
+        "active.summon": "painted-keeper-active-summon",
+        "recover.summon": "painted-keeper-recover-summon"
+      }
+    },
+    "boss.king": {
+      "states": {
+        "spawn": "painted-king-spawn",
+        "move": "painted-king-move",
+        "stagger": "painted-king-stagger",
+        "hurt": "painted-king-hurt",
+        "dying": "painted-king-dying",
+        "windup.combo1": "painted-king-windup-combo1",
+        "active.combo1": "painted-king-active-combo1",
+        "recover.combo1": "painted-king-recover-combo1",
+        "windup.combo2": "painted-king-windup-combo2",
+        "active.combo2": "painted-king-active-combo2",
+        "recover.combo2": "painted-king-recover-combo2",
+        "windup.combo3": "painted-king-windup-combo3",
+        "active.combo3": "painted-king-active-combo3",
+        "recover.combo3": "painted-king-recover-combo3",
+        "windup.kingDash": "painted-king-windup-kingdash",
+        "active.kingDash": "painted-king-active-kingdash",
+        "recover.kingDash": "painted-king-recover-kingdash",
+        "windup.kingWave": "painted-king-windup-kingwave",
+        "active.kingWave": "painted-king-active-kingwave",
+        "recover.kingWave": "painted-king-recover-kingwave",
+        "windup.kingLeap": "painted-king-windup-kingleap",
+        "active.kingLeap": "painted-king-active-kingleap",
+        "recover.kingLeap": "painted-king-recover-kingleap",
+        "windup.summon": "painted-king-windup-summon",
+        "active.summon": "painted-king-active-summon",
+        "recover.summon": "painted-king-recover-summon"
       }
     }
   },

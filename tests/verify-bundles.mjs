@@ -13,6 +13,10 @@ check(single.includes('data:image/webp;base64,'),'single edition includes artwor
 check(single.includes('"assets/production/asset-manifest.json":"data:application/json;base64,'),'single edition embeds production manifest for offline lookup');
 check(existsSync('dist/assets/production/asset-manifest.json'),'web and YouTube editions ship production manifest');
 const production=JSON.parse(readFileSync('public/assets/production/asset-manifest.json','utf8'));
+for(const [id,spec] of Object.entries(production.images)){
+ check(existsSync('dist/'+spec.src),`${id} image shipped in web/host build`);
+ check(single.includes('"'+spec.src+'":"data:image/'),`${id} image embedded in offline edition`);
+}
 for(const [event,spec] of Object.entries(production.audio)){
  for(const path of spec.sources){
   check(existsSync('dist/'+path),`${event} codec shipped in web/host build`);

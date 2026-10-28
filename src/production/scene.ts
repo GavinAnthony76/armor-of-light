@@ -71,9 +71,13 @@ export class ProductionScene {
       const key=this.assets.manifest.actors[id]?.states[v.key],clip=this.assets.manifest.clips[key];
       if(!clip)continue;
       if(!clip.bodyMotion)break;
-      return {mode:clip.mode??'overlay',bodyOnly:true,draw:()=>{
+      return {mode:clip.mode??'overlay',bodyOnly:true,
+        texture:()=>this.assets.image(clip.image)??undefined,draw:()=>{
         const spec=this.assets.manifest.images[clip.image],im=this.assets.image(clip.image);
         if(!im)return false;
+        // The serpent is not a humanoid cutout. Its live curved neck and jaw
+        // receive this material inside their original paths in shadows.ts.
+        if(e.kind==='serpent')return true;
         drawPaintedEnemyBody(ctx,e,im,spec,clip.bodyMotion!,v.time,v.duration);return true;
       }};
     }

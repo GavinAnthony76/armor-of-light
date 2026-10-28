@@ -4,6 +4,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { validateManifest } from '../src/production/manifest';
 import { playerVisual } from '../src/production/scene';
 import { Player } from '../src/core/player';
+import { sceneResidency } from './scene-residency';
 
 const m = validateManifest(JSON.parse(readFileSync('public/assets/production/asset-manifest.json', 'utf8')));
 let n = 0;
@@ -46,7 +47,6 @@ check(surface.every(l => l.depth![1] < 900), 'surface art is absent at archive f
 check(archive.some(l => l.depth![0] < 900 && l.depth![1] > 900), 'archive art covers the lower route');
 check(desert.layers.filter(l => l.plane === 'foreground').every(l => (l.opacity ?? .25) <= .35),
   'near scenery remains restrained and behind gameplay');
-// Conservative upper bound, even if every atlas and depth band is resident.
-const decoded = Object.values(m.images).reduce((sum, im) => sum + im.width * im.height * 4, 0);
-check(decoded < 80 * 1024 * 1024, `whole art pack fits active-scene headroom (${(decoded / 1048576).toFixed(1)} MiB)`);
+for(const [theme,bytes] of sceneResidency(m))
+  check(bytes<80*1048576,`${theme}: current scene below 80 MiB (${(bytes/1048576).toFixed(1)})`);
 console.log(`${n} installed painted-pack checks passed.`);

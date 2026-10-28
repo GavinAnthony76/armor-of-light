@@ -3,12 +3,13 @@
 ## Delivery and scope
 
 The five shared enemy archetypes (husk, wisp, caster, lurker and sentinel)
-and the Dune Warden now use body-only cutout animation recreated from the
+and all seven guardians now use body-only painting recreated from the
 user-approved Complete Game Asset Showcase / Game Asset Bible direction.
 These shared enemy bodies appear wherever their archetypes occur, including
 mini-bosses with no mini-specific exact-state binding.
-The other six guardians retain their complete original presentation; this
-first pack does not claim new unique artwork for those guardians or named minis.
+The Tide Serpent, Thorn Sentinel, Storm Watcher, Iron Colossus, Keeper of
+Shadows and Hollow King each have a distinct calibrated source. Named minis
+still inherit shared archetype art rather than unique portraits.
 
 The generated source is an **armless body sheet**, not a finished animation
 sheet. `scripts/prepare-painted-enemies.mjs` calibrates six lossless RGBA PNG
@@ -35,10 +36,14 @@ breathing and attack lean, and the low lurker silhouette uses its own hip band.
 `frames: [0]` identifies the shared **source texture**, not a static pose.
 Atlas-based clips without `bodyMotion` continue using the unchanged frame path.
 
-This choice keeps all six body textures at **6 MiB decoded total** instead of
+This choice keeps all twelve body textures at **12 MiB decoded total** instead of
 multiplying the already large hero atlas by every enemy/action. The installed
-pack remains below the 80 MiB conservative whole-pack audit. A desktop test
-with all six bodies in view measured about 69.4 MiB resident with no issues.
+pack is audited by **current scene**, not by summing future lands/guardians.
+The conservative bound includes all hero poses/materials, shared enemies,
+the current guardian and all land layers/depth bands/props/surfaces/effects:
+71.7 MiB for desert and 64.0 MiB for each other currently installed land.
+A Chromium stress scene retaining all twelve body sources measured **75.5 MiB**
+resident with no issues, below the 80 MiB scene target.
 No future guardians are preloaded and no state transition needs another image.
 
 Body replacement skips only the corresponding procedural body/armor.
@@ -50,6 +55,21 @@ in the original renderer. Damage brightness affects paintings, not warnings.
 Missing/not-yet-loaded body sources always draw the entire original actor.
 An unmapped action never borrows a move/idle portrait.
 
+The six-guardian source master is calibrated by
+`scripts/prepare-painted-guardians.mjs`; like the first master it stays ignored.
+Low-confidence background-removal alpha is removed before resampling, and
+transparent delivery RGB is normalized. Every humanoid guardian uses scale 0.5,
+the stable foot pivot and original body box. The original moving capes draw
+behind the new bodies; sword arms, greatswords and Colossus arm capsules/fists
+keep their original coordinates, arcs and warning rims.
+
+The serpent deliberately does **not** use humanoid cutout articulation. Its
+calibrated source provides a painted scale material inside the original live
+tapered neck polygon and opening jaw path. Neck/head position, Bézier samples,
+fins, eyes and water churn retain their original geometry; no portrait is
+positioned at a fictitious serpent foot pivot. This also preserves the existing
+head hurtbox and bite/lunge presentation. Missing material draws the full original.
+
 ## Exact attack mapping
 
 | Actor | Original attack IDs |
@@ -60,6 +80,15 @@ An unmapped action never borrows a move/idle portrait.
 | lurker | `lurkerLeap`, `lurkerSnap` |
 | sentinel | `thrust1`, `thrust2` |
 | boss.warden | `sweep`, `slam`, `summon` |
+| boss.serpent | `spit`, `tail`, `bite` |
+| boss.thorn | `thrust1`, `thrust2`, `tail`, `summon` |
+| boss.watcher | `casterOrb`, `tail`, `kingWave`, `kingDash` |
+| boss.colossus | `sweep`, `slam` |
+| boss.keeper | `kingDash`, `combo1`, `combo2`, `combo3`, `kingWave`, `summon` |
+| boss.king | `combo1`, `combo2`, `combo3`, `kingDash`, `kingWave`, `kingLeap`, `summon` |
+
+These include chained thrust/combo states, the Watcher's ranged `kingDash`
+substitution and the King's phase-two `summon`, not just the first cycle entry.
 
 Each has distinct exact `windup.<id>`, `active.<id>`, `recover.<id>` bindings,
 plus `spawn`, `move`, `stagger`, `hurt` and `dying`.
@@ -84,11 +113,13 @@ phase, timer, movement, collision, sound or damage.
 - `npm run test:art` includes animation, pack and enemy coverage.
 - `npm run build`, `npm run build:single`, `npm run test:bundles` verify web,
   YouTube-host entrypoints and the offline edition. The single HTML is about
-  11.9 MiB, below the 20 MiB target.
+  13.1 MiB with the expanded scenery, below the 20 MiB target.
 - `BASE=https://<development-domain> python3 tests/painted-enemies-browser.py`
   checks actual painted bodies in all states, warnings, phone-sized portrait/
   landscape, reduced motion, a real 404 body-file fallback without reload
-  churn, decoded residency and offline startup with zero network sidecars.
+  churn (including each of the six new guardian files), decoded residency and
+  offline startup with zero network sidecars. Each guardian is also captured
+  individually at portrait/landscape sizes, not only in a crowded stress fixture.
   Evidence stays in `generated-artifacts/painted-enemy-qa/`.
 - Core campaign, weapon, action, traversal and save tests remain unchanged.
   Browser fixture enemies are test-only and never enter normal gameplay.

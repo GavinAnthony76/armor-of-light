@@ -39,6 +39,26 @@ to decode; shared cutouts allow painted motion without reducing calibration.
 actual attack-phase durations. Recheck active-scene residency before adding
 guardian packs; do not trade away warning readability or original attack reach.
 
+Use current-land residency, not whole-pack decoded size, as the scene budget
+when adding more guardians or scenery. Include all hero pose/material sources,
+shared enemies, the current guardian and the current land's visible resources;
+keep browser stress checks as a separate measurement.
+
+**Why:** Future guardians and future lands are demand-loaded, so summing the
+whole campaign falsely treats mutually exclusive resources as one live scene.
+
+**How to apply:** Preserve the under-80-MiB active-scene target and cache headroom.
+Do not weaken it merely because the total campaign pack has grown.
+
+Preserve the serpent's original live neck and jaw geometry when painting it;
+use clipped material rather than humanoid foot-pivot articulation.
+
+**Why:** Its head moves independently of its base and defines the combat hurtbox;
+a rigid full-body replacement could visually contradict the live collision.
+
+**How to apply:** Keep fins, head position, opening jaw and warnings procedural,
+and verify identical geometry with and without the painted material.
+
 Judge transparent-art cleanliness from decoded pixels and contrasting-background
 composites as well as direct previews. Prefer normalized RGBA PNG body cutouts
 if lossless-alpha WebP direct previews disagree with browser canvas rendering.

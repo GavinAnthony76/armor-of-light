@@ -50,6 +50,8 @@ export interface ProductionManifest {
 export interface BodyArt {
   mode: 'overlay' | 'replace';
   bodyOnly?: boolean;
+  /** Resident body material for original articulated geometry (e.g. serpent). */
+  texture?: () => HTMLImageElement | undefined;
   draw: () => boolean;
 }
 export const emptyManifest = (): ProductionManifest =>

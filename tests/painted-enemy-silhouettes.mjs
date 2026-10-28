@@ -14,6 +14,12 @@ const approved={
   lurker:'4c248cdab014ce1ec16aaec135a7fa55575bd79d2d35042d669737b1ad0302dd',
   sentinel:'1f4f142bd57ea73a5637629fd4b162a66ba43332e5d151819e8037d5e6f70df4',
   warden:'443a26f4e56691ed8c038fe7cee684c38047abeb275b971581ef901ef46f1730',
+  serpent:'ae96006e84f078ca6afca36fb9431fa45b0ed1b2e1064b8bd1a8062d50a1e90b',
+  thorn:'67bcd83157a86546eab7c8dc75b8f7ac9088aba7963ac6df799a74d9d0e55463',
+  watcher:'a0e6bd42dfc3c02f0ff8439099d8380b9bc60485453c448f7743f44fcbea49fe',
+  colossus:'2055df433e320abc2bc20676d2e26d46d5cf18f4a124c4946f2dd2c1bb6971ba',
+  keeper:'0f9a5188e940008ee9c99b7eedcce3a2df2252e035ac4e1272925d1bf2a08b61',
+  king:'fe3b26c5bd89578e09fbf5f103644986a41bc1c09ec709f59f88013c5e46bc63',
 };
 let checks=0;
 const check=(condition,message)=>{if(!condition)throw Error(message);checks++;};
@@ -49,7 +55,8 @@ function decodePNG(path){
 }
 function audit(rgba,kind){
   const spec=m.images[`${kind}-painted-body`];
-  const dimensions={husk:[40,74],wisp:[34,34],caster:[40,82],lurker:[56,46],sentinel:[48,92],warden:[120,200]}[kind];
+  const dimensions={husk:[40,74],wisp:[34,34],caster:[40,82],lurker:[56,46],sentinel:[48,92],warden:[120,200],
+    serpent:[70,70],thorn:[64,128],watcher:[64,144],colossus:[120,200],keeper:[64,128],king:[64,128]}[kind];
   const [width,height]=dimensions.map(v=>v/spec.scale),mask=Buffer.alloc(512*512);
   let pixels=0,hidden=0,outside=0,x0=512,y0=512,x1=0,y1=0;
   for(let i=0;i<mask.length;i++){

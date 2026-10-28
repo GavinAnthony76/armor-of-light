@@ -128,7 +128,8 @@ export function drawEnemy(ctx: Ctx, e: Enemy, diff: Difficulty, time: number, ar
   }
 
   if (e.kind === 'serpent') {
-    drawSerpent(ctx, e, diff, time);
+    const texture=art?.bodyOnly&&art.mode==='replace'&&art.draw()?art.texture?.():undefined;
+    drawSerpent(ctx, e, diff, time, texture);
     ctx.restore();
     if(art?.mode==='overlay'){ctx.save();ctx.globalAlpha=alpha;art.draw();ctx.restore();}
     drawWarning(ctx, e, diff, time);
@@ -141,6 +142,13 @@ export function drawEnemy(ctx: Ctx, e: Enemy, diff: Difficulty, time: number, ar
     ctx.beginPath();
     ctx.ellipse(e.x, e.y + 1, e.w * 0.7, 5, 0, 0, Math.PI * 2);
     ctx.fill();
+  }
+  // Keep the original moving cape BEHIND a replacement body, not over its
+  // painted torso/legs. Failed sources still use the complete original actor.
+  if(['thorn','watcher','keeper','king'].includes(e.kind)&&art?.bodyOnly&&art.mode==='replace'&&art.texture?.()){
+    ctx.save();ctx.translate(e.x,e.y);
+    if(e.state==='spawn')ctx.scale(1,.2+.8*Math.min(1,e.t/.6));
+    ctx.scale(e.facing,1);drawKingCape(ctx,time+e.id*1.37);ctx.restore();
   }
   const painted=!!(art?.bodyOnly&&art.mode==='replace'&&art.draw());
 
@@ -169,20 +177,19 @@ export function drawEnemy(ctx: Ctx, e: Enemy, diff: Difficulty, time: number, ar
       drawSentinel(ctx, e, diff, t, painted);
       break;
     case 'colossus':
-      
-      drawWarden(ctx,e,diff,t);
+      drawWarden(ctx,e,diff,t,painted);
       break;
     case 'thorn':
     case 'watcher':
     case 'keeper':
       
-      drawKing(ctx,e,diff,t);
+      drawKing(ctx,e,diff,t,painted);
       break;
     case 'warden':
       drawWarden(ctx, e, diff, t, painted);
       break;
     case 'king':
-      drawKing(ctx, e, diff, t);
+      drawKing(ctx, e, diff, t, painted);
       break;
   }
   if(!painted)drawArmorDetail(ctx,e,diff,t);
@@ -625,7 +632,7 @@ function drawWarden(ctx: Ctx, e: Enemy, diff: Difficulty, t: number, painted=fal
     if(painted){
       // Texture the original moving arm capsule and fist, not a new pose or
       // hitbox. Reuse the resident body stone instead of loading another sheet.
-      const stone=productionAssets.image('warden-painted-body');
+      const stone=productionAssets.image(`${e.kind}-painted-body`);
       if(stone){
         ctx.save();ctx.translate(sx,-110);ctx.rotate(-a);
         ctx.beginPath();ctx.roundRect(-12,-12,24,74,12);
@@ -644,11 +651,7 @@ function drawWarden(ctx: Ctx, e: Enemy, diff: Difficulty, t: number, painted=fal
   if (id === 'sweep' && e.state === 'active') arcSwipe(ctx, 40, -180, 100, -1.2, 2.2, m.eye);
 }
 
-function drawKing(ctx: Ctx, e: Enemy, diff: Difficulty, t: number): void {
-  const m = material(ctx, e, -140, 0);
-  const k = windK(e, diff);
-  const id = e.attack?.id;
-  // tattered cape
+function drawKingCape(ctx:Ctx,t:number):void {
   ctx.fillStyle = '#0b0514';
   ctx.beginPath();
   ctx.moveTo(-6, -108);
@@ -659,6 +662,14 @@ function drawKing(ctx: Ctx, e: Enemy, diff: Difficulty, t: number): void {
   ctx.lineTo(-10, -10);
   ctx.closePath();
   ctx.fill();
+}
+
+function drawKing(ctx: Ctx, e: Enemy, diff: Difficulty, t: number, painted=false): void {
+  const m = material(ctx, e, -140, 0);
+  const k = windK(e, diff);
+  const id = e.attack?.id;
+  if(!painted)drawKingCape(ctx,t);
+  if(!painted){
   legs(ctx, e, m, -50, 9, 50, 13);
   // torso armor
   ctx.beginPath();
@@ -688,6 +699,7 @@ function drawKing(ctx: Ctx, e: Enemy, diff: Difficulty, t: number): void {
   ctx.lineWidth = 1.5;
   ctx.stroke();
   eyes(ctx, 6, -126, m, 2.4, 7, 1.2);
+  }
   // greatsword
   let a: number;
   if (id === 'combo1' || id === 'combo3') a = swingArm(e, diff, 0.6, -2.6, 1.7);
@@ -726,7 +738,7 @@ function drawKing(ctx: Ctx, e: Enemy, diff: Difficulty, t: number): void {
   if (e.state === 'active' && id && id.startsWith('combo')) arcSwipe(ctx, sx, sy, 90, id === 'combo2' ? 0.2 : -2.4, id === 'combo2' ? 2.8 : 1.7, m.eye);
 }
 
-function drawSerpent(ctx: Ctx, e: Enemy, diff: Difficulty, t: number): void {
+function drawSerpent(ctx: Ctx, e: Enemy, diff: Difficulty, t: number, texture?:HTMLImageElement): void {
   const m = material(ctx, e, e.head.y - 40, e.y + 80);
   const k = windK(e, diff);
   const baseX = e.homeX + 30;
@@ -752,6 +764,22 @@ function drawSerpent(ctx: Ctx, e: Enemy, diff: Difficulty, t: number): void {
   for (let i = pts.length - 1; i >= 0; i--) ctx.lineTo(pts[i].x - pts[i].nx * pts[i].w, pts[i].y - pts[i].ny * pts[i].w);
   ctx.closePath();
   fillShape(ctx, m, 3);
+  if(texture){
+    // Clip to the unchanged tapered Bézier polygon, never replace it with a
+    // humanoid foot-pivot portrait. A central opaque scale sample is material.
+    ctx.save();ctx.clip();
+    if(e.flash>0)ctx.filter='brightness(1.8)';
+    // Lay the scale sample along the ORIGINAL curve tangents, not a world-space
+    // checkerboard. Overlapping strips stay inside the unchanged outer clip.
+    for(let i=0;i<N;i++){
+      const p=pts[i],q=pts[i+1],dx=q.x-p.x,dy=q.y-p.y;
+      const len=Math.hypot(dx,dy)||1,c=dx/len,s=dy/len;
+      ctx.save();ctx.transform(c,s,-s,c,p.x,p.y);
+      ctx.drawImage(texture,232,386,32,32,-1,-p.w,len+2,p.w*2);
+      ctx.restore();
+    }
+    ctx.restore();
+  }
   // dorsal fins
   ctx.fillStyle = '#1d0f33';
   for (let i = 3; i < N - 2; i += 2) {
@@ -775,6 +803,13 @@ function drawSerpent(ctx: Ctx, e: Enemy, diff: Difficulty, t: number): void {
   ctx.quadraticCurveTo(10, 26, -24, 16);
   ctx.closePath();
   fillShape(ctx, m, 3);
+  if(texture){
+    ctx.save();ctx.clip();
+    if(e.flash>0)ctx.filter='brightness(1.8)';
+    ctx.drawImage(texture,232,386,32,32,-26,-32,74,66);
+    ctx.drawImage(texture,204,308,108,75,-26,-32,74,55);
+    ctx.restore();
+  }
   eyes(ctx, 14, -12, m, 3.4, 9, 1.3);
   ctx.restore();
   // water churn at the base

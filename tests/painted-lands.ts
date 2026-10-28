@@ -4,6 +4,7 @@ import { validateManifest } from '../src/production/manifest';
 import { ProductionAssets } from '../src/production/assets';
 import { ProductionScene } from '../src/production/scene';
 import { STAGES } from '../src/core/levels';
+import { sceneResidency } from './scene-residency';
 
 let n = 0;
 function check(ok: unknown, message: string) { if (!ok) throw Error(message); n++; }
@@ -77,6 +78,6 @@ for (const theme of Object.keys(floors)) {
     `${theme}: missing lower artwork retains original opaque pit/water fallback`);
 }
 check(JSON.stringify(m) === before, 'rendering cannot mutate manifest or terrain definitions');
-const decoded = Object.values(m.images).reduce((sum, im) => sum + im.width * im.height * 4, 0);
-check(decoded < 80 * 1048576, 'entire installed art catalog remains below 80 MiB');
+for(const [theme,bytes] of sceneResidency(m))
+  check(bytes<80*1048576,`${theme}: installed scenery and guardian scene below 80 MiB`);
 console.log(`${n} six-land painted scenery, depth, aspect, fallback and reduced-motion checks passed.`);

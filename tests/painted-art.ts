@@ -5,6 +5,7 @@ import { productionAssets } from '../src/production/assets';
 import { drawPaintedHead, drawPaintedTorso, drawPaintedSegment } from '../src/render/painted-rig';
 import { HeroView } from '../src/render/hero';
 import { Player } from '../src/core/player';
+import { sceneResidency } from './scene-residency';
 let count=0;
 const check=(ok:unknown,message:string)=>{if(!ok)throw new Error(message);count++;};
 const manifest=validateManifest(JSON.parse(readFileSync('public/assets/production/asset-manifest.json','utf8')));
@@ -26,7 +27,8 @@ for(const [id,spec] of Object.entries(manifest.images)){
   }
   decoded+=w*h*4;compressed+=statSync(path).size;
 }
-check(decoded<80*1024*1024,'combined painted rig and animation pack fits 80MiB scene budget');
+for(const [theme,bytes] of sceneResidency(manifest))
+  check(bytes<80*1048576,`${theme}: current scene fits 80MiB decoded budget`);
 check(compressed<6*1024*1024,'combined optimized paintings and atlas stay under 6MiB');
 for(const actor of Object.values(manifest.actors)){
   check(Object.values(actor.states).every(id=>manifest.clips[id].frames.length>1||!!manifest.clips[id].bodyMotion),
