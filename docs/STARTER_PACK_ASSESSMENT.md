@@ -43,3 +43,27 @@ infrastructure commit separate. Ask whether the user wants a clearly marked
 prototype preview or reference-only treatment before integrating this pack.
 Final assets still need the approved reference style, complete pose/timing
 mapping and per-asset visual/device testing.
+
+## Updated showcase and HD illustration reference pack
+
+The user subsequently supplied the **Complete Game Asset Showcase** as the
+updated visual direction, together with the HD illustrations ZIP. This reference
+does match the intended painted fantasy look, unlike the flat starter pack.
+
+The newer archive contains 16 PNGs plus README/manifest, not finished game
+animation. Its own manifest labels the listed assets `productionReady: false`.
+The actual files were inspected:
+
+- Seven flattened background crops measure only 211–219 × 151 pixels.
+- Eliam is one static 215 × 237 image. The crop retains neighboring label/art
+  remnants and is not a clean, aligned character animation export.
+- Two boss concepts measure 255 × 167 and 314 × 167.
+- Effect/UI/item/terrain/pose atlases are reference crops, not cleaned individual
+  sprites, seamless tiles or validated animation sequences.
+- No separate parallax planes or new audio recordings are supplied.
+
+Keep the updated showcase as the visual target. Use these illustrations for
+reference or explicitly approved small story-card previews, not enlarged gameplay
+backgrounds or replacements for responsive combat animation. Request full-size,
+separated and cleaned production exports using PRODUCTION_ASSET_INTEGRATION.md.
+No assets from either ZIP have been installed in the live renderer.
