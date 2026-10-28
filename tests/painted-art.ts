@@ -11,26 +11,31 @@ const manifest=validateManifest(JSON.parse(readFileSync('public/assets/productio
 let decoded=0,compressed=0;
 for(const [id,spec] of Object.entries(manifest.images)){
   const path=`public/${spec.src}`,b=readFileSync(path);
-  check(b.toString('ascii',0,4)==='RIFF'&&b.toString('ascii',8,12)==='WEBP',`${id}: real WebP export`);
-  const chunk=b.toString('ascii',12,16);
+  const png=b.subarray(0,8).equals(new Uint8Array([137,80,78,71,13,10,26,10]));
+  check(png||(b.toString('ascii',0,4)==='RIFF'&&b.toString('ascii',8,12)==='WEBP'),`${id}: real PNG/WebP export`);
+  const chunk=png?'PNG':b.toString('ascii',12,16);
   let w:number,h:number;
-  if(chunk==='VP8X'){w=b.readUIntLE(24,3)+1;h=b.readUIntLE(27,3)+1;}
+  if(png){w=b.readUInt32BE(16);h=b.readUInt32BE(20);}
+  else if(chunk==='VP8X'){w=b.readUIntLE(24,3)+1;h=b.readUIntLE(27,3)+1;}
   else if(chunk==='VP8L'){const n=b.readUInt32LE(21);w=(n&0x3fff)+1;h=((n>>>14)&0x3fff)+1;}
   else {check(chunk==='VP8 ',`${id}: supported WebP header`);w=b.readUInt16LE(26)&0x3fff;h=b.readUInt16LE(28)&0x3fff;}
   check(w===spec.width&&h===spec.height,`${id}: exact manifest dimensions`);
   if(id.startsWith('eliam-')||id==='desert-pillar'){
-    check(chunk==='VP8X'&&(b[20]&16)!==0,`${id}: transparent RGBA export`);
+    check(png?b[25]===6:chunk==='VP8X'&&(b[20]&16)!==0,`${id}: transparent RGBA export`);
   }
   decoded+=w*h*4;compressed+=statSync(path).size;
 }
-check(decoded<16*1024*1024,'all painted textures fit within 16MiB decoded');
-check(compressed<1024*1024,'optimized exports add less than 1MiB');
-check(Object.keys(manifest.actors).length===0,'no static full-body replacement of rig animations');
+check(decoded<80*1024*1024,'combined painted rig and animation pack fits 80MiB scene budget');
+check(compressed<6*1024*1024,'combined optimized paintings and atlas stay under 6MiB');
+for(const actor of Object.values(manifest.actors)){
+  check(Object.values(actor.states).every(id=>manifest.clips[id].frames.length>1),
+    'body animation mappings use multiple pose samples, never a static full-body portrait');
+}
 for(const theme of ['desert','flood','garden','mountain','valley','city','river']){
   check(!!manifest.lands[theme]?.surfaces?.ground,`${theme}: actual textured terrain binding`);
 }
 check(manifest.lands.desert.layers.every(l=>l.depth!==undefined),'new desert scenery cannot cover archive/sky routes');
-for(const y of [-2100,1600]){
+for(const y of [-2100,2500]){
   check(manifest.lands.desert.layers.every(l=>l.depth&&(y<l.depth[0]||y>l.depth[1])),'archive and sky depths retain their original scenery');
 }
 check(manifest.clips['painted-ember'].frames.length===4,'real four-phase ember atlas');

@@ -64,7 +64,8 @@ export function validateManifest(raw:unknown):ProductionManifest {
       if((layer as Record<string,number>).height*(f?.width??Number(s.width))/(f?.height??Number(s.height))<64)fail(`land ${id} layer repeat density`);
     }
     for(const p of v.props)if(!record(p)||!owns(images,p.image)||!finite(p.x,-20000,20000)||!finite(p.y,-2000,4000)||
-      (p.facing!==undefined&&p.facing!==1&&p.facing!==-1)||(p.clip!==undefined&&(!owns(clips,p.clip)||(clips[String(p.clip)] as Record<string,unknown>).image!==p.image)))fail(`land ${id} prop`);
+      (p.facing!==undefined&&p.facing!==1&&p.facing!==-1)||(p.sway!==undefined&&!finite(p.sway,0,.08))||
+      (p.clip!==undefined&&(!owns(clips,p.clip)||(clips[String(p.clip)] as Record<string,unknown>).image!==p.image)))fail(`land ${id} prop`);
     const surfaces=(value as Record<string,unknown>).surfaces;
     if(surfaces!==undefined){
       if(!record(surfaces))fail(`land ${id} surfaces`);

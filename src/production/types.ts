@@ -31,7 +31,10 @@ export interface SceneLayer {
   depth?: [number,number]; // visible player-foot Y interval, e.g. archive vs sky
   fadeY?: number;
 }
-export interface SceneProp { image: string; x: number; y: number; facing?: 1 | -1; clip?: string }
+export interface SceneProp {
+  image: string; x: number; y: number; facing?: 1 | -1; clip?: string;
+  sway?: number; // small decorative shear about the source base; never collision
+}
 export interface SampleSpec { sources: string[]; gain: number; voices: number }
 export interface ProductionManifest {
   version: 1;

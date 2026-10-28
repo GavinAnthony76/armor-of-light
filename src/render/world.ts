@@ -3,6 +3,7 @@ import { VIEW_H } from '../core/config';
 import type { Prop, StageDef, Theme } from '../core/levels';
 import type { Terrain } from '../core/terrain';
 import { createRng } from '../core/rng';
+import { windSway } from './atmosphere';
 
 /**
  * Painted, procedurally generated scenery for each theme: sky, parallax
@@ -502,7 +503,8 @@ export class WorldView {
   }
 
   /** Weather and a light color wash over everything. Screen space. */
-  drawWeather(ctx: CanvasRenderingContext2D, camX: number, viewW: number, dt: number, time: number, viewH=VIEW_H): void {
+  drawWeather(ctx: CanvasRenderingContext2D, camX: number, viewW: number, dt: number, time: number, viewH=VIEW_H, reducedMotion=false): void {
+    if(reducedMotion)return;
     const kind = this.pal.ambient;
     const W = viewW + 100;
     if (kind === 'rain') {
@@ -585,6 +587,8 @@ function drawProp(ctx: CanvasRenderingContext2D, p: Prop, gy: number, time: numb
   ctx.save();
   ctx.translate(x, gy + 2);
   ctx.scale(s, s);
+  // Rooted plants bend in the wind; solid architecture stays fixed.
+  if(['reeds','deadTree','palm','cypress','hedge','flowers','olive','lily'].includes(p.t))ctx.transform(1,0,windSway(time,x),1,0,0);
   switch (p.t) {
     case 'pillar':
     case 'broken': {

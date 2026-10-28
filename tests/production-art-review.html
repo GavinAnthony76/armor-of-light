@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<link rel="icon" href="data:,">
+<title>Painted production scene review</title>
+<style>html,body,iframe{margin:0;width:100%;height:100%;border:0;overflow:hidden;background:#131724}iframe{display:block}</style>
+<iframe id="scene" title="Live painted desert scene" src="/?debug"></iframe>
+<script>
+const frame=document.querySelector('iframe');
+frame.addEventListener('load',()=>{
+  const timer=setInterval(()=>{
+    const app=frame.contentWindow.__aol;
+    if(!app)return;
+    clearInterval(timer);app.startLevel(0);
+    app.game.banners=[];
+  },50);
+});
+</script>
+</html>

@@ -40,6 +40,7 @@ for(const mutate of [
   (m:typeof manifest)=>{m.actors.eliam.states.run='missing-clip';},
   (m:typeof manifest)=>{m.lands.desert.surfaces!.ground='eliam-body';},
   (m:typeof manifest)=>{m.clips['eliam-run'].image='constructor';},
+  (m:typeof manifest)=>{m.lands.desert.props[0].sway=1;},
 ]){
   const copy=JSON.parse(JSON.stringify(manifest)) as typeof manifest;mutate(copy);
   let failed=false;try{validateManifest(copy);}catch{failed=true;}check(failed,'invalid manifest rejects safely');
@@ -84,6 +85,12 @@ check(!calls.length,'upper sky layer does not cover lower archive rooms');
 delete assets.manifest.lands.desert.layers[0].depth;
 calls.length=0;scene.props(ctx,'desert',5000,0,960,540,1,false);
 check(!calls.length,'distant props do not draw or preload');
+assets.manifest.lands.desert.props[0].sway=.04;
+calls.length=0;scene.props(ctx,'desert',0,0,960,540,1,false);
+check(calls.some(c=>c.name==='translate'&&c.args[0]===100&&c.args[1]===450),'painted vegetation sways about its fixed world base');
+check(calls.some(c=>c.name==='transform'&&Math.abs(Number(c.args[2]))<=.04),'painted vegetation sway is bounded');
+calls.length=0;scene.props(ctx,'desert',0,0,960,540,2,true);
+check(calls.some(c=>c.name==='transform'&&c.args[2]===0),'reduced motion freezes painted vegetation');
 await assets.preloadImage('terrain-tile');calls.length=0;
 const terrain=new Terrain([[100,300,450],[350,394,-1800]],[[420,510,380]]);
 const terrainBefore=JSON.stringify(terrain);

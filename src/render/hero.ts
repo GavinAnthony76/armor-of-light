@@ -10,7 +10,7 @@ import { drawPaintedBoot, drawPaintedHead, drawPaintedSegment, drawPaintedTorso 
  * tiny verlet rope so it trails naturally behind movement.
  */
 
-interface Pose {
+export interface Pose {
   bob: number; // hip drop (px, + = lower)
   lean: number; // torso tilt (rad, + = forward)
   hipF: number;
@@ -162,6 +162,11 @@ function poseFor(p: Player, time: number): Pose {
     };
   }
   return { ...BASE, bob: Math.sin(time * 2.2) * 0.8 };
+}
+
+/** Read-only pose snapshot for offline production sprite sampling. */
+export function sampleHeroPose(p: Player, time: number): Readonly<Pose> {
+  return Object.freeze({ ...poseFor(p, time) });
 }
 
 type V = { x: number; y: number };

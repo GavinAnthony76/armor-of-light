@@ -12,7 +12,8 @@
     "test": "node --import tsx tests/run.ts && node --import tsx tests/campaign.ts && node --import tsx tests/action.ts && node --import tsx tests/weapons.ts && node --import tsx tests/audio.ts && node --import tsx tests/hosts.ts && node --import tsx tests/input.ts && node --import tsx tests/traversal.ts && node --import tsx tests/layout.ts && node --import tsx tests/desert-slice.ts && node --import tsx tests/combat-feel.ts && node --import tsx tests/desert-demo.ts && node --import tsx tests/level-integration.ts && node --import tsx tests/archive.ts && node --import tsx tests/journey.ts && node --import tsx tests/production.ts && node --import tsx tests/painted-art.ts && npm run test:approved-sfx",
     "test:approved-sfx": "node --import tsx tests/approved-sfx.mjs",
     "test:e2e": "python3 tests/e2e.py",
-    "test:bundles": "node tests/verify-bundles.mjs"
+    "test:bundles": "node tests/verify-bundles.mjs",
+    "test:art": "node --import tsx tests/atmosphere.ts && node --import tsx tests/production-pack.ts"
   },
   "devDependencies": {
     "tsx": "^4.20.0",

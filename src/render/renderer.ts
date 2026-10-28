@@ -8,6 +8,7 @@ import type { Game } from '../game';
 import type { InputMode } from '../input';
 import { drawEnemy, WARN_RED } from './shadows';
 import { drawJourney } from './journey';
+import { drawAtmosphere, drawBrazier, sceneryTime } from './atmosphere';
 import { productionAssets } from '../production/assets';
 import { ProductionScene } from '../production/scene';
 
@@ -124,13 +125,14 @@ export class Renderer {
     this.production.layers(ctx,s.def.theme,'background',game.camX,camTop,l.viewW,l.viewH,game.reduceMotion,s.player.y);
     // Close scenery is intentionally below collision geometry and all actors.
     this.production.layers(ctx,s.def.theme,'foreground',game.camX,camTop,l.viewW,l.viewH,game.reduceMotion,s.player.y);
+    drawAtmosphere(ctx,s.def.theme,game.time,game.camX,l.viewW,l.viewH,s.player.y,game.reduceMotion);
 
     // ---------------- world space
     ctx.save();
     ctx.scale(Z, Z);
     ctx.translate(-Math.round(game.camX * 4) / 4 + sx, -camTop + sy);
     const camX = game.camX;
-    world.drawProps(ctx, s.terrain, camX, worldW, game.time, game.gateOpen);
+    world.drawProps(ctx, s.terrain, camX, worldW, sceneryTime(game.time,game.reduceMotion), game.gateOpen);
     this.production.props(ctx,s.def.theme,camX,camTop,worldW,l.viewH/Z,game.time,game.reduceMotion);
     this.drawExit(game);
     world.drawTerrain(ctx, s.terrain, camX, worldW, game.time,Math.max(VIEW_H,camTop+l.viewH/Z));
@@ -139,7 +141,7 @@ export class Renderer {
     if (!game.demo) for (const sign of s.def.signs.filter(q=>Math.abs(q.x-s.player.x)<170).sort((a,b)=>Math.abs(a.x-s.player.x)-Math.abs(b.x-s.player.x)).slice(0,1)) this.drawSign(sign, s.terrain.groundAt(sign.x) ?? 450, inputMode);
     this.drawPickups(game);
     this.drawWeaponDrops(game);
-    drawJourney(ctx,s,game.time,camX,worldW);
+    drawJourney(ctx,s,sceneryTime(game.time,game.reduceMotion),camX,worldW);
     this.drawMarkers(game);
     this.drawWaves(game);
     for(const e of s.enemies){
@@ -163,7 +165,7 @@ export class Renderer {
     ctx.restore();
 
     // ---------------- screen space
-    world.drawWeather(ctx, camX, l.viewW, frameDt, game.time,l.viewH);
+    world.drawWeather(ctx, camX, l.viewW, game.reduceMotion?0:frameDt, sceneryTime(game.time,game.reduceMotion),l.viewH,game.reduceMotion);
     if(s.def.id===0)this.drawDesertForeground(game);
     if (game.hurtFlash > 0) {
       const g = ctx.createRadialGradient(l.viewW / 2, l.viewH / 2, l.viewH * 0.3, l.viewW / 2, l.viewH / 2, l.viewW * 0.7);
@@ -188,7 +190,7 @@ export class Renderer {
   // ------------------------------------------------------------ world
 
   private drawDesertDepth(game:Game):void {
-    const c=this.ctx,l=this.layout,t=game.time,depth=Math.max(0,Math.min(1,(game.stage!.player.y-500)/220));
+    const c=this.ctx,l=this.layout,t=sceneryTime(game.time,game.reduceMotion),depth=Math.max(0,Math.min(1,(game.stage!.player.y-500)/220));
     const cover=(im:HTMLImageElement,rate:number)=>{if(!im.complete||!im.naturalWidth)return;const h=Math.max(l.viewH,l.viewW/1.5),w=h*im.naturalWidth/im.naturalHeight;c.drawImage(im,-Math.min(Math.max(0,w-l.viewW),game.camX*rate),(l.viewH-h)/2,w,h);};
     c.save();c.fillStyle='#d79962';c.fillRect(0,0,l.viewW,l.viewH);cover(this.desertArt[0],.035);
     const ruins=this.desertArt[1];
@@ -207,7 +209,11 @@ export class Renderer {
   }
 
   private drawDesertLandmarks(game:Game):void {
-    const c=this.ctx,s=game.stage!,t=game.time;
+    const c=this.ctx,s=game.stage!,t=sceneryTime(game.time,game.reduceMotion);
+    // Authored decoration only: bases do not create platforms or interactions.
+    for(const lamp of [{x:680,y:450},{x:2180,y:450},{x:2740,y:900},{x:3150,y:900},{x:4450,y:450},{x:6180,y:450}]){
+      if(lamp.x>game.camX-80&&lamp.x<game.camX+game.viewW+80)drawBrazier(c,lamp.x,lamp.y-20,t);
+    }
     for(const x of [1320,2180,4450,4740,5090,6180]){
       if(x<game.camX-100||x>game.camX+game.viewW+100)continue;
       const y=s.terrain.groundAt(x)??450;
@@ -242,12 +248,19 @@ export class Renderer {
       const w=WEAPONS[d.weapon],ground=s.terrain.groundAt(d.x)??d.y;
       ctx.save();ctx.fillStyle='rgba(10,12,27,.45)';ctx.beginPath();ctx.ellipse(d.x,ground+1,24,4,0,0,Math.PI*2);ctx.fill();
       // Small dark backing and thin light rim keep the actual silhouette readable on every land.
-      ctx.translate(d.x,d.y-22+(d.settled?Math.sin(d.age*2)*1.5:0));
+      const decorTime=sceneryTime(d.age,game.reduceMotion);
+      ctx.translate(d.x,d.y-22+(d.settled?Math.sin(decorTime*2)*2.5:0));
       ctx.shadowColor='#090f20';ctx.shadowBlur=5;ctx.strokeStyle='#fff3cd';ctx.lineWidth=1;
       ctx.fillStyle=w.color+'18';ctx.beginPath();ctx.ellipse(0,0,35,28,0,0,Math.PI*2);ctx.fill();ctx.stroke();
       ctx.shadowColor=w.color;ctx.shadowBlur=7;
-      ctx.rotate(d.settled?-.12:Math.sin(d.age*6)*.3);
-      ctx.scale(.82,.82);drawWeapon(ctx,d.weapon,d.rank,{x:-18,y:14},2.05,game.time);ctx.restore();
+      ctx.rotate(d.settled?-.12:Math.sin(decorTime*6)*.3);
+      for(let i=0;i<3;i++){
+        const angle=decorTime*1.8+i*Math.PI*2/3;
+        ctx.fillStyle=w.color;ctx.globalAlpha=.45;ctx.beginPath();
+        ctx.arc(Math.cos(angle)*29,Math.sin(angle)*18,1.8,0,Math.PI*2);ctx.fill();
+      }
+      ctx.globalAlpha=1;
+      ctx.scale(.82,.82);drawWeapon(ctx,d.weapon,d.rank,{x:-18,y:14},2.05,sceneryTime(game.time,game.reduceMotion));ctx.restore();
     }
   }
 

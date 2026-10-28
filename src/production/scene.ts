@@ -84,7 +84,10 @@ export class ProductionScene {
       const spec=this.assets.manifest.images[p.image],w=(spec.frame?.width??spec.width)*spec.scale,h=(spec.frame?.height??spec.height)*spec.scale;
       if(p.x+w<camX||p.x-w>camX+viewW||p.y+h<camY||p.y-h>camY+viewH)continue;
       const clip=p.clip?this.assets.manifest.clips[p.clip]:{image:p.image,frames:[0],fps:1,loop:false};
-      this.drawClip(ctx,clip,time,p.x,p.y,p.facing??1,undefined,still);
+      ctx.save();ctx.translate(p.x,p.y);
+      if(p.sway)ctx.transform(1,0,still?0:Math.sin(time*1.3+p.x*.013)*p.sway,1,0,0);
+      this.drawClip(ctx,clip,time,0,0,p.facing??1,undefined,still);
+      ctx.restore();
     }
   }
   surfaces(ctx:CanvasRenderingContext2D,theme:string,terrain:Terrain,camX:number,camY:number,viewW:number,viewH:number):void {
