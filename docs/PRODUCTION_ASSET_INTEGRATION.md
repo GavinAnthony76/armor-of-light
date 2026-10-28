@@ -1,8 +1,9 @@
 # Phase 2 — production asset handoff
 
-This commit is **integration infrastructure only**. No replacement artwork,
-audio recordings or generated concepts are included. The production manifest is
-intentionally empty: the existing game is the complete fallback, not a placeholder.
+The initial infrastructure commit contained no replacement artwork or recordings.
+The user subsequently authorized recreating necessary assets from the approved
+showcase, and the manifest now includes the first painted visual pass. See
+PAINTED_VISUAL_PASS.md. The existing game remains the complete per-asset fallback.
 Read ART_AUDIO_STORY_PRODUCTION.md for approved direction and story.
 
 ## Integration boundaries

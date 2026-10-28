@@ -1,9 +1,43 @@
 {
   "version": 1,
-  "images": {},
-  "clips": {},
+  "images": {
+    "eliam-head": {"src":"assets/production/characters/eliam/head.webp","width":192,"height":256,"anchor":[96,240],"scale":0.1,"source":"Recreated painted warrior rig","license":"Generated for project use"},
+    "eliam-torso": {"src":"assets/production/characters/eliam/torso.webp","width":192,"height":256,"anchor":[96,240],"scale":0.13,"source":"Recreated painted warrior rig","license":"Generated for project use"},
+    "eliam-boot": {"src":"assets/production/characters/eliam/boot.webp","width":128,"height":96,"anchor":[64,80],"scale":0.1,"source":"Recreated painted warrior rig","license":"Generated for project use"},
+    "eliam-thigh": {"src":"assets/production/characters/eliam/thigh.webp","width":96,"height":256,"anchor":[48,128],"scale":0.06,"source":"Recreated painted warrior rig","license":"Generated for project use"},
+    "eliam-bracer": {"src":"assets/production/characters/eliam/bracer.webp","width":96,"height":192,"anchor":[48,96],"scale":0.06,"source":"Recreated painted warrior rig","license":"Generated for project use"},
+    "hammer-head": {"src":"assets/production/characters/eliam/hammer.webp","width":256,"height":192,"anchor":[128,96],"scale":0.12,"source":"Recreated burning hammer","license":"Generated for project use"},
+    "shadow-armor": {"src":"assets/production/enemies/shadow-armor.webp","width":192,"height":256,"anchor":[96,128],"scale":0.2,"source":"Dark steel painted armor variant","license":"Generated for project use"},
+    "desert-ruins-painted": {"src":"assets/production/world/desert/painted-ruins.webp","width":1024,"height":640,"anchor":[0,0],"scale":1,"source":"Recreated from approved Complete Game Asset Showcase","license":"Generated for project use"},
+    "desert-pillars-painted": {"src":"assets/production/world/desert/parallax-pillars.webp","width":1536,"height":512,"anchor":[0,0],"scale":1,"source":"Separated recreated scenery tower","license":"Generated for project use"},
+    "desert-pillar": {"src":"assets/production/world/desert/pillar.webp","width":128,"height":384,"anchor":[64,384],"scale":0.44,"source":"Separated recreated scenery tower","license":"Generated for project use"},
+    "desert-stone": {"src":"assets/production/world/materials/desert-stone.webp","width":256,"height":256,"anchor":[0,0],"scale":0.5,"source":"Existing sandstone texture derivative","license":"Existing project asset"},
+    "flood-stone": {"src":"assets/production/world/materials/flood-stone.webp","width":256,"height":256,"anchor":[0,0],"scale":0.5,"source":"Existing sandstone texture derivative","license":"Existing project asset"},
+    "garden-stone": {"src":"assets/production/world/materials/garden-stone.webp","width":256,"height":256,"anchor":[0,0],"scale":0.5,"source":"Existing sandstone texture derivative","license":"Existing project asset"},
+    "mountain-stone": {"src":"assets/production/world/materials/mountain-stone.webp","width":256,"height":256,"anchor":[0,0],"scale":0.5,"source":"Existing sandstone texture derivative","license":"Existing project asset"},
+    "valley-stone": {"src":"assets/production/world/materials/valley-stone.webp","width":256,"height":256,"anchor":[0,0],"scale":0.5,"source":"Existing sandstone texture derivative","license":"Existing project asset"},
+    "city-stone": {"src":"assets/production/world/materials/city-stone.webp","width":256,"height":256,"anchor":[0,0],"scale":0.5,"source":"Existing sandstone texture derivative","license":"Existing project asset"},
+    "river-stone": {"src":"assets/production/world/materials/river-stone.webp","width":256,"height":256,"anchor":[0,0],"scale":0.5,"source":"Existing sandstone texture derivative","license":"Existing project asset"},
+    "painted-embers": {"src":"assets/production/effects/painted-embers.webp","width":384,"height":96,"frame":{"width":96,"height":96,"columns":4,"count":4},"anchor":[48,48],"scale":0.125,"source":"Flame phases from recreated hammer","license":"Generated for project use"}
+  },
+  "clips": {"painted-ember":{"image":"painted-embers","frames":[0,1,2,3],"fps":16,"loop":false}},
   "actors": {},
-  "effects": {},
-  "lands": {},
+  "effects": {"ember":"painted-ember"},
+  "lands": {
+    "desert": {
+      "layers":[
+        {"image":"desert-ruins-painted","plane":"background","height":680,"speedX":0.07,"speedY":0.025,"cover":true,"depth":[-900,850],"fadeY":160},
+        {"image":"desert-pillars-painted","plane":"background","height":520,"x":480,"y":25,"speedX":0.22,"speedY":0.06,"repeatX":true,"opacity":0.9,"depth":[-900,850],"fadeY":160}
+      ],
+      "props":[{"image":"desert-pillar","x":440,"y":450},{"image":"desert-pillar","x":1590,"y":450,"facing":-1}],
+      "surfaces":{"ground":"desert-stone","platform":"desert-stone"}
+    },
+    "flood":{"layers":[],"props":[],"surfaces":{"ground":"flood-stone","platform":"flood-stone"}},
+    "garden":{"layers":[],"props":[],"surfaces":{"ground":"garden-stone","platform":"garden-stone"}},
+    "mountain":{"layers":[],"props":[],"surfaces":{"ground":"mountain-stone","platform":"mountain-stone"}},
+    "valley":{"layers":[],"props":[],"surfaces":{"ground":"valley-stone","platform":"valley-stone"}},
+    "city":{"layers":[],"props":[],"surfaces":{"ground":"city-stone","platform":"city-stone"}},
+    "river":{"layers":[],"props":[],"surfaces":{"ground":"river-stone","platform":"river-stone"}}
+  },
   "audio": {}
 }

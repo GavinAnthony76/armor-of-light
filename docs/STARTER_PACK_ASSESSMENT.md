@@ -1,5 +1,10 @@
 # Supplied production starter: technical assessment
 
+**Current status:** The user subsequently authorized enhancing or recreating
+necessary files from the reference. The first actual painted visual upgrade is
+now integrated; see PAINTED_VISUAL_PASS.md. The historical ZIP limitations below
+are not a reason to block that work.
+
 The user identified the supplied **Armor of Light — Game Asset Bible PNG**
 as the visual direction: detailed painted fantasy characters, readable ink
 silhouettes, a burning hammer and rich seven-land environments.
