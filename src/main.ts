@@ -4,6 +4,7 @@ import { showChapterIntro } from './ui/chapter';
 import './polyfill';
 import './style.css';
 import './mobile.css';
+import './ui/title-scene.css';
 import { AudioEngine } from './audio/audio';
 import { STAGES } from './core/levels';
 import type { StageResult } from './core/stage';

@@ -15,6 +15,7 @@
     "test:e2e": "python3 tests/e2e.py",
     "test:bundles": "node tests/verify-bundles.mjs",
     "test:art": "node --import tsx tests/atmosphere.ts && node --import tsx tests/production-pack.ts && node --import tsx tests/painted-enemies.ts && node --import tsx tests/painted-lands.ts",
+    "test:title": "node --import tsx tests/title-scene.ts",
     "test:enemies": "node --import tsx tests/painted-enemies.ts",
     "test:enemy-silhouettes": "node tests/painted-enemy-silhouettes.mjs",
     "test:enemy-engines": "python3 tests/painted-enemies-engines.py"

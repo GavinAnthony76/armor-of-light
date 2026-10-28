@@ -12,6 +12,7 @@ import type { StageResult } from '../core/stage';
 import type { Layout } from '../render/renderer';
 import type { SaveData } from '../save';
 import { ICON } from './icons';
+import { mountTitleScene, setTitleReduceMotion, type TitleScene } from './title-scene';
 
 export interface UIHandlers {
   play(level: number): void;
@@ -42,6 +43,7 @@ const fmtTime = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60
 export class UI {
   current: Screen | 'none' = 'none';
   private screens: Record<Screen, HTMLElement>;
+  private titleScene?: TitleScene;
   readonly touch: HTMLElement;
   private keyboardMode = false;
 
@@ -52,6 +54,7 @@ export class UI {
   ) {
     root.innerHTML = `
       <section class="screen title" data-screen="title">
+        <canvas class="title-scene" aria-hidden="true"></canvas>
         <div class="brand">
           <p class="eyebrow">Seven lands · A journey of courage and restoration</p>
           <h1>Armor<span>of</span>Light</h1>
@@ -176,6 +179,7 @@ export class UI {
     root.querySelectorAll<HTMLInputElement>('[data-volume]').forEach(el=>el.addEventListener('input',()=>this.h.setMusicVolume(Number(el.value)/100)));
     const q = (s: string) => root.querySelector(`[data-screen="${s}"]`) as HTMLElement;
     this.screens = { title: q('title'), levels: q('levels'), help: q('help'), hud: q('hud'), pause: q('pause'), results: q('results') };
+    this.titleScene = mountTitleScene(this.screens.title.querySelector<HTMLCanvasElement>('.title-scene')!);
     this.touch = this.ref('touch');
 
     window.addEventListener('keydown', (e) => {
@@ -221,6 +225,7 @@ export class UI {
 
   show(screen: Screen | 'none'): void {
     this.current = screen;
+    this.titleScene?.setActive(screen === 'title');
     for (const [name, el] of Object.entries(this.screens)) {
       const on = name === screen || (name === 'hud' && (screen === 'pause' || screen === 'results'));
       el.classList.toggle('active', on);
@@ -235,6 +240,7 @@ export class UI {
   }
 
   setSettings(s: SaveData['settings']): void {
+    setTitleReduceMotion(!!s.reduceMotion);
     this.root.querySelectorAll<HTMLInputElement>('[data-volume]').forEach(el=>el.value=String(Math.round((s.musicVolume??.8)*100)));
     this.root.querySelectorAll<HTMLButtonElement>('[data-act="sfx"]').forEach((b) => {
       b.innerHTML = s.sfx ? ICON.sound : ICON.soundOff;

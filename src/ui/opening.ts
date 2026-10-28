@@ -1,5 +1,6 @@
 import { STAGES } from '../core/levels';
 import { asset } from '../assets';
+import { mountTitleScene, type TitleScene } from './title-scene';
 
 /** A one-gesture prologue. No audio is started here; the host may unlock it in onEnter. */
 export function showOpening(onEnter: () => void): Promise<void> {
@@ -13,6 +14,7 @@ export function showOpening(onEnter: () => void): Promise<void> {
     const art = asset(stage.background);
     overlay.style.setProperty('--opening-art', `url("${art.replace(/"/g, '\\"')}")`);
     overlay.innerHTML = `
+      <canvas class="opening-scene" aria-hidden="true"></canvas>
       <div class="opening-grain" aria-hidden="true"></div>
       <div class="opening-frame">
         <p class="opening-kicker"><span>AN EMBERFALL CHRONICLE</span><i></i><span>SEVEN LANDS</span></p>
@@ -30,11 +32,17 @@ export function showOpening(onEnter: () => void): Promise<void> {
       </div>`;
 
     let settled = false;
+    let entered = false;
+    let removed = false;
+    let scene: TitleScene | undefined;
     const finish = () => {
       if (settled) return;
       settled = true;
       overlay.classList.add('leaving');
       const remove = () => {
+        if (removed) return;
+        removed = true;
+        scene?.destroy();
         overlay.remove();
         resolve();
       };
@@ -44,16 +52,18 @@ export function showOpening(onEnter: () => void): Promise<void> {
     };
     const enter = (event?: Event) => {
       event?.preventDefault();
-      if (settled) return;
+      if (settled || entered) return;
+      entered = true;
       // Deliberately invoke in the trusted click/key gesture for WebAudio unlock.
-      onEnter();
-      finish();
+      try { onEnter(); } finally { finish(); }
     };
     overlay.querySelector('button')!.addEventListener('click', enter);
     overlay.addEventListener('keydown', (event: KeyboardEvent) => {
       if ((event.key === 'Enter' || event.key === ' ') && event.target === overlay) enter(event);
     });
     document.body.append(overlay);
+    scene = mountTitleScene(overlay.querySelector<HTMLCanvasElement>('.opening-scene')!);
+    scene.setActive(true);
     requestAnimationFrame(() => overlay.querySelector<HTMLButtonElement>('button')?.focus({ preventScroll: true }));
   });
 }
