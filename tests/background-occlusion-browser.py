@@ -43,7 +43,8 @@ with sync_playwright() as pw:
               const a=__aol.productionAssets,theme=__aol.game.stage.def.theme;
               await Promise.all(a.manifest.lands[theme].layers.map(l=>a.preloadImage(l.image)));
             }''')
-            for y in [-20, 450, 650, 1060]:
+            transition_y = [650, 650, 650, 770, 800, 710, 710][land]
+            for y in [-20, 450, transition_y, 1060]:
                 result = page.evaluate('''y=>{
                   const {renderer:r,canvas,ProductionScene:C}=comparison,g=__aol.game,s=g.stage,p=s.player;
                   p.x=p.prevX=s.prevPlayerX=650;p.y=p.prevY=s.prevPlayerY=y;
@@ -61,13 +62,15 @@ with sync_playwright() as pw:
                     const b=r.ctx.getImageData(0,0,canvas.width,canvas.height).data;
                     let different=0,maxDelta=0;
                     for(let i=0;i<a.length;i++)if(a[i]!==b[i]){different++;maxDelta=Math.max(maxDelta,Math.abs(a[i]-b[i]))}
-                    return {culled:optimized,different,maxDelta};
+                    return {culled:optimized,different,maxDelta,actualLand:s.def.id};
                   }finally{C.prototype.coversBackground=original;Math.random=random}
                 }''', y)
                 result.update(land=land, y=y, width=width, height=height, touch=touch)
                 samples.append(result)
                 (OUT / 'results.json').write_text(json.dumps({**engine_info(browser, ENGINE), 'samples': samples, 'errors': errors}, indent=2))
+                assert result['actualLand'] == land, result
                 assert result['different'] == 0, result
+                assert result['culled'] == (y != transition_y), result
             if land == 2:
                 # Actual rendered upper-room scene at each viewport, not a mockup.
                 page.evaluate('''()=>{

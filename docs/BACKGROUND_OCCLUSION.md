@@ -33,8 +33,9 @@ counters do not establish physical GPU/process memory release.
   missing edges, foreground rejection, source replacement and unreadable pixels.
 - Firefox exact framebuffer comparisons passed for all seven lands at desktop,
   390×844 portrait and 844×390 landscape sizes, at upper/surface/transition/lower
-  depths: 84 comparisons, zero differing channels. 75 cases skipped hidden
-  backgrounds; nine retained the legacy background. The test forces the old
+  depths: 84 comparisons, zero differing channels. 63 cases skipped hidden
+  backgrounds; 21 retained the legacy background at each land's actual fade
+  interval. The test forces the old
   rendering path for the reference without changing scenery or gameplay data.
 - Initial separate 120-frame profiles measured total mean render time from
   26.20 to 18.54 ms in desert upper and 42.33 to 19.87 ms in garden upper.
@@ -54,3 +55,17 @@ slowdown and eviction recovery. Previous Chromium post-pressure and local Firefo
 pacing failures remain historical evidence; this optimization alone does not
 close #29 or establish #30. Fuller approved recordings (#18) and real-device
 memory/audio evidence still require their respective inputs and measurements.
+
+The new isolated local Firefox 157 soak failed after 147 room samples and 396.10
+seconds, before the pressure phase: River surface mean-of-samples render p95
+42.0 → 76.67 ms exceeded the unchanged tolerance. All three normal sweeps held
+38 loads and 73.33 MiB warm residency. This retained failure is separate from
+the short profile improvement; stable logical memory does not establish its
+cause or certify smoothness. No repeat soak was used to replace that result.
+
+Hosted [run 40768673034](https://github.com/GavinAnthony76/armor-of-light/actions/runs/40768673034)
+on runtime commit `d0e497e` passed sound, offline scenery and calibration in all
+three engines at the time of this note; long-session and framebuffer job results
+were still pending. The follow-up only strengthens the framebuffer fixture to
+sample each land's distinct transition depth and makes captures use the compared
+canvas. It changes no runtime code. PR #13 remains draft pending those results.
