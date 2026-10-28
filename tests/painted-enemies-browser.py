@@ -175,6 +175,34 @@ with sync_playwright() as pw:
         broken.screenshot(path=str(OUT / ('missing-' + kind + '.jpg')))
         missing.close()
     print('PASS all six guardians with real missing-file fallback and no retry churn')
+    # Real browser canvas readback must reject in-bounds transparent samples,
+    # including the shaped head overlay, without disabling procedural fallback.
+    for kind, role in [('serpent', 'serpentScales'), ('serpent', 'serpentHead'),
+                       ('colossus', 'colossusStone')]:
+        calibration = browser.new_context(viewport=dict(width=1280, height=720))
+        probe = calibration.new_page()
+        probe.on('pageerror', lambda error: errors.append(str(error)))
+        start(probe)
+        probe.evaluate("""({kind,role}) => {
+          const a=__aol,id=kind+'-painted-body';
+          a.productionAssets.manifest.images[id].enemyPresentation.samples[role]=[0,0,8,8];
+        }""", dict(kind=kind, role=role))
+        fixture(probe, 'windup', guardians=True)
+        result = probe.evaluate("""async ({kind,role}) => {
+          const {ProductionScene}=await import('/src/production/scene.ts');
+          const a=__aol,s=a.game.stage,e=s.enemies.find(e=>e.kind===kind);
+          const scene=new ProductionScene(a.productionAssets),ctx=document.createElement('canvas').getContext('2d');
+          const before=JSON.stringify(e),box=JSON.stringify(e.hurtBox());
+          const art=scene.enemy(ctx,e,s.diff);
+          const draws=[art.draw(),art.draw(),art.draw()];
+          return {draws,texture:!!art.texture(),unchanged:before===JSON.stringify(e)&&box===JSON.stringify(e.hurtBox()),
+            issues:a.productionAssets.diagnostics().issues.filter(i=>i.includes(kind+'-painted-body: '+role))};
+        }""", dict(kind=kind, role=role))
+        assert result['draws'] == [False, False, False] and not result['texture'], result
+        assert result['unchanged'] and len(result['issues']) == 1, result
+        probe.screenshot(path=str(OUT / ('transparent-' + role + '.jpg')))
+        calibration.close()
+    print('PASS real canvas transparent-material rejection and unchanged combat state')
     # The single HTML must boot and render its packaged bodies with no sidecars.
     single = Path('dist-single/armor-of-light.html')
     if single.exists():

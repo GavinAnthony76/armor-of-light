@@ -1,4 +1,13 @@
 /** Presentation data only. No hitboxes, movement, damage or gameplay events. */
+export type SourceRect = [number, number, number, number]; // x, y, width, height
+export interface BodyBands {
+  top: number; neck: number; hip: number; legTop: number; foot: number;
+}
+export interface EnemyPresentation {
+  /** Source-pixel band boundaries; two-pixel seam overlap is added by the renderer. */
+  bands?: BodyBands;
+  samples?: Partial<Record<'serpentScales' | 'serpentHead' | 'colossusStone', SourceRect>>;
+}
 export interface ImageSpec {
   src: string;
   width: number;
@@ -7,6 +16,7 @@ export interface ImageSpec {
   anchor: [number, number]; // untrimmed source-cell pixels, normally the feet
   scale: number; // world units per source pixel; uniform on both axes
   sockets?: Record<string, [number, number]>;
+  enemyPresentation?: EnemyPresentation;
   source: string;
   license: string;
 }
@@ -52,6 +62,7 @@ export interface BodyArt {
   bodyOnly?: boolean;
   /** Resident body material for original articulated geometry (e.g. serpent). */
   texture?: () => HTMLImageElement | undefined;
+  samples?: EnemyPresentation['samples'];
   draw: () => boolean;
 }
 export const emptyManifest = (): ProductionManifest =>

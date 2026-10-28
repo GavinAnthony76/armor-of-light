@@ -64,6 +64,16 @@ a rigid full-body replacement could visually contradict the live collision.
 **How to apply:** Keep fins, head position, opening jaw and warnings procedural,
 and verify identical geometry with and without the painted material.
 
+Validate reusable material tiles separately from shaped head overlays.
+
+**Why:** The approved serpent head includes intentional transparent silhouette
+corners; the approved stone patch also has a few clear edge pixels. Requiring
+every sampled pixel to be opaque would discard approved paintings.
+
+**How to apply:** Preserve the distinction between near-opaque neck/stone
+material and the shaped head overlay when adjusting asset acceptance checks.
+Reject empty patches without treating intentional cutout edges as corruption.
+
 Judge transparent-art cleanliness from decoded pixels and contrasting-background
 composites as well as direct previews. Prefer normalized RGBA PNG body cutouts
 if lossless-alpha WebP direct previews disagree with browser canvas rendering.

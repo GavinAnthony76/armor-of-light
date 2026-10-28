@@ -6,6 +6,10 @@ import { ProductionAssets } from '../src/production/assets';
 import { ProductionScene, enemyVisual } from '../src/production/scene';
 import { validateManifest } from '../src/production/manifest';
 import { drawEnemy, WARN_GOLD, WARN_RED } from '../src/render/shadows';
+import { bodyBands, materialSamples, validMaterialPixels } from '../src/production/enemy-presentation';
+import type { ImageSpec, SourceRect } from '../src/production/types';
+// @ts-expect-error Node-only PNG fixture reader.
+import { decodeRGBA } from './png-rgba.mjs';
 
 let n=0;
 const check=(value:unknown,message:string)=>{if(!value)throw Error(message);n++;};
@@ -29,11 +33,27 @@ const ctx=new Proxy({globalAlpha:1},{
   set(target,key,value){calls.push({op:`set:${String(key)}`,args:[value]});return Reflect.set(target,key,value);},
 }) as unknown as CanvasRenderingContext2D;
 let requests:string[]=[];
+const decoded=new WeakMap<HTMLImageElement,{width:number;pixels:Uint8ClampedArray}>();
+let pixelReads=0;
+const readPixels=(im:HTMLImageElement,rect:SourceRect)=>{
+  pixelReads++;
+  const source=decoded.get(im)!;
+  const out=new Uint8ClampedArray(rect[2]*rect[3]*4);
+  for(let y=0;y<rect[3];y++){
+    const start=((rect[1]+y)*source.width+rect[0])*4;
+    out.set(source.pixels.subarray(start,start+rect[2]*4),y*rect[2]*4);
+  }
+  return out;
+};
 const assets=new ProductionAssets(p=>p,undefined,()=>{
   const image={naturalWidth:512,naturalHeight:512,onload:null as (()=>void)|null,onerror:null as (()=>void)|null,
-    set src(path:string){requests.push(path);queueMicrotask(()=>image.onload?.());},
+    set src(path:string){
+      requests.push(path);
+      decoded.set(image as unknown as HTMLImageElement,decodeRGBA(`public/${path}`));
+      queueMicrotask(()=>image.onload?.());
+    },
   };return image as unknown as HTMLImageElement;
-});
+},readPixels);
 assets.install(m);
 const scene=new ProductionScene(assets);
 let exportBytes=0;
@@ -74,6 +94,14 @@ for(const [kind,ids] of Object.entries(attacks) as [EnemyKind,string[]][]){
             drawEnemy(ctx,e,diff,1,art);
             check(calls.some(c=>c.op==='clip')&&calls.some(c=>c.op==='drawImage'),'serpent paints inside original neck and jaw paths');
           }else check(calls.some(c=>c.op==='scale'&&c.args[0]===e.facing*image.scale),'uniform original world scale and facing');
+          const explicit=JSON.stringify(calls),presentation=image.enemyPresentation;
+          delete image.enemyPresentation;
+          calls=[];
+          const legacy=scene.enemy(ctx,e,diff);
+          legacy?.draw();
+          if(kind==='serpent')drawEnemy(ctx,e,diff,1,legacy);
+          check(JSON.stringify(calls)===explicit,`${kind}: omitted metadata retains identical legacy draw commands`);
+          image.enemyPresentation=presentation;
           check(JSON.stringify(e)===before&&JSON.stringify(e.hurtBox())===box,'rendering cannot mutate combat, hitboxes or movement');
           poses.push(JSON.stringify(calls));
         }
@@ -92,6 +120,7 @@ for(const [kind,ids] of Object.entries(attacks) as [EnemyKind,string[]][]){
 check(exportBytes<1536*1024,'twelve lossless PNG delivery paintings remain small');
 check(assets.diagnostics().decodedBytes===12*512*512*4,'twelve shared sources cost 12MiB across all state clips');
 check(requests.length===12,'changing states, difficulty, phase and facing never reloads images');
+check(pixelReads===3,'decoded material checks run once per image/rectangle, not per frame');
 // Missing exact states never substitute standing art.
 const e=new Enemy('warden',300,450,DIFFICULTIES.challenging);
 e.state='active';e.attack={...ATTACKS.sweep,id:'unmapped'};
@@ -165,6 +194,59 @@ for(const kind of ['serpent','thorn','watcher','colossus','keeper','king'] as En
     check(calls.some((c,i)=>i>last&&c.op==='set:fillStyle'&&c.args[0]===(heavy?WARN_RED:WARN_GOLD)),`${kind}: gold/red warning survives above paint`);
   }
 }
+// Replacement calibrations affect only source crops/pivots, never live geometry.
+for(const kind of ['warden','serpent','colossus'] as EnemyKind[]){
+  const guardian=new Enemy(kind,300,450,DIFFICULTIES.challenging);
+  guardian.state='active';guardian.attack=ATTACKS[kind==='serpent'?'bite':'sweep'];guardian.t=.08;
+  const spec=m.images[`${kind}-painted-body`],saved=spec.enemyPresentation;
+  const snapshot=JSON.stringify(guardian),hurtbox=JSON.stringify(guardian.hurtBox());
+  calls=[];drawEnemy(ctx,guardian,DIFFICULTIES.challenging,1,scene.enemy(ctx,guardian,DIFFICULTIES.challenging));
+  const original=calls;
+  const bands={top:60,neck:155,hip:320,legTop:315,foot:448};
+  const samples=kind==='serpent'?{serpentScales:[234,388,16,16] as SourceRect,serpentHead:[236,390,8,8] as SourceRect}:
+    kind==='colossus'?{colossusStone:[220,140,24,24] as SourceRect}:undefined;
+  spec.enemyPresentation={...(kind!=='serpent'?{bands}:{}),samples};
+  validateManifest(m);
+  calls=[];drawEnemy(ctx,guardian,DIFFICULTIES.challenging,1,scene.enemy(ctx,guardian,DIFFICULTIES.challenging));
+  check(JSON.stringify(calls)!==JSON.stringify(original),`${kind}: replacement calibration changes painted draw commands`);
+  if(kind!=='serpent')check(calls.some(c=>c.op==='drawImage'&&c.args[2]===bands.legTop-2),'custom leg band controls actual source crop');
+  for(const r of Object.values(samples??{})){
+    check(calls.some(c=>c.op==='drawImage'&&JSON.stringify(c.args.slice(1,5))===JSON.stringify(r)),`${kind}: configured material rectangle reaches renderer`);
+  }
+  const paths=(list:Call[])=>list.filter(c=>['moveTo','lineTo','quadraticCurveTo','ellipse','arc','roundRect'].includes(c.op));
+  check(JSON.stringify(paths(calls))===JSON.stringify(paths(original)),`${kind}: replacement calibration leaves original geometry and weapons untouched`);
+  check(JSON.stringify(guardian)===snapshot&&JSON.stringify(guardian.hurtBox())===hurtbox,`${kind}: replacement calibration leaves combat state and hurtbox untouched`);
+  spec.enemyPresentation=saved;
+}
+// Actual transparent pixels fail closed even when the rectangle is in bounds.
+for(const kind of ['serpent','colossus'] as EnemyKind[]){
+  const id=`${kind}-painted-body`,spec=m.images[id],saved=spec.enemyPresentation;
+  const guardian=new Enemy(kind,300,450,DIFFICULTIES.challenging);
+  guardian.state='windup';guardian.attack=ATTACKS[kind==='serpent'?'bite':'slam'];
+  spec.enemyPresentation={samples:kind==='serpent'?{serpentScales:[0,0,8,8]}:{colossusStone:[0,0,8,8]}};
+  validateManifest(m);
+  const beforeReads=pixelReads;
+  for(let i=0;i<3;i++){
+    calls=[];drawEnemy(ctx,guardian,DIFFICULTIES.challenging,1,scene.enemy(ctx,guardian,DIFFICULTIES.challenging));
+    check(!calls.some(c=>c.op==='drawImage')&&calls.some(c=>c.op==='quadraticCurveTo'),`${kind}: transparent patch retains complete procedural actor`);
+  }
+  check(pixelReads===beforeReads+1,`${kind}: invalid patch is not re-read every frame`);
+  check(assets.issues.filter(issue=>issue.includes(`sample ${id}:`)).length===1,`${kind}: invalid material diagnosed once`);
+  spec.enemyPresentation=saved;
+}
+const opaque=new Uint8ClampedArray([40,50,60,255]),clear=new Uint8ClampedArray([40,50,60,0]);
+check(validMaterialPixels(opaque,[0,0,1,1],false),'opaque material accepted');
+check(!validMaterialPixels(clear,[0,0,1,1],true),'fully transparent head overlay rejected');
+check(!validMaterialPixels(new Uint8ClampedArray([1,2,3,100]),[0,0,1,1],false),'translucent material rejected');
+check(!validMaterialPixels(opaque,[0,0,2,2],false),'incomplete pixel data rejected');
+const unreadable=new ProductionAssets(p=>p,undefined,()=>{
+  const im={naturalWidth:512,naturalHeight:512,onload:null as (()=>void)|null,onerror:null,
+    set src(_path:string){queueMicrotask(()=>im.onload?.());}};
+  return im as unknown as HTMLImageElement;
+},()=>{throw Error('Canvas read failed');});
+unreadable.install(m);await unreadable.preloadImage('serpent-painted-body');
+check(!unreadable.materialImage('serpent-painted-body',materialSamples(m.images['serpent-painted-body'],'serpent')),'unreadable material pixels fail closed');
+check(bodyBands({scale:.5} as ImageSpec,'warden',200).neck===140,'legacy body bands remain available without metadata');
 // Cache residency protects all visible bodies from eviction.
 assets.beginFrame();
 for(const kind of Object.keys(attacks))assets.image(`${kind}-painted-body`);
@@ -179,6 +261,18 @@ for(const mutate of [
   (copy:typeof m)=>{copy.images['husk-painted-body'].width=256;},
   (copy:typeof m)=>{copy.images['husk-painted-body'].anchor=[0,0];},
   (copy:typeof m)=>{copy.images['husk-painted-body'].scale=.1;},
+  ...[
+    {top:0,neck:140,hip:328,legTop:328,foot:448},
+    {top:48,neck:340,hip:328,legTop:328,foot:448},
+    {top:48,neck:140,hip:328,legTop:328,foot:513},
+    {top:48,neck:140,hip:NaN,legTop:328,foot:448},
+  ].map(bands=>(copy:typeof m)=>{copy.images['warden-painted-body'].enemyPresentation={bands};}),
+  ...[
+    [-1,116,10,10],[500,116,20,10],[200,500,10,20],[200,116,0,10],
+    [200,116,10.5,10],[200,116,Infinity,10],[200,116,10],
+  ].map(rect=>(copy:typeof m)=>{copy.images['colossus-painted-body'].enemyPresentation={samples:{colossusStone:rect as SourceRect}};}),
+  (copy:typeof m)=>{copy.images['colossus-painted-body'].enemyPresentation={samples:{unknown:[0,0,8,8]} as never};},
+  (copy:typeof m)=>{copy.images['colossus-painted-body'].enemyPresentation={bands:{} as never};},
 ]){
   const copy=JSON.parse(JSON.stringify(m));mutate(copy);
   let rejected=false;try{validateManifest(copy);}catch{rejected=true;}check(rejected,'malformed body-motion contract rejected');

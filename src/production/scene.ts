@@ -6,6 +6,7 @@ import type { Terrain } from '../core/terrain';
 import type { BodyArt, Clip, SceneLayer } from './types';
 import { productionAssets, type ProductionAssets } from './assets';
 import { drawPaintedEnemyBody } from '../render/painted-enemy';
+import { materialSamples } from './enemy-presentation';
 
 export function layerDepthAlpha(layer:SceneLayer,focusY:number):number {
   const fade=layer.fadeY??0;
@@ -71,9 +72,11 @@ export class ProductionScene {
       const key=this.assets.manifest.actors[id]?.states[v.key],clip=this.assets.manifest.clips[key];
       if(!clip)continue;
       if(!clip.bodyMotion)break;
-      return {mode:clip.mode??'overlay',bodyOnly:true,
-        texture:()=>this.assets.image(clip.image)??undefined,draw:()=>{
-        const spec=this.assets.manifest.images[clip.image],im=this.assets.image(clip.image);
+      const spec=this.assets.manifest.images[clip.image],samples=materialSamples(spec,e.kind);
+      const texture=()=>this.assets.materialImage(clip.image,samples);
+      return {mode:clip.mode??'overlay',bodyOnly:true,samples,
+        texture,draw:()=>{
+        const im=texture();
         if(!im)return false;
         // The serpent is not a humanoid cutout. Its live curved neck and jaw
         // receive this material inside their original paths in shadows.ts.

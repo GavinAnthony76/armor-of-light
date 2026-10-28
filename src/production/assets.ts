@@ -1,6 +1,17 @@
 import { asset } from '../assets';
 import { emptyManifest } from './types';
 import { validateManifest } from './manifest';
+import type { EnemyPresentation, SourceRect } from './types';
+import { validMaterialPixels } from './enemy-presentation';
+
+function readMaterialPixels(im:HTMLImageElement,rect:SourceRect):Uint8ClampedArray {
+  const canvas=document.createElement('canvas');
+  canvas.width=rect[2];canvas.height=rect[3];
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});
+  if(!ctx)throw Error('Material pixel reader unavailable');
+  ctx.drawImage(im,...rect,0,0,rect[2],rect[3]);
+  return ctx.getImageData(0,0,rect[2],rect[3]).data;
+}
 
 /** Failures are observable but never prevent the procedural game from rendering. */
 export class ProductionAssets {
@@ -12,6 +23,7 @@ export class ProductionAssets {
   private failed=new Set<string>();
   private visible=new Set<string>();
   private bytes=0;
+  private materialChecks=new WeakMap<HTMLImageElement,Map<string,boolean>>();
   readonly budget=96*1024*1024;
   /** Protect this frame's assets from cache eviction/reload thrashing. */
   beginFrame():void {this.visible.clear();}
@@ -19,7 +31,25 @@ export class ProductionAssets {
     readonly resolve:(path:string)=>string=asset,
     private fetcher:typeof fetch=(...args)=>fetch(...args),
     private makeImage:()=>HTMLImageElement=()=>new Image(),
+    private readPixels:(im:HTMLImageElement,rect:SourceRect)=>Uint8ClampedArray=readMaterialPixels,
   ){}
+  /** Check each decoded source/rectangle once, outside the repeated drawing path. */
+  materialImage(id:string,samples:NonNullable<EnemyPresentation['samples']>):HTMLImageElement|undefined {
+    const im=this.image(id);if(!im)return undefined;
+    let checks=this.materialChecks.get(im);
+    if(!checks){checks=new Map();this.materialChecks.set(im,checks);}
+    for(const [role,rect] of Object.entries(samples)){
+      const key=JSON.stringify([role,rect]);
+      if(!checks.has(key)){
+        let valid=false;
+        try{valid=validMaterialPixels(this.readPixels(im,rect),rect,role==='serpentHead');}catch{/* Fail closed, including unreadable/tainted canvas. */}
+        checks.set(key,valid);
+        if(!valid)this.report(`Invalid or transparent material sample ${id}: ${role}`);
+      }
+      if(!checks.get(key))return undefined;
+    }
+    return im;
+  }
   report(message:string):void {
     if(this.issues.includes(message))return;
     this.issues.push(message);

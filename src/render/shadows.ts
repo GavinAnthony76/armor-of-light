@@ -1,5 +1,7 @@
 import type { Difficulty } from '../core/config';
 import type { Enemy } from '../core/enemy';
+import type { BodyArt } from '../production/types';
+import { materialSamples } from '../production/enemy-presentation';
 
 /**
  * Shadow creatures: dark, softly wobbling shapes with a violet rim and
@@ -129,7 +131,7 @@ export function drawEnemy(ctx: Ctx, e: Enemy, diff: Difficulty, time: number, ar
 
   if (e.kind === 'serpent') {
     const texture=art?.bodyOnly&&art.mode==='replace'&&art.draw()?art.texture?.():undefined;
-    drawSerpent(ctx, e, diff, time, texture);
+    drawSerpent(ctx, e, diff, time, texture, art?.samples);
     ctx.restore();
     if(art?.mode==='overlay'){ctx.save();ctx.globalAlpha=alpha;art.draw();ctx.restore();}
     drawWarning(ctx, e, diff, time);
@@ -177,7 +179,7 @@ export function drawEnemy(ctx: Ctx, e: Enemy, diff: Difficulty, time: number, ar
       drawSentinel(ctx, e, diff, t, painted);
       break;
     case 'colossus':
-      drawWarden(ctx,e,diff,t,painted);
+      drawWarden(ctx,e,diff,t,painted,art);
       break;
     case 'thorn':
     case 'watcher':
@@ -557,7 +559,7 @@ function drawSentinel(ctx: Ctx, e: Enemy, diff: Difficulty, t: number, painted=f
   void t;
 }
 
-function drawWarden(ctx: Ctx, e: Enemy, diff: Difficulty, t: number, painted=false): void {
+function drawWarden(ctx: Ctx, e: Enemy, diff: Difficulty, t: number, painted=false, art?:BodyArt): void {
   const m = material(ctx, e, -210, 0);
   const k = windK(e, diff);
   const id = e.attack?.id;
@@ -632,12 +634,13 @@ function drawWarden(ctx: Ctx, e: Enemy, diff: Difficulty, t: number, painted=fal
     if(painted){
       // Texture the original moving arm capsule and fist, not a new pose or
       // hitbox. Reuse the resident body stone instead of loading another sheet.
-      const stone=productionAssets.image(`${e.kind}-painted-body`);
+      const stone=art?.texture?.();
       if(stone){
         ctx.save();ctx.translate(sx,-110);ctx.rotate(-a);
         ctx.beginPath();ctx.roundRect(-12,-12,24,74,12);
         ctx.moveTo(20,50);ctx.arc(0,50,20,0,Math.PI*2);ctx.clip();
-        ctx.drawImage(stone,200,116,100,100,-46,-12,92,92);
+        const sample=art?.samples?.colossusStone??materialSamples({},'colossus').colossusStone!;
+        ctx.drawImage(stone,...sample,-46,-12,92,92);
         ctx.restore();
         // Paths aren't restored by canvas save/restore; rebuild the fist rim.
         ctx.beginPath();ctx.arc(ex,ey,20,0,Math.PI*2);
@@ -738,7 +741,10 @@ function drawKing(ctx: Ctx, e: Enemy, diff: Difficulty, t: number, painted=false
   if (e.state === 'active' && id && id.startsWith('combo')) arcSwipe(ctx, sx, sy, 90, id === 'combo2' ? 0.2 : -2.4, id === 'combo2' ? 2.8 : 1.7, m.eye);
 }
 
-function drawSerpent(ctx: Ctx, e: Enemy, diff: Difficulty, t: number, texture?:HTMLImageElement): void {
+function drawSerpent(ctx: Ctx, e: Enemy, diff: Difficulty, t: number, texture?:HTMLImageElement, samples?:BodyArt['samples']): void {
+  const defaults=materialSamples({},'serpent');
+  const scales=samples?.serpentScales??defaults.serpentScales!;
+  const head=samples?.serpentHead??defaults.serpentHead!;
   const m = material(ctx, e, e.head.y - 40, e.y + 80);
   const k = windK(e, diff);
   const baseX = e.homeX + 30;
@@ -775,7 +781,7 @@ function drawSerpent(ctx: Ctx, e: Enemy, diff: Difficulty, t: number, texture?:H
       const p=pts[i],q=pts[i+1],dx=q.x-p.x,dy=q.y-p.y;
       const len=Math.hypot(dx,dy)||1,c=dx/len,s=dy/len;
       ctx.save();ctx.transform(c,s,-s,c,p.x,p.y);
-      ctx.drawImage(texture,232,386,32,32,-1,-p.w,len+2,p.w*2);
+      ctx.drawImage(texture,...scales,-1,-p.w,len+2,p.w*2);
       ctx.restore();
     }
     ctx.restore();
@@ -806,8 +812,8 @@ function drawSerpent(ctx: Ctx, e: Enemy, diff: Difficulty, t: number, texture?:H
   if(texture){
     ctx.save();ctx.clip();
     if(e.flash>0)ctx.filter='brightness(1.8)';
-    ctx.drawImage(texture,232,386,32,32,-26,-32,74,66);
-    ctx.drawImage(texture,204,308,108,75,-26,-32,74,55);
+    ctx.drawImage(texture,...scales,-26,-32,74,66);
+    ctx.drawImage(texture,...head,-26,-32,74,55);
     ctx.restore();
   }
   eyes(ctx, 14, -12, m, 3.4, 9, 1.3);

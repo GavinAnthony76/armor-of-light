@@ -339,6 +339,9 @@
     },
     "warden-painted-body": {
       "src": "assets/production/bosses/warden/warden-painted-body.png",
+      "enemyPresentation": {
+        "bands": { "top": 48, "neck": 140, "hip": 328, "legTop": 328, "foot": 448 }
+      },
       "width": 512,
       "height": 512,
       "anchor": [
@@ -567,6 +570,12 @@
     },
     "serpent-painted-body": {
       "src": "assets/production/bosses/serpent/serpent-painted-body.png",
+      "enemyPresentation": {
+        "samples": {
+          "serpentScales": [232, 386, 32, 32],
+          "serpentHead": [204, 308, 108, 75]
+        }
+      },
       "width": 512,
       "height": 512,
       "anchor": [
@@ -579,6 +588,9 @@
     },
     "thorn-painted-body": {
       "src": "assets/production/bosses/thorn/thorn-painted-body.png",
+      "enemyPresentation": {
+        "bands": { "top": 192, "neck": 250.88, "hip": 371.2, "legTop": 371.2, "foot": 448 }
+      },
       "width": 512,
       "height": 512,
       "anchor": [
@@ -591,6 +603,9 @@
     },
     "watcher-painted-body": {
       "src": "assets/production/bosses/watcher/watcher-painted-body.png",
+      "enemyPresentation": {
+        "bands": { "top": 160, "neck": 226.24, "hip": 361.6, "legTop": 361.6, "foot": 448 }
+      },
       "width": 512,
       "height": 512,
       "anchor": [
@@ -603,6 +618,10 @@
     },
     "colossus-painted-body": {
       "src": "assets/production/bosses/colossus/colossus-painted-body.png",
+      "enemyPresentation": {
+        "bands": { "top": 48, "neck": 140, "hip": 328, "legTop": 328, "foot": 448 },
+        "samples": { "colossusStone": [200, 116, 100, 100] }
+      },
       "width": 512,
       "height": 512,
       "anchor": [
@@ -615,6 +634,9 @@
     },
     "keeper-painted-body": {
       "src": "assets/production/bosses/keeper/keeper-painted-body.png",
+      "enemyPresentation": {
+        "bands": { "top": 192, "neck": 250.88, "hip": 371.2, "legTop": 371.2, "foot": 448 }
+      },
       "width": 512,
       "height": 512,
       "anchor": [
@@ -627,6 +649,9 @@
     },
     "king-painted-body": {
       "src": "assets/production/bosses/king/king-painted-body.png",
+      "enemyPresentation": {
+        "bands": { "top": 192, "neck": 250.88, "hip": 371.2, "legTop": 371.2, "foot": 448 }
+      },
       "width": 512,
       "height": 512,
       "anchor": [

@@ -70,6 +70,44 @@ fins, eyes and water churn retain their original geometry; no portrait is
 positioned at a fictitious serpent foot pivot. This also preserves the existing
 head hurtbox and bite/lunge presentation. Missing material draws the full original.
 
+### Replacement painting calibration
+
+Each image may supply `enemyPresentation` in the production manifest. It is
+presentation-only; it does not relax the 512×512 source cell, (256,448) anchor,
+uniform scale or exact-state clip contract. Existing packs may omit it entirely;
+the original per-archetype band and material defaults remain in effect.
+
+```json
+{
+  "bands": { "top": 48, "neck": 140, "hip": 328, "legTop": 328, "foot": 448 },
+  "samples": { "colossusStone": [200, 116, 100, 100] }
+}
+```
+
+`bands` is an optional complete set of source-pixel Y boundaries. `hip` is the
+torso pivot; `legTop` is the leg split (separate for low quadrupeds). The renderer
+adds the existing two-pixel seam overlap. Boundaries must be finite, ordered,
+inside the source, and leave room for the overlap. Band changes affect cutout
+cropping and articulation only, not actor position or size.
+
+`samples` is an optional partial map of `[x,y,width,height]` integer source
+rectangles. Supported roles are `serpentScales`, `serpentHead`, and
+`colossusStone`; omitted roles retain their original rectangles. Rectangles
+must have positive area and fit inside the source. On first use, actual decoded
+pixels are checked: scales and stone require at least 95% mean alpha coverage.
+The head is a shaped overlay with intentional clear corners, so it requires
+50% rather than near-total coverage. Fully transparent, mostly empty or
+unreadable samples retain the complete procedural actor and report one issue.
+Results are cached per decoded image, role and rectangle; no per-frame pixel
+readback or extra body image is needed. The Colossus arm uses the selected clip's
+resident image, so a replacement binding cannot accidentally sample an old pack.
+
+Calibrate by editing the manifest and replacing the PNG only; no renderer edits
+are needed. Keep the existing weapons, warning geometry and combat timing.
+`npm run test:enemies` compares explicit and omitted metadata in every live
+state, checks custom crops, rejects malformed/transparent samples, and verifies
+the original hitboxes, arm/weapon endpoints, timing and missing-file fallback.
+
 ## Exact attack mapping
 
 | Actor | Original attack IDs |

@@ -1,5 +1,6 @@
 import type { Enemy } from '../core/enemy';
 import type { Clip, ImageSpec } from '../production/types';
+import { bodyBands } from '../production/enemy-presentation';
 
 /** Read-only cutout animation. All positions are relative to the original feet. */
 export function drawPaintedEnemyBody(
@@ -18,8 +19,8 @@ export function drawPaintedEnemyBody(
   if(motion==='dying'){lean=-.25*k;crouch=.15*k;}
   const moving=motion==='move'&&Math.abs(e.vx)>15&&e.onGround;
   const step=moving?Math.sin(e.stride)*.14:0;
-  const h=e.h/spec.scale,top=448-h,hip=448-h*.30;
-  const neck=448-h*.77,foot=448;
+  const h=e.h/spec.scale;
+  const {top,neck,hip,legTop,foot}=bodyBands(spec,e.kind,e.h);
   // Source is a calibrated 512-square, armless body. Regions overlap by two
   // source pixels to avoid seams; no opaque rectangle or contact shadow.
   const region=(x:number,y:number,w:number,height:number,px:number,py:number,angle:number)=>{
@@ -41,7 +42,6 @@ export function drawPaintedEnemyBody(
   }else{
     // Grounded legs remain separate and move in opposition; quadrupeds use
     // the same split at their measured low hip rather than stretching a still.
-    const legTop=e.kind==='lurker'?448-h*.38:hip;
     region(0,legTop-2,256,foot-legTop+2,240,legTop,-step);
     region(256,legTop-2,256,foot-legTop+2,272,legTop,step);
     ctx.translate(256,hip+h*crouch);ctx.rotate(lean);ctx.translate(-256,-hip);

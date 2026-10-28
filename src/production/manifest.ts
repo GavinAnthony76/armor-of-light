@@ -35,6 +35,24 @@ export function validateManifest(raw:unknown):ProductionManifest {
     }
     if((v.anchor as number[])[0]<0||(v.anchor as number[])[0]>fw||(v.anchor as number[])[1]<0||(v.anchor as number[])[1]>fh)fail(`image ${id} anchor`);
     if(v.sockets!==undefined&&(!record(v.sockets)||Object.values(v.sockets).some(p=>!point(p))))fail(`image ${id} sockets`);
+    if(v.enemyPresentation!==undefined){
+      const p=v.enemyPresentation;
+      if(!record(p)||v.frame!==undefined||Object.keys(p).some(k=>!['bands','samples'].includes(k)))fail(`image ${id} enemy presentation`);
+      const presentation=p as Record<string,unknown>;
+      if(presentation.bands!==undefined){
+        const b=presentation.bands;
+        if(!record(b)||Object.keys(b).length!==5||!['top','neck','hip','legTop','foot'].every(k=>finite(b[k],0,fh))||
+          !(Number(b.top)>=2&&Number(b.top)<Number(b.neck)&&Number(b.neck)+2<Math.min(Number(b.hip),Number(b.legTop))&&
+            Math.max(Number(b.hip),Number(b.legTop))+2<Number(b.foot)))fail(`image ${id} body bands`);
+      }
+      if(presentation.samples!==undefined){
+        const samples=presentation.samples;
+        if(!record(samples)||Object.entries(samples).some(([key,r])=>
+          !['serpentScales','serpentHead','colossusStone'].includes(key)||!Array.isArray(r)||r.length!==4||
+          !r.every(n=>integer(n,0,4096))||r[2]<1||r[3]<1||r[0]+r[2]>fw||r[1]+r[3]>fh))
+          fail(`image ${id} material sample bounds`);
+      }
+    }
   }
   for(const [id,value] of Object.entries(clips)){
     if(!record(value))fail(`clip ${id}`);
